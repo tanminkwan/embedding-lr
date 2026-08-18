@@ -1,0 +1,1089 @@
+"질의","응답","카테고리"
+"Tomcat 재시작 명령어 뭐야?","- shutdown 후 startup
+```bash
+$CATALINA_HOME/bin/shutdown.sh
+$CATALINA_HOME/bin/startup.sh
+```
+- systemd 등록돼있으면 systemctl restart tomcat","IT"
+"JEUS 8에서 도메인 상태 확인하는 명령어는?","```bash
+jeusadmin <노드>:<포트> domain-status
+```
+- WebAdmin 콘솔에서도 서버별 상태 확인 가능","IT"
+"nginx 설정 파일 문법 검사 어떻게 해?","```bash
+nginx -t
+```
+- 문법 에러면 몇 번째 줄인지 바로 찍어줌
+- reload 전엔 항상 이거 먼저 돌려야 함","IT"
+"Apache 워커 프로세스 확인하는 방법?","```bash
+ps -ef | grep httpd
+apachectl status
+```
+- status는 mod_status 모듈 활성화 필요","IT"
+"WebtoB 프로세스 상태 확인 명령어?","```bash
+wsdm -status
+```
+- HTL, HTH 노드별 상태(ACT/DEACT) 다 나옴","IT"
+"스레드 덤프 뜨는 명령어 알려줘","```bash
+jstack <pid> > thread_dump.txt
+```
+- kill -3 <pid> 로도 stdout(catalina.out 등)에 덤프 가능","IT"
+"JVM 힙 덤프 뜨는 방법?","```bash
+jmap -dump:live,format=b,file=heap.hprof <pid>
+```
+- live 옵션 빼면 unreachable 객체도 같이 덤프됨","IT"
+"Tomcat 커넥터 설정에서 maxThreads 기본값이 뭐야?","- server.xml Connector 기본값 200
+- 트래픽 많으면 보통 400~800 사이로 늘려서 씀","IT"
+"nginx 무중단 리로드 명령어는?","```bash
+nginx -s reload
+```
+- 마스터 프로세스는 유지, 워커만 graceful하게 교체됨","IT"
+"JEUS 노드매니저가 뭐야?","- 각 노드에서 JEUS 서버 프로세스를 기동/중지/모니터링하는 에이전트
+- 매니저 서버가 원격 노드를 제어할 때 이걸 통해서 명령 전달함","IT"
+"Apache mod_jk이 하는 역할이 뭐야?","- Apache와 WAS(Tomcat/JEUS)를 AJP 프로토콜로 연결해주는 커넥터 모듈
+- workers.properties에 워커 목록/로드밸런싱 정의","IT"
+"GC 로그 켜는 JVM 옵션 알려줘","```
+-Xlog:gc*:file=gc.log:time,uptime:filecount=5,filesize=100M
+```
+- JDK8 이하는 -XX:+PrintGCDetails -Xloggc:gc.log 사용","IT"
+"Tomcat 세션 타임아웃 설정 어디서 해?","- web.xml의 `<session-timeout>` 태그, 단위는 분
+- 기본값은 30분","IT"
+"WebtoB에서 HTH 노드가 뭐야?","- 클라이언트 HTTP 요청 받아서 WAS로 라우팅하는 노드
+- 로드밸런싱은 HTL 노드가 담당","IT"
+"커넥션 풀이 뭐야 간단히 설명해줘","- DB 연결을 미리 만들어두고 재사용하는 캐시 같은 개념
+- 매번 연결 생성/해제하는 비용을 줄여서 응답속도 개선함","IT"
+"JEUS 8 로그 파일 위치 어디야?","- $JEUS_HOME/domains/<도메인명>/servers/<서버명>/logs
+- server.log, stdout.log 위주로 확인","IT"
+"nginx upstream이 뭐야?","- 백엔드 서버들을 그룹으로 묶어 정의하는 블록
+- round robin, least_conn 등 로드밸런싱 알고리즘 지정 가능","IT"
+"Tomcat catalina.out 로그 위치는?","- $CATALINA_HOME/logs/catalina.out
+- 표준출력/표준에러 다 여기로 쌓임","IT"
+"JVM에서 G1GC랑 CMS GC 차이가 뭐야?","- CMS는 Concurrent Mark Sweep, 단편화 발생하고 Java 9부터 deprecated
+- G1은 리전 기반이라 단편화 적고 목표 일시정지시간(-XX:MaxGCPauseMillis) 지정 가능","IT"
+"Apache와 nginx의 가장 큰 차이가 뭐야?","- Apache는 프로세스/스레드 기반(prefork, worker MPM)
+- nginx는 이벤트 기반 비동기라 동시접속 많을 때 메모리 효율 좋음","IT"
+"nginx에서 502 Bad Gateway 뜨는데 원인 뭐부터 봐야돼?","확인 순서
+1. WAS 프로세스 살아있는지 확인 (ps -ef)
+2. nginx.conf의 upstream 주소/포트 맞는지 확인
+3. WAS 쪽 에러로그에서 스택트레이스 확인
+4. 커넥션풀/스레드풀 고갈 여부 확인
+- 놓치기 쉬운 점: WAS 프로세스는 떠있는데 애플리케이션 컨텍스트만 죽은 경우 있음","IT"
+"Tomcat에서 커넥션 풀 고갈됐다는 로그 나오는데 어떻게 확인해?","확인 순서
+1. context.xml의 maxActive/maxTotal 설정값 확인
+2. DB 슬로우쿼리 로그로 커넥션 반환 지연 여부 확인
+3. 코드에서 커넥션 close 누락(릭) 있는지 확인
+4. 스레드 덤프로 커넥션 대기중인 스레드 수 확인
+- 놓치기 쉬운 점: 풀 로그 레벨을 debug로 올려야 실사용 커넥션 수가 찍힘","IT"
+"JEUS 8 스레드풀이 계속 꽉 차는데 원인 뭐가 있을까?","확인 순서
+1. 스레드 덤프 떠서 BLOCKED/WAITING 상태 스레드 위치 확인
+2. 외부 연동(DB, API) 응답 지연 여부 확인
+3. 스레드풀 min/max 사이즈 적정한지 확인
+4. 데드락 여부 확인
+- 놓치기 쉬운 점: 동기 로깅 자체가 병목이 되는 경우도 있음","IT"
+"애플리케이션이 갑자기 느려졌는데 Full GC 의심될 때 확인 순서는?","확인 순서
+1. gc.log에서 Full GC 빈도/소요시간 확인
+2. jstat -gcutil <pid> 1000 으로 실시간 확인
+3. -Xms/-Xmx 힙 사이즈 적정한지 확인
+4. 캐시나 세션에 큰 객체 쌓이는지 heap dump로 확인
+- 놓치기 쉬운 점: Old Gen이 GC 후에도 계속 증가 추세면 메모리 릭 의심해야 함","IT"
+"LVM에서 논리볼륨 용량 늘리는 명령어 뭐야?","```
+lvextend -L +10G /dev/mapper/vgname-lvname
+resize2fs /dev/mapper/vgname-lvname   # ext4
+xfs_growfs /mountpoint                # xfs
+```
+- xfs는 축소 안 됨, 확장만 가능
+- ext계열은 resize2fs, xfs는 xfs_growfs 사용","IT"
+"AIX에서 설치된 패키지 목록 확인하려면?","```
+lslpp -L
+lslpp -h <fileset명>   # 설치 이력 확인
+```
+- -L은 요약, -l은 상세 정보 출력","IT"
+"vmstat 봤는데 si/so 값이 계속 올라가는데 원인이 뭐야?","si/so는 스왑 in/out, 지속 발생하면 메모리 부족 신호
+확인 순서:
+1. free -h 로 여유 메모리/스왑 사용량 확인
+2. ps aux --sort=-%mem 로 메모리 많이 쓰는 프로세스 특정
+3. /proc/meminfo에서 Cached/Buffers 비중 확인 (캐시는 회수 가능하니 정상)
+4. dmesg | grep -i ""out of memory"" 로 OOM killer 발동 여부 확인
+- vm.swappiness 기본값 60이면 스왑 과다 사용 가능성 있음, DB서버는 10 이하로 낮추는 게 일반적","IT"
+"df -h는 여유 있는데 ""No space left on device"" 뜨는데 원인이 뭐야?","확인 순서:
+1. df -i 로 inode 사용률 확인, 100%면 확정
+2. find /path -xdev -printf '%h\n' | sort | uniq -c | sort -rn | head 로 inode 많이 쓰는 디렉토리 특정
+3. 세션파일, 캐시, 메일큐(/var/spool) 등 소용량 대량파일 의심
+4. 정리 후에도 재발하면 애플리케이션이 파일 삭제 안 하는지 확인
+- 삭제 직후 inode가 바로 안 줄면 마운트 상태나 캐시 갱신 지연일 수 있음","IT"
+"cron이 등록은 됐는데 실행이 안 될 때 확인할 것","확인 순서:
+1. crontab -l 로 등록 확인 (계정 맞는지)
+2. journalctl -u crond 또는 /var/log/cron 으로 실행 로그 확인
+3. 스크립트 내 절대경로 사용 여부 확인
+4. 스크립트 실행권한(chmod +x) 확인
+5. systemctl status crond 로 서비스 구동 여부 확인
+- cron 환경에서는 로그인 셸의 PATH/환경변수가 로드 안 된다는 점 자주 놓침","IT"
+"ulimit -n 값 영구적으로 늘리려면?","```
+# /etc/security/limits.conf
+* soft nofile 65536
+* hard nofile 65536
+```
+- 현재 세션만 바꾸려면 ulimit -n 65536
+- systemd 서비스는 유닛파일에 LimitNOFILE= 별도 설정 필요","IT"
+"svmon으로 봤을 때 AIX 서버 메모리가 부족해 보이는데 어떻게 판단해?","확인 순서:
+1. svmon -G 로 전체 메모리/페이징스페이스 사용률 확인
+2. pg space %used가 높으면 페이징 발생 중
+3. svmon -P 로 프로세스별 메모리 사용량 top 확인
+4. vmstat 1 5 로 pi/po(페이지인/아웃) 지속 발생 여부 확인
+- AIX는 여유 메모리를 기본적으로 파일캐시로 다 쓰기 때문에 free 낮다고 무조건 부족한 게 아님, computational memory 기준으로 판단해야 함","IT"
+"xfs 파일시스템 축소 가능해?","안 됨. xfs는 확장(xfs_growfs)만 지원
+- 축소하려면 백업 후 파일시스템 재생성 필요","IT"
+"Windows Server 서비스가 갑자기 계속 다운되는데 확인 방법?","확인 순서:
+1. 이벤트뷰어 Application/System 로그에서 종료 시점 에러코드 확인
+2. sc qfailure <서비스명> 로 복구 옵션 설정 여부 확인
+3. 의존 서비스(Dependencies) 중 하나가 먼저 죽은 건 아닌지 확인
+4. 메모리/핸들 누수면 작업관리자에서 핸들 수 지속 증가 확인
+- 자동복구(sc failure)만 걸어두고 근본원인 안 잡으면 무한 재시작 루프에 빠질 수 있음","IT"
+"LVM 볼륨그룹에 디스크 추가했는데 용량이 안 늘어나","확인 순서:
+1. pvcreate /dev/sdX 로 새 디스크 PV 초기화했는지 확인
+2. vgextend vgname /dev/sdX 후 vgs/vgdisplay 로 VG 편입 확인
+3. lvextend로 LV 실제 확장했는지 확인 (VG 확장만으로는 LV 크기 안 변함)
+4. resize2fs/xfs_growfs 로 파일시스템 리사이즈 누락 여부 확인
+- 순서 정리: pvcreate → vgextend → lvextend → resize","IT"
+"커널 파라미터 즉시 적용하는 방법?","```
+sysctl -w vm.swappiness=10
+sysctl -p   # /etc/sysctl.conf 반영
+```
+- 재부팅 후에도 유지하려면 /etc/sysctl.conf 또는 /etc/sysctl.d/*.conf 에 기재 필요","IT"
+"AIX에서 커널 파라미터(no) 값 확인/변경?","```
+no -a | grep tcp_recvspace
+no -o tcp_recvspace=262144
+no -p -o tcp_recvspace=262144   # 영구 적용
+```","IT"
+"디스크 풀(100%)인데 du로 찾아도 큰 파일이 안 보임","확인 순서:
+1. lsof | grep deleted 로 삭제됐지만 프로세스가 물고 있는 파일 확인
+2. df -h와 du -sh / 결과 차이 나면 십중팔구 이 케이스
+3. 해당 프로세스 재시작하거나 kill 하면 공간 회수됨
+- 로그파일을 rm으로 지워도 프로세스가 열어놓은 상태면 공간 안 돌아옴, truncate로 지워야 함: `: > /path/to/logfile`","IT"
+"JFS2 파일시스템 확장 명령어(AIX)?","```
+chfs -a size=+5G /filesystem
+```
+- LV 자동 확장 포함, 온라인 상태로 확장 가능","IT"
+"좀비 프로세스가 서버에 많이 쌓였는데 문제 있어?","- 좀비는 리소스(메모리/CPU) 거의 안 먹음, 다만 PID 고갈 가능성은 있음
+- 부모 프로세스가 wait() 안 해서 발생, 부모 재시작하면 정리됨
+- 수천 개 이상 쌓이면 fork 실패로 이어질 수 있음","IT"
+"load average는 높은데 CPU 사용률(vmstat us+sy)은 낮을 때","확인 순서:
+1. iostat -x 1 로 %util, await 확인 → I/O 대기 의심
+2. ps aux 에서 D 상태(uninterruptible sleep) 프로세스 확인
+3. NFS 마운트 문제인 경우가 많음, mount 옵션(hard/soft) 확인
+4. 디스크 자체 병목이면 iostat await 값이 튐
+- load average는 CPU뿐 아니라 D상태(디스크 대기) 프로세스도 포함한다는 점 놓치기 쉬움","IT"
+"리눅스에서 fork: retry: Resource temporarily unavailable 에러 뜨는데 뭐야?","확인 순서:
+1. ulimit -u 로 현재 프로세스 제한 확인
+2. /etc/security/limits.conf 의 nproc 제한값 확인
+3. ps -eLf | wc -l 로 현재 스레드/프로세스 총량 확인
+4. ps -u username | wc -l 로 특정 사용자 제한치 근접 여부 확인
+- systemd 기반이면 limits.conf 말고 /etc/systemd/system.conf 의 DefaultLimitNPROC도 확인해야 함, 두 설정이 따로 적용됨","IT"
+"Windows Server 이벤트 로그 명령줄로 확인하는 방법?","```
+Get-EventLog -LogName System -Newest 20
+Get-WinEvent -FilterHashtable @{LogName='Application'; Level=2}
+```","IT"
+"RHEL 서버 부팅 후 특정 파일시스템이 마운트 안 됨","확인 순서:
+1. journalctl -b 로 부팅 로그에서 mount 실패 메시지 확인
+2. /etc/fstab UUID/디바이스명 오타나 디스크 순서 변경 여부 확인
+3. blkid로 실제 UUID와 fstab 비교
+4. fsck로 파일시스템 손상 여부 확인
+- fstab에 nofail 옵션 없으면 해당 파일시스템 마운트 실패 시 부팅 자체가 멈출 수 있음","IT"
+"AIX 부트이미지 재생성 언제 해야해?","```
+bosboot -a -d /dev/hdisk0
+```
+- 커널 파라미터, 디바이스 드라이버 변경 후 재부팅 전에 실행 필요","IT"
+"LVM PV/VG/LV 관계 한 줄로 정리하면?","PV(물리디스크)를 모아 VG(볼륨그룹) 만들고, VG를 쪼개서 LV(논리볼륨) 생성한 뒤 그 위에 파일시스템을 얹는 구조","IT"
+"NFS 마운트한 디렉토리 접근시 hang 걸림","확인 순서:
+1. mount 옵션 확인 (hard vs soft) - hard면 서버 응답 없을 때 무한 대기
+2. showmount -e <nfs서버> 로 서버 응답 확인
+3. rpcinfo -p <nfs서버> 로 포트매퍼/nfsd 서비스 확인
+4. 네트워크 단절이면 서버 재기동 전까지 df 자체가 멈출 수 있음
+- soft, intr, timeo 옵션 조합으로 완화 가능하지만 데이터 무결성 트레이드오프 있음, 운영 DB용 마운트엔 비추천","IT"
+"커널 파라미터 중 세마포어 관련 파라미터 뭐가 있어?","```
+kernel.sem = 250 32000 32 128
+```
+- 순서대로 SEMMSL, SEMMNS, SEMMNU, SEMMNI, 오라클 등 DB 설치 시 필수 튜닝 항목","IT"
+"chage로 계정 만료일 확인하는 법?","```
+chage -l username
+```","IT"
+"스위치에서 특정 포트가 어떤 VLAN에 물려있는지 어떻게 확인해?","```
+show interfaces switchport
+```
+- Access Mode VLAN 항목에서 현재 VLAN 확인
+- 트렁크 포트면 Trunking VLANs 항목에서 허용 목록 확인","IT"
+"STP에서 포트가 blocking 상태인지 어떻게 확인해?","```
+show spanning-tree interface gi1/0/1
+```
+- Role이 Altn/Back이면 blocking 상태
+- Root Bridge 우선순위도 같이 확인해서 의도한 토폴로지인지 체크","IT"
+"방화벽에 새 allow 룰 넣었는데 여전히 차단되는데 정책 순서 때문일까?","확인 순서:
+1. 위쪽에 있는 deny 룰이 먼저 매치되고 있는지 hit count 확인
+2. 새 룰이 올바른 방향(inbound/outbound)에 들어갔는지 확인
+3. 룰 저장 후 commit/apply 여부 확인
+4. 소스/목적지 조건에 NAT 이전/이후 주소 헷갈렸는지 확인
+- top-down 매치 방식이라 순서만 바꿔도 해결되는 경우가 많음","IT"
+"iptables에서 특정 룰만 골라서 삭제하려면?","```
+iptables -L INPUT --line-numbers
+iptables -D INPUT 3
+```
+- 라인 번호로 지정 삭제가 제일 안전
+- 저장 안 하면 재부팅 시 초기화되니 저장 명령 별도 실행 필요","IT"
+"클라이언트에서 SSL handshake failure 뜨는데 원인이 뭘까?","확인 순서:
+1. openssl s_client로 서버 인증서 체인 확인
+```
+openssl s_client -connect host:443 -servername host
+```
+2. 클라이언트-서버 간 지원 TLS 버전/cipher suite 겹치는지 확인
+3. 중간 인증서 누락 여부 (Root만 있고 Intermediate 빠진 경우 흔함)
+4. 서버 시간 오차로 인증서 유효기간 벗어난 경우
+- 방화벽/프록시가 SNI 기반으로 차단하는 경우도 놓치기 쉬움","IT"
+"인증서 체인 파일 만들 때 순서는 어떻게 돼?","- Leaf(서버 인증서) → Intermediate → Root 순서로 이어 붙임
+- Root는 클라이언트가 이미 신뢰하고 있어서 생략 가능한 경우 많음
+- 순서 틀리면 일부 클라이언트에서 체인 검증 실패","IT"
+"L4 LB에서 특정 백엔드만 계속 헬스체크 fail 뜨는데 뭐부터 봐야해?","확인 순서:
+1. LB에서 해당 백엔드로 직접 확인
+```
+curl -v http://backend_ip:port/health
+```
+2. 헬스체크 URI, 포트, 기대 응답 코드 설정값 확인
+3. 백엔드 서버 프로세스/포트 리스닝 상태 확인
+4. 서버 방화벽에서 LB IP 허용 여부 확인
+5. 타임아웃 값이 너무 짧게 잡혀있는지 확인
+- 헬스체크 interval/threshold와 실제 앱 응답 시간 안 맞으면 flapping 발생","IT"
+"Site-to-Site VPN 터널이 자꾸 끊기는데 원인 후보가 뭐가 있을까?","확인 순서:
+1. Phase1/Phase2 SA 상태 확인
+```
+show crypto isakmp sa
+show crypto ipsec sa
+```
+2. 양쪽 PSK, IKE 버전, 암호화 알고리즘 일치 여부
+3. NAT-T 필요한 구간인데 비활성화된 경우
+4. DPD(Dead Peer Detection) 타임아웃 설정 확인
+5. 상대측 ISP 회선 불안정 여부
+- MTU 문제로 fragmentation 발생해서 간헐적 끊김 나는 경우도 흔함","IT"
+"특정 포트로 오가는 패킷만 tcpdump로 캡처하려면?","```
+tcpdump -i eth0 port 443 -w capture.pcap
+```
+- 특정 호스트로 좁히려면 and host 조건 추가
+- 캡처 크기 크면 -c로 패킷 수 제한 걸어두는 게 안전","IT"
+"특정 도메인의 A 레코드만 조회하려면?","```
+dig +short example.com A
+```
+- 특정 네임서버로 직접 질의하려면 @ns_ip 옵션 추가
+- 캐시 영향 배제하려면 +trace로 루트부터 확인","IT"
+"방화벽 TCP 세션 타임아웃 기본값이 왜 중요해?","- 오래 걸리는 배치/파일전송이 타임아웃보다 길면 중간에 세션 끊김
+- 기본값이 보통 3600초 전후라 장시간 유지되는 커넥션은 별도 정책 필요
+- 타임아웃 늘리면 방화벽 세션 테이블 메모리 사용량도 같이 늘어남","IT"
+"L4 로드밸런서에서 round robin이랑 least connection 차이가 뭐야?","- round robin은 순서대로 균등 분배, 서버 부하 상태는 고려 안함
+- least connection은 현재 연결 수 가장 적은 서버로 우선 배분
+- 세션 길이가 서버마다 크게 다르면 least connection이 더 안정적","IT"
+"L7 LB에서 특정 path로 들어온 요청이 원하는 백엔드로 안 가는데 뭐 봐야해?","확인 순서:
+1. path 매칭 rule 순서 확인 (먼저 매치되는 룰이 우선 적용되는 구조인 경우 많음)
+2. 정규식/prefix 매칭 오타 여부
+3. Host 헤더 기반 라우팅과 병행 시 두 조건 충돌 여부
+4. 백엔드 pool에 실제로 해당 서버 등록됐는지 확인
+- 캐시된 라우팅 테이블 때문에 설정 반영 안 된 것처럼 보이는 경우 있음, LB reload 필요","IT"
+"TLS 1.2랑 1.3 핸드셰이크 차이가 뭐야?","- 1.3은 핸드셰이크 라운드트립이 1번으로 줄어서 더 빠름
+- 1.3은 약한 cipher suite들(RC4, CBC 등) 제거됨
+- 0-RTT 재접속 지원하지만 리플레이 공격 가능성 있어 사용 시 주의","IT"
+"인증서 만료일 커맨드로 바로 확인하는 법?","```
+openssl x509 -enddate -noout -in cert.pem
+```
+- 원격 서버 것도 s_client로 받아서 파이프 연결하면 바로 확인 가능
+- 만료 임박 알림은 모니터링에 등록해두는 게 안전","IT"
+"OSPF neighbor가 계속 DOWN/INIT 상태에서 안 올라오는데 뭐부터 봐야해?","확인 순서:
+1. 인터페이스 상태와 IP 서브넷 일치 여부
+```
+show ip ospf neighbor
+show ip ospf interface
+```
+2. Area ID, 인증 방식/키 일치 여부
+3. Hello/Dead 타임 설정 불일치
+4. MTU 불일치 (DB 교환 단계에서 멈추는 전형적 증상)
+5. 중간 방화벽/ACL에서 OSPF 멀티캐스트(224.0.0.5) 차단 여부
+- MTU 미스매치는 neighbor가 EXSTART에서 멈추는 게 특징","IT"
+"같은 IP인데 접속 때마다 다른 장비로 붙는 것 같은데 ARP 문제인지 어떻게 확인해?","확인 순서:
+1. 해당 IP의 ARP 응답이 매번 다른 MAC으로 오는지 확인
+```
+arp -a | grep 192.168.1.10
+```
+2. 중복 IP 할당(DHCP static + 수동 할당 충돌) 여부 확인
+3. VRRP/HSRP 가상 IP인 경우 정상 동작(활성 노드 변경)인지 구분
+4. 스위치 mac address-table에서 해당 MAC이 여러 포트에 학습되는지 확인
+- gratuitous ARP 스푸핑 의심되면 포트 보안이나 DAI(Dynamic ARP Inspection) 적용 검토","IT"
+"특정 구간에서만 큰 패킷이 안 나가는 것 같은데 MTU 문제인지 어떻게 확인해?","확인 순서:
+1. DF 비트 설정하고 크기 늘려가며 ping 테스트
+```
+ping -M do -s 1472 target_ip
+```
+2. 응답 없으면 크기 줄여가며 임계값 찾기
+3. 터널 구간(VPN, GRE) 있으면 오버헤드 고려해서 MTU 재계산
+4. 중간 장비에서 ICMP fragmentation needed 차단 여부 확인
+- PMTUD 차단된 환경이면 큰 패킷만 조용히 드랍돼서 원인 찾기 어려움","IT"
+"특정 내부 IP가 NAT 되어 나가는데도 외부에서 접속 응답이 안 오는데 뭘 확인해야해?","확인 순서:
+1. NAT 매핑 테이블에서 실제 세션 생성됐는지 확인
+```
+show nat rule detail | include 10.0.0.5
+show session all | include 10.0.0.5
+```
+2. static NAT vs dynamic pool 설정 꼬였는지 확인
+3. 반대 방향(inbound) 허용 정책 별도로 있는지 확인
+4. ISP 구간에서 해당 외부 IP 라우팅 안 되고 있는지 확인
+- NAT은 됐는데 리턴 트래픽 라우팅 안 되는 케이스가 의외로 많음","IT"
+"스위치에서 특정 포트 트래픽을 분석용으로 미러링하려면?","```
+monitor session 1 source interface gi1/0/5
+monitor session 1 destination interface gi1/0/10
+```
+- destination 포트는 일반 트래픽 용도로 같이 못 씀
+- 미러링 대역폭이 destination 포트 용량 넘으면 드랍 발생","IT"
+"BGP 피어가 계속 flapping 하는데 원인 후보가 뭐가 있을까?","확인 순서:
+1. 로그에서 flap 원인 메시지 확인 (hold timer expired인지, reset인지)
+```
+show ip bgp neighbor x.x.x.x
+```
+2. 물리 회선 불안정 여부 (interface error/drop 카운터 확인)
+3. Hold timer/Keepalive 값 양쪽 불일치
+4. 최대 prefix 제한 초과로 세션 강제 종료되는 경우
+5. MTU나 TCP MSS 문제로 대량 업데이트 시 세션 끊기는 경우
+- 회선은 멀쩡한데 keepalive 처리 지연으로 flap 나는 경우도 있어서 CPU 부하도 같이 체크","IT"
+"만료 임박한 SSL 인증서 갱신할 때 순서가 어떻게 돼?","- 기존 개인키 재사용 여부 결정 후 CSR 생성
+```
+openssl req -new -key server.key -out server.csr
+```
+- CA에 CSR 제출 후 발급받은 인증서로 교체
+- 교체 후 서비스 재시작하고 체인 검증까지 확인","IT"
+"DNS 레코드 바꿨는데 일부 지역에서만 반영이 안 되는데 왜 그래?","확인 순서:
+1. TTL 값 확인, 이전 TTL이 길면 캐시 만료까지 대기 필요
+```
+dig example.com A +noall +answer
+```
+2. 로컬 리졸버/ISP DNS 캐시 여부 (외부 공용 DNS로 재조회해서 비교)
+3. Secondary 네임서버로 zone transfer 제대로 됐는지 확인
+4. Anycast/GSLB 구성이면 특정 리전만 반영 지연될 수 있음
+- 각 네임서버에 직접 @옵션으로 질의해서 비교하는 게 제일 빠른 확인 방법","IT"
+"스위치 포트 채널(LACP) 묶인 상태 확인하려면?","```
+show etherchannel summary
+```
+- 각 포트 상태가 P(bundled)인지 확인
+- I나 D 상태면 협상 실패한 것이므로 상대 장비 설정도 같이 확인","IT"
+"Oracle에서 테이블스페이스 사용률 확인하는 쿼리 알려줘","```sql
+SELECT tablespace_name,
+       round(used_space*8/1024,2) used_mb,
+       round(tablespace_size*8/1024,2) total_mb,
+       round(used_percent,2) pct
+FROM dba_tablespace_usage_metrics;
+```
+- used_percent 90% 넘으면 알람 걸어두는 게 좋음
+- autoextend 켜져 있어도 디스크 자체가 꽉차면 소용없음, df -h도 같이 확인","IT"
+"ORA-01555 스냅샷 too old 에러 뜨는데 원인이 뭐야","확인 순서
+1. undo_retention 파라미터 값 확인, 너무 짧으면 발생
+2. undo tablespace 크기 부족한지 dba_data_files로 확인
+3. 장시간 실행되는 배치/리포트 쿼리가 있는지 확인 (긴 트랜잭션이 undo 재사용을 막음)
+4. fetch across commit 패턴(커밋 자주 하면서 같은 커서 유지) 코드 있는지 확인
+- 놓치기 쉬운 포인트: undo tablespace guarantee retention 옵션 꺼져있으면 공간 부족 시 undo가 덮어써짐","IT"
+"Oracle에서 특정 세션이 잡고 있는 락 확인하려면","```sql
+SELECT s.sid, s.serial#, s.username, o.object_name, l.locked_mode
+FROM v$locked_object l, dba_objects o, v$session s
+WHERE l.object_id = o.object_id
+AND l.session_id = s.sid;
+```
+- blocking session은 v$session.blocking_session 컬럼으로 바로 확인 가능","IT"
+"어제까지 잘 돌던 쿼리 실행계획이 갑자기 바뀌었어, 왜 이런 거야","확인 순서
+1. 옵티마이저 통계 최근 수집 시점 확인 (dba_tab_statistics.last_analyzed)
+2. bind peeking 이슈인지 확인 - 바인드 값에 따라 카디널리티 추정이 달라짐
+3. 히스토그램 유무 확인, 컬럼 데이터 분포 치우쳐 있으면 통계 재수집 필요
+4. SPM(SQL Plan Baseline) 적용 여부 확인
+- 놓치기 쉬운 포인트: 파티션 테이블이면 파티션별 통계 따로 확인해야 함","IT"
+"Oracle 아카이브 로그 오래된 것 지우고 싶은데 방법","```sql
+RMAN> DELETE ARCHIVELOG ALL COMPLETED BEFORE 'SYSDATE-3';
+```
+- rm으로 직접 지우면 컨트롤파일 정보랑 안 맞아서 나중에 crosscheck 필요해짐
+- 삭제 전엔 백업 완료된 것만 지워지는지 REPORT OBSOLETE로 먼저 확인","IT"
+"RAC 환경에서 노드 간 인터커넥트 지연 때문에 성능 저하 의심되는데 어떻게 확인해","확인 순서
+1. gv$cluster_interconnects로 인터커넥트 사용 NIC 확인
+2. gc cr/current block busy 대기 이벤트 비중 AWR/ASH로 확인
+3. os 레벨 netstat/ifconfig로 패킷 드랍, 재전송률 확인
+4. private network 대역폭 병목인지 (public network랑 분리 안 된 경우 흔함)
+- 놓치기 쉬운 포인트: 인터커넥트 스위치가 이중화 안 돼있으면 SPOF, 케이블 상태도 물리적으로 점검","IT"
+"Oracle AWR 리포트 뽑는 방법 알려줘","```sql
+@$ORACLE_HOME/rdbms/admin/awrrpt.sql
+```
+- 시작/종료 snap id 입력하면 됨
+- awrrpti.sql 쓰면 특정 인스턴스만 뽑을 수 있음 (RAC일 때 유용)","IT"
+"ORA-00257 archiver error 뜨면서 DB가 멈췄어","확인 순서
+1. archive log destination 디스크 용량 확인 (df -h)
+2. 공간 부족이면 백업 완료된 아카이브 로그부터 삭제 또는 다른 위치로 이동
+3. FRA(flash recovery area) 사용 중이면 db_recovery_file_dest_size 늘리기
+4. 삭제 후 alter system archive log current로 즉시 반영 확인
+- 놓치기 쉬운 포인트: 공간 확보해도 DB는 자동으로 안 풀릴 때 있음, alter system 명령으로 강제 트리거 필요할 수 있음","IT"
+"인덱스 리빌드는 언제 해줘야 해","- dba_indexes.blevel이 4 이상으로 계속 올라가면 검토
+- 대량 delete 이후 leaf node 낭비 심할 때
+- 무조건 정기적으로 하는 건 비추, 실제 단편화 확인하고 판단","IT"
+"RMAN 백업이 계속 실패하는데 뭐부터 봐야 해","확인 순서
+1. rman log에서 정확한 ORA 에러 코드 확인
+2. 대상 디스크/테이프 용량 확인
+3. controlfile autobackup 경로 접근 권한 확인
+4. 이전 백업 세트가 expired 상태로 남아있는지 crosscheck backup으로 확인
+- 놓치기 쉬운 포인트: 병렬 채널 수(parallelism) 과다 설정 시 I/O 경합으로 타임아웃 나기도 함","IT"
+"Tibero에서 현재 접속 세션 확인하는 커맨드","```sql
+SELECT sid, uid, status, program FROM v$session;
+```
+- status가 ACTIVE인데 오래 걸리는 세션은 v$sql_text로 실행 쿼리 같이 확인","IT"
+"Tibero 인스턴스가 비정상 종료됐는데 복구 절차가 어떻게 돼","확인 순서
+1. tbdown 로그(tbsvr trace)에서 종료 원인 확인 - abort인지 crash인지
+2. tbboot로 재기동 시도, mount 단계에서 멈추면 컨트롤파일 상태 확인
+3. crash recovery는 redo 로그로 자동 롤포워드 되는지 alert 로그 확인
+4. 미디어 손상 의심되면 RMAN 대응 백업으로 복구
+- 놓치기 쉬운 포인트: 강제 종료(kill -9) 이력 있으면 데이터파일 fuzzy 여부부터 확인해야 함","IT"
+"Tibero 아카이브 모드 켜져 있는지 확인하려면","```sql
+SELECT log_mode FROM v$database;
+```
+- ARCHIVELOG면 활성화 상태, NOARCHIVELOG면 비활성 상태","IT"
+"Tibero에서 락 경합 발생 중인지 확인하는 방법","확인 순서
+1. v$lock으로 lock_type, lmode, request 확인해서 대기 세션 파악
+2. blocking 세션의 sid로 v$session 조인해서 실행 중인 SQL 확인
+3. 장시간 잡고 있는 트랜잭션이면 커밋/롤백 안 된 애플리케이션 로직 의심
+4. 필요시 alter system kill session으로 강제 종료
+- 놓치기 쉬운 포인트: 배치 스케줄 겹칠 때 자주 발생, 크론 시간대 확인 필수","IT"
+"Tibero 테이블스페이스 자동 확장 설정하는 법","```sql
+ALTER TABLESPACE ts_data
+ADD DATAFILE '/data/ts_data02.dbf' SIZE 1G
+AUTOEXTEND ON NEXT 100M MAXSIZE 10G;
+```
+- MAXSIZE UNLIMITED로 두면 디스크 풀로 장애날 수 있으니 상한 꼭 지정","IT"
+"PostgreSQL 슬로우쿼리 로그 남기려면 어떻게 설정해","```conf
+log_min_duration_statement = 1000
+```
+- postgresql.conf에서 설정, 단위는 ms
+- 1000이면 1초 넘는 쿼리만 로그에 남음","IT"
+"PostgreSQL에서 쿼리가 락 대기로 멈춰있는데 어떻게 확인해","확인 순서
+1. pg_locks와 pg_stat_activity 조인해서 대기 프로세스와 blocking pid 확인
+```sql
+SELECT blocked_locks.pid AS blocked_pid,
+       blocking_locks.pid AS blocking_pid
+FROM pg_catalog.pg_locks blocked_locks
+JOIN pg_catalog.pg_locks blocking_locks
+  ON blocking_locks.locktype = blocked_locks.locktype
+ AND blocking_locks.database IS NOT DISTINCT FROM blocked_locks.database
+ AND blocking_locks.relation IS NOT DISTINCT FROM blocked_locks.relation
+ AND blocking_locks.pid != blocked_locks.pid
+WHERE NOT blocked_locks.granted;
+```
+2. blocking_pid의 쿼리 내용 pg_stat_activity.query로 확인
+3. 필요시 pg_terminate_backend(pid)로 강제 종료
+- 놓치기 쉬운 포인트: idle in transaction 상태로 오래 물고 있는 세션이 원인인 경우가 제일 흔함","IT"
+"PostgreSQL 테이블이 vacuum이 안 돌아서 bloat 심한 것 같은데 뭐부터 확인해","확인 순서
+1. pg_stat_user_tables.n_dead_tup으로 데드튜플 수 확인
+2. autovacuum 설정값 autovacuum_vacuum_scale_factor 확인, 너무 크면 안 돌음
+3. 장시간 open 트랜잭션 있는지 확인 (vacuum이 오래된 트랜잭션 때문에 못 지움)
+4. 급하면 수동으로 VACUUM (ANALYZE) 테이블명 실행
+- 놓치기 쉬운 포인트: replication slot이 살아있는데 안 쓰이면 WAL도 안 지워지고 vacuum도 막힘","IT"
+"PostgreSQL replication lag 확인하는 쿼리","```sql
+SELECT client_addr, state,
+       pg_wal_lsn_diff(sent_lsn, replay_lsn) AS lag_bytes
+FROM pg_stat_replication;
+```
+- lag_bytes 계속 늘어나면 스탠바이 서버 I/O나 네트워크 병목 의심","IT"
+"PostgreSQL WAL 디렉토리 용량이 계속 차오르는데 원인이 뭘까","확인 순서
+1. pg_stat_replication에서 replication slot이 있는지, lag 심한 slot 있는지 확인
+2. 사용 안 하는 slot은 pg_drop_replication_slot으로 정리
+3. archive_command 설정된 경우 아카이브 스크립트가 실패해서 WAL이 안 지워지는지 확인 (archiver 로그 확인)
+4. checkpoint 주기가 너무 길게 잡혀있는지 확인 (max_wal_size, checkpoint_timeout)
+- 놓치기 쉬운 포인트: archive_command 스크립트 리턴코드가 0이 아니면 계속 쌓임, 조용히 실패하는 경우 많음","IT"
+"PostgreSQL 실행계획 확인하는 방법","```sql
+EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE status = 'PAID';
+```
+- ANALYZE 붙이면 실제 실행해서 소요시간까지 나옴, 운영 DB에서는 조심해서 써야 함","IT"
+"PostgreSQL에서 too many clients already 에러가 떠","확인 순서
+1. max_connections 설정값과 현재 pg_stat_activity 카운트 비교
+2. 커넥션풀(pgbouncer 등) 설정이 max_connections보다 큰지 확인
+3. idle 커넥션이 많으면 애플리케이션 커넥션풀 반환 로직 점검
+4. 급하면 max_connections 늘리기 전에 shared_buffers 등 메모리 파라미터도 같이 재계산해야 함
+- 놓치기 쉬운 포인트: max_connections 늘리면 그만큼 메모리 더 잡아먹으니 서버 메모리 한도 먼저 확인","IT"
+"PostgreSQL 인덱스가 실제로 쓰이고 있는지 확인하는 법","```sql
+SELECT indexrelname, idx_scan FROM pg_stat_user_indexes
+WHERE relname = 'orders';
+```
+- idx_scan이 0에 가까우면 안 쓰이는 인덱스, 삭제 검토 대상","IT"
+"PostgreSQL streaming replication 구성할 때 기본적으로 설정해야 하는 파라미터 뭐가 있어","- primary: wal_level = replica, max_wal_senders 여유있게 설정
+- primary: archive_mode on (필요시)
+- standby: primary_conninfo에 접속 정보, standby.signal 파일 생성
+- pg_hba.conf에 replication 계정 접속 허용 추가","IT"
+"도커 컨테이너 로그 확인하는 명령어 뭐야?","```
+docker logs <container_id>
+```
+- 실시간으로 보려면 -f 옵션
+- 최근 N줄만 보려면 --tail 100","IT"
+"도커 이미지 레이어 캐시가 뭐야?","- 각 Dockerfile 명령어(RUN, COPY 등)마다 레이어 생성되고 캐시됨
+- 이전 레이어랑 내용 같으면 재사용, 다르면 그 이후 전부 재빌드
+- 자주 바뀌는 COPY는 아래쪽에 둬야 캐시 효율 좋아짐","IT"
+"kubectl로 파드 상태 확인하는 명령어?","```
+kubectl get pods -n <namespace>
+kubectl describe pod <pod_name> -n <namespace>
+```
+- describe로 Events 항목 보면 원인 나옴","IT"
+"Deployment랑 ReplicaSet 차이가 뭐야?","- ReplicaSet: 지정한 개수만큼 Pod 유지시켜주는 컨트롤러
+- Deployment: ReplicaSet을 관리하면서 롤링 업데이트, 롤백 기능까지 제공
+- 실무에선 ReplicaSet 직접 안 만들고 Deployment로 관리함","IT"
+"Helm chart랑 release 차이가 뭐야?","- chart: 배포할 리소스 템플릿 묶음(패키지)
+- release: chart를 특정 클러스터에 실제로 설치한 인스턴스
+- 같은 chart로 release 여러 개 만들 수 있음(namespace/이름 다르게)","IT"
+"Jenkins pipeline job이랑 freestyle job 차이가 뭐야?","- freestyle: GUI로 빌드 스텝 설정, 단순 작업에 적합
+- pipeline: Jenkinsfile(코드)로 빌드 과정 정의, 버전 관리 가능하고 복잡한 흐름 구성 쉬움
+- 요즘은 대부분 pipeline(Jenkinsfile) 방식 씀","IT"
+"GitLab CI에서 stage랑 job 차이가 뭐야?","- stage: build, test, deploy 같은 실행 단계 그룹
+- job: 실제 실행되는 작업 단위, 특정 stage에 속함
+- 같은 stage에 있는 job들은 병렬 실행됨","IT"
+"도커 멀티스테이지 빌드는 왜 쓰는거야?","- 빌드용 이미지랑 실행용 이미지 분리해서 최종 이미지 용량 줄임
+- 빌드 도구, 소스코드가 최종 이미지에 안 남음
+- 보안(불필요 툴 제거)이랑 배포 속도에도 유리","IT"
+"ConfigMap이랑 Secret 차이가 뭐야?","- ConfigMap: 평문 설정값 저장(환경변수, 설정파일)
+- Secret: base64 인코딩 저장, 비밀번호/토큰 등 민감정보용
+- base64는 암호화 아니니까 RBAC으로 접근 제어 따로 해야 함","IT"
+"Prometheus랑 Grafana 역할 차이가 뭐야?","- Prometheus: 메트릭 수집/저장, 알림 규칙(Alertmanager 연동)
+- Grafana: 수집된 메트릭을 시각화하는 대시보드 툴
+- Prometheus 단독으로도 웹 UI 있지만 시각화는 Grafana가 훨씬 나음","IT"
+"kubectl exec으로 컨테이너 접속하는 명령어?","```
+kubectl exec -it <pod_name> -n <namespace> -- /bin/bash
+```
+- 컨테이너 여러 개면 -c <container_name>으로 지정","IT"
+"도커 컨테이너 재시작 정책 옵션 뭐 있어?","- no: 재시작 안 함(기본값)
+- on-failure: 비정상 종료시에만 재시작
+- always: 항상 재시작
+- unless-stopped: 수동으로 멈춘 경우 제외하고 항상 재시작","IT"
+"쿠버네티스 네임스페이스는 왜 나눠 쓰는거야?","- 리소스 논리적 격리(팀별, 환경별)
+- 리소스 쿼터, 네트워크 정책을 네임스페이스 단위로 적용 가능
+- 이름 충돌 없이 같은 리소스명 여러 네임스페이스에서 사용 가능","IT"
+"Helm values.yaml은 뭐하는 파일이야?","- chart 템플릿에 주입할 변수값 정의하는 파일
+- --set이나 -f로 오버라이드 가능
+- 환경별(dev/prod) values 파일 따로 관리하는 게 일반적","IT"
+"GitLab CI runner 종류가 뭐가 있어?","- shared runner: 여러 프로젝트가 공용으로 쓰는 runner
+- specific runner: 특정 프로젝트/그룹 전용 runner
+- group runner: 그룹 내 프로젝트들이 공유
+- 보안/자원 격리 필요하면 specific runner 씀","IT"
+"ELK 스택 구성 요소가 뭐야?","- Elasticsearch: 로그 저장/검색 엔진
+- Logstash: 로그 수집/가공(파이프라인)
+- Kibana: 시각화 UI
+- 최근엔 Logstash 대신 Filebeat 많이 씀(가벼움)","IT"
+"쿠버네티스 Service 타입 종류 뭐 있어?","- ClusterIP: 클러스터 내부 통신용(기본값)
+- NodePort: 노드 포트로 외부 노출
+- LoadBalancer: 클라우드 LB 연동
+- ExternalName: 외부 DNS 이름 매핑","IT"
+"Jenkins agent(node)가 뭐야?","- 실제 빌드가 실행되는 서버/컨테이너
+- master는 스케줄링만, 빌드는 agent에서 실행
+- 라벨(label)로 특정 agent에 job 지정 가능","IT"
+"도커 네트워크 종류 뭐 있어?","- bridge: 기본 네트워크, 컨테이너 간 통신
+- host: 호스트 네트워크 그대로 사용
+- none: 네트워크 없음
+- overlay: 여러 호스트 걸친 스웜/클러스터 통신용","IT"
+"liveness probe랑 readiness probe 차이가 뭐야?","- liveness: 컨테이너가 살아있는지 체크, 실패하면 재시작
+- readiness: 트래픽 받을 준비 됐는지 체크, 실패하면 서비스에서 제외(재시작은 안 함)
+- 둘 다 실패시 동작 다르니 헷갈리면 안 됨","IT"
+"Pod가 CrashLoopBackOff 상태인데 뭐부터 봐야돼?","확인 순서:
+1. kubectl describe pod <pod> 로 Events, Exit Code 확인
+2. kubectl logs <pod> --previous 로 이전 컨테이너 로그 확인
+3. Exit Code 1: 애플리케이션 에러 로그 확인
+4. Exit Code 137: OOMKilled 여부, resources.limits 확인
+5. liveness probe 설정이 너무 빡빡한지(initialDelaySeconds) 확인
+- 놓치기 쉬운 포인트: configmap/secret 마운트 경로 오타로 앱이 못 뜨는 경우 많음","IT"
+"도커 이미지 빌드가 너무 느린데 어떻게 최적화해?","확인 순서:
+1. Dockerfile 레이어 순서 확인 - 자주 바뀌는 COPY는 아래로
+2. .dockerignore로 불필요 파일(node_modules, .git) 제외
+3. 멀티스테이지 빌드로 빌드 의존성 분리
+4. BuildKit 캐시 마운트 사용 (--mount=type=cache)
+5. base 이미지 alpine/slim으로 경량화
+- 놓치기 쉬운 포인트: CI에서 캐시 레이어 안 남기고 매번 fresh clone하면 캐시 효과 없음","IT"
+"HPA 설정했는데 스케일 아웃이 안 되는데 왜 그래?","확인 순서:
+1. kubectl top pod 로 metrics-server 정상 동작하는지 확인
+2. kubectl describe hpa <name> 로 current/target 메트릭 값 확인
+3. Deployment에 resources.requests 설정 안 돼있으면 HPA가 CPU% 계산 못함
+4. minReplicas/maxReplicas 값 확인
+5. behavior(stabilizationWindowSeconds) 설정으로 스케일 지연되는 건 아닌지 확인
+- 놓치기 쉬운 포인트: requests 안 걸어두면 utilization 계산 자체가 안 됨","IT"
+"PVC가 Pending 상태에서 안 넘어가는데 뭐 확인해야돼?","확인 순서:
+1. kubectl describe pvc <name> 로 Events 확인
+2. StorageClass 존재 여부, 이름 오타 확인
+3. 요청한 accessMode를 지원하는 PV/StorageClass인지 확인
+4. 동적 프로비저닝이면 provisioner(CSI 드라이버) 파드 상태 확인
+5. 용량이 노드/스토리지 백엔드 가용량 초과하는지 확인
+- 놓치기 쉬운 포인트: ReadWriteMany 요청했는데 스토리지가 RWO만 지원하는 경우 많음","IT"
+"오늘 하루 어땠어","그냥 그랬어 별일 없었어","DAILY"
+"요즘 잘 지내","응 그럭저럭 지내고 있어","DAILY"
+"뭐하고 있었어","그냥 누워서 폰 보고 있었어","DAILY"
+"심심한데 뭐하지","산책이라도 나가봐","DAILY"
+"오랜만이야 잘 지냈어","어 오랜만이네 나야 늘 똑같지 뭐","DAILY"
+"주말에 뭐할 거야","딱히 계획 없고 그냥 쉬려고","DAILY"
+"요즘 바빠","어 좀 정신없이 바쁘네","DAILY"
+"오늘 기분 어때","나쁘지 않아 그냥 평범해","DAILY"
+"오늘 뭐 재밌는 일 없었어","딱히 없었어 그냥 조용한 하루였어","DAILY"
+"좋은 아침이야","어 오늘도 화이팅하자","DAILY"
+"잘 자 내일 봐","어 너도 잘 자","DAILY"
+"밥은 먹었어","어 방금 먹었어 너는","DAILY"
+"요즘 어떻게 지내냐","그냥저냥 지내고 있어","DAILY"
+"오늘따라 왜 이렇게 피곤하지","잠을 못 자서 그런가보다","DAILY"
+"심심해 죽겠다","나도 딱히 할 거 없어서 그냥 누워있어","DAILY"
+"나 오늘 완전 럭키했어","오 뭔데 부럽다","DAILY"
+"오늘따라 기분이 좋네","좋은 일 있었나보네 부럽다","DAILY"
+"그냥 네 생각나서 연락했어","어 고맙다 나도 잘 지내고 있어","DAILY"
+"이번 주말 뭐 하고 지냈어","그냥 집에서 뒹굴거리다 끝났어","DAILY"
+"오늘 컨디션 어때","나쁘지 않은데 살짝 나른하네","DAILY"
+"오늘 날씨 어때","밖에 좀 흐리고 쌀쌀한 편이야","DAILY"
+"비오는데 우산 챙겨야할까","어 챙기는 게 좋을 듯해","DAILY"
+"요즘 너무 덥지 않아","어 완전 찜통이야","DAILY"
+"오늘 미세먼지 심한가","하늘 보니 좀 뿌옇긴 하네","DAILY"
+"눈 온다는데 진짜야","어 일기예보에서 그러더라","DAILY"
+"요즘 일교차가 너무 심해","맞아 아침저녁으로 따뜻하게 입어야 해","DAILY"
+"태풍 온다는데 괜찮을까","외출은 좀 자제하는 게 좋을 것 같아","DAILY"
+"오늘 바람 진짜 세다","그러게 걸어다니기 힘들 정도네","DAILY"
+"오늘 습도 왜 이래","완전 눅눅하고 찝찝하네","DAILY"
+"장마 언제 끝나나 몰라","이번 주까지는 이어진다더라","DAILY"
+"오늘 밤 기온 많이 떨어진대","어 따뜻하게 입고 자야겠다","DAILY"
+"벌써 가을바람이 부네","그러게 계절이 진짜 빠르다","DAILY"
+"오늘 자외선 지수 높아","꽤 높은 것 같아 선크림 챙겨","DAILY"
+"이번 겨울 진짜 추울까","벌써부터 걱정되긴 하네","DAILY"
+"오늘 하늘 진짜 맑다","완전 파랗다 사진 찍기 딱이네","DAILY"
+"점심 뭐 먹지","김치찌개 어때 든든하잖아","DAILY"
+"저녁 메뉴 추천 좀","오늘은 삼겹살 어때","DAILY"
+"근처에 맛있는 국밥집 있어","어 역 앞에 순대국밥집 괜찮더라","DAILY"
+"매운 거 먹고 싶은데 뭐가 좋을까","마라탕 어때 딱 그 느낌이야","DAILY"
+"다이어트 중인데 뭐 먹지","샐러드에 닭가슴살 곁들여봐","DAILY"
+"오늘 회식 메뉴 추천해줘","삼겹살에 소주 조합이 무난하지","DAILY"
+"배달 시켜 먹을까","좋지 오늘같은 날은 배달이 진리야","DAILY"
+"라면 끓여 먹을까","어 계란 하나 풀어서 먹어봐","DAILY"
+"디저트 뭐가 맛있을까","마카롱이나 티라미수 어때","DAILY"
+"커피 마시고 싶은데 뭐 마실까","아메리카노 무난하게 좋지","DAILY"
+"치킨 시킬까 피자 시킬까","오늘은 치킨 땡기는 날이야","DAILY"
+"이 동네 맛집 좀 알려줘","시장 안에 있는 분식집이 유명해","DAILY"
+"브런치 먹기 좋은 곳 있어","카페 거리 쪽에 브런치 맛집 많아","DAILY"
+"야식 뭐 먹을까 고민돼","떡볶이랑 순대 어때","DAILY"
+"회 좋아해","어 광어회 진짜 좋아해","DAILY"
+"오늘 소고기 먹고 싶다","오 좋다 나도 껴줘","DAILY"
+"편의점 도시락 뭐가 맛있어","제육볶음 도시락 괜찮더라","DAILY"
+"김밥 좋아해","어 참치김밥 완전 좋아해","DAILY"
+"매콤한 국물 요리 추천해줘","부대찌개 어때 얼큰하니 좋아","DAILY"
+"아침 뭐 먹었어","그냥 토스트에 우유 마셨어","DAILY"
+"오늘 뭘 먹어야 살이 안 찔까","저녁은 가볍게 먹는 게 좋아","DAILY"
+"빵집 추천 좀","골목 안쪽에 있는 빵집이 유명해","DAILY"
+"오늘따라 단 게 당기네","초콜릿 하나 먹어봐","DAILY"
+"술안주로 뭐가 좋을까","오징어무침이나 골뱅이무침 어때","DAILY"
+"국물 요리 뭐가 땡길까","갈비탕 어때 든든하잖아","DAILY"
+"제주도 2박3일 여행코스 추천해줘","첫날은 동쪽 해안 돌고 둘째날은 오름 가봐","DAILY"
+"부산 여행 가는데 어디가 좋아","해운대랑 광안리 야경은 꼭 봐야지","DAILY"
+"국내여행 추천 좀","강원도 가서 바다 보고 오는 거 어때","DAILY"
+"혼자 여행가기 좋은 곳 있어","경주 어때 조용히 걷기 좋아","DAILY"
+"이번 휴가 어디로 갈까 고민돼","가까운 바다로 훌쩍 떠나봐","DAILY"
+"여행 짐 쌀 때 뭐가 필수야","보조배터리랑 상비약은 꼭 챙겨","DAILY"
+"캠핑 가기 좋은 계절이 언제야","가을이 제일 선선하고 좋아","DAILY"
+"해외여행 가고 싶은데 어디 좋아","요즘은 일본이 가성비 좋더라","DAILY"
+"당일치기 여행 어디 갈까","근교 수목원이나 계곡 어때","DAILY"
+"여행 가서 뭐 하는 게 제일 좋아","그냥 걷다가 맛있는 거 먹는 거지","DAILY"
+"등산 가기 좋은 산 추천해줘","북한산 코스 완만해서 괜찮아","DAILY"
+"여행 준비할 때 뭐부터 해야 해","숙소랑 교통편부터 잡아","DAILY"
+"바다 여행 가고 싶은데 어디가 좋을까","강릉이나 속초 추천해","DAILY"
+"여행 갈 때 사진 잘 찍는 팁 있어","노을 질 때 찍으면 감성 사진 나와","DAILY"
+"온천 여행 가고 싶은데 어디 좋아","충남 쪽 온천 마을 괜찮더라","DAILY"
+"요즘 너무 피곤해","무리하지 말고 좀 쉬어","DAILY"
+"스트레스 너무 쌓였어","잠깐 산책이라도 하고 와봐","DAILY"
+"오늘 진짜 힘든 하루였어","고생했어 오늘은 푹 쉬어","DAILY"
+"짜증나는 일이 있었어","무슨 일인데 얘기해봐","DAILY"
+"너무 우울해","무슨 일 있었어 얘기해도 돼","DAILY"
+"화가 나서 미치겠어","일단 심호흡 좀 해봐","DAILY"
+"요즘 의욕이 하나도 없어","그런 날도 있는 거야 너무 자책하지 마","DAILY"
+"눈물이 자꾸 나","힘든 일 있었구나 괜찮아질 거야","DAILY"
+"왜 이렇게 외롭지","나라도 옆에 있어줄게","DAILY"
+"걱정이 너무 많아","하나씩 천천히 해결하면 돼","DAILY"
+"오늘 너무 지쳤어","오늘은 일찍 자 그게 최고야","DAILY"
+"불안해서 잠이 안 와","따뜻한 차 한 잔 마셔봐","DAILY"
+"기분이 널뛰기해","그럴 때도 있지 너무 신경쓰지 마","DAILY"
+"뭔가 허무해","잠깐 쉬어가는 것도 나쁘지 않아","DAILY"
+"오늘따라 예민해","컨디션 안 좋은가 보다 좀 쉬어","DAILY"
+"요즘 취미 뭐 있어","요즘은 그림 그리는 거에 빠졌어","DAILY"
+"새로운 취미 찾고 싶은데 뭐가 좋을까","요가나 클라이밍 한번 해봐","DAILY"
+"주말에 할 만한 취미 추천해줘","베이킹 한번 해보는 거 어때","DAILY"
+"요즘 뜨개질 배우고 있어","오 신기하다 뭐 만들고 있어","DAILY"
+"그림 그리는 거 어렵지 않아","처음엔 어려운데 하다 보면 재밌어","DAILY"
+"사진 찍는 거 좋아해","어 풍경 사진 찍는 거 좋아해","DAILY"
+"악기 하나 배우고 싶은데 뭐가 쉬울까","우쿨렐레가 배우기 쉬운 편이야","DAILY"
+"독서모임 해본 적 있어","어 한번 해봤는데 생각보다 재밌더라","DAILY"
+"요즘 뭐 수집해","피규어 조금씩 모으고 있어","DAILY"
+"원데이 클래스 추천해줄래","도자기 공방 클래스 재밌더라","DAILY"
+"요즘 잠을 잘 못 자","자기 전에 폰 좀 멀리 해봐","DAILY"
+"낮잠 잤더니 밤에 잠이 안와","낮잠은 짧게 자는 게 좋아","DAILY"
+"요즘 너무 졸려","잠이 부족한가 보다 일찍 자","DAILY"
+"밤새서 그런지 머리가 띵해","오늘은 일찍 좀 자","DAILY"
+"꿈을 너무 생생하게 꿔","그런 날 있지 신기하긴 하다","DAILY"
+"자꾸 늦게 자게 돼","알람 하나 맞춰놓고 일찍 누워봐","DAILY"
+"몸이 으슬으슬한데 감기인가","푹 쉬고 따뜻하게 있어봐","DAILY"
+"오늘따라 몸이 무거워","컨디션 관리 좀 해야겠다","DAILY"
+"아침에 못 일어나겠어","알람 여러 개 맞춰봐","DAILY"
+"요즘 코를 곤다고 하더라","피곤이 많이 쌓였나보다","DAILY"
+"강아지 키우고 싶은데 어떤 종이 좋을까","초보라면 말티즈 키우기 편해","DAILY"
+"고양이가 밥을 안 먹어","갑자기 그러면 한번 병원 가보는 게 좋아","DAILY"
+"반려동물 처음 키우는데 뭐부터 준비해야해","사료랑 배변판부터 챙겨","DAILY"
+"강아지 산책 얼마나 시켜야해","하루 두 번 정도는 시켜주는 게 좋아","DAILY"
+"우리집 냥이가 너무 귀여워","사진 좀 보여줘 궁금하다","DAILY"
+"강아지 짖는 버릇 어떻게 고쳐","훈련사한테 상담받아보는 것도 좋아","DAILY"
+"반려동물이랑 여행 가능한 곳 있어","요즘 펫동반 숙소 많이 생겼어","DAILY"
+"고양이 발톱 언제 깎아줘야해","한 2주에 한번 정도면 돼","DAILY"
+"강아지가 요즘 밥투정이 심해","사료 바꿔보는 것도 방법이야","DAILY"
+"반려동물 키우면 뭐가 제일 힘들어","여행 갈 때 맡길 곳 찾는 게 힘들어","DAILY"
+"광합성 원리 알려줘","식물이 빛 에너지로 이산화탄소랑 물을 이용해서 포도당이랑 산소를 만드는 과정이야. 엽록소가 빛을 흡수하는 게 핵심이지.","KNOWLEDGE"
+"조선시대 왕 순서 어떻게 돼?","태조부터 시작해서 정종, 태종, 세종 순으로 이어지고 마지막은 순종이야. 총 27명의 왕이 있었어.","KNOWLEDGE"
+"금리 인상이 물가에 미치는 영향은?","금리가 오르면 대출이 부담스러워져서 소비랑 투자가 줄어들어. 그러면 수요가 줄면서 물가 상승이 억제되는 효과가 있어.","KNOWLEDGE"
+"피타고라스 정리 설명해줘","직각삼각형에서 빗변의 제곱이 나머지 두 변의 제곱의 합과 같다는 정리야. a²+b²=c² 로 표현해.","KNOWLEDGE"
+"태양계 행성 순서가 어떻게 되지?","수성, 금성, 지구, 화성, 목성, 토성, 천왕성, 해왕성 순이야.","KNOWLEDGE"
+"임진왜란은 언제 일어났어?","1592년에 일본이 조선을 침략하면서 시작됐고 1598년까지 이어졌어.","KNOWLEDGE"
+"인플레이션이랑 디플레이션 차이가 뭐야?","인플레이션은 물가가 계속 오르는 거고 디플레이션은 반대로 물가가 계속 내려가는 현상이야.","KNOWLEDGE"
+"소수는 뭐야?","1과 자기 자신으로만 나눠지는 1보다 큰 자연수를 말해. 2, 3, 5, 7 같은 숫자들이지.","KNOWLEDGE"
+"블랙홀이 뭔지 설명해줘","중력이 너무 강해서 빛조차 빠져나올 수 없는 천체야. 별이 붕괴하면서 생기는 경우가 많아.","KNOWLEDGE"
+"세종대왕이 만든 게 뭐야?","한글을 창제한 걸로 제일 유명하고 측우기나 해시계 같은 과학 기구도 많이 만들었어.","KNOWLEDGE"
+"GDP가 뭐야?","한 나라 안에서 일정 기간 생산된 재화와 서비스의 총가치를 말해. 경제 규모를 나타내는 대표 지표야.","KNOWLEDGE"
+"원주율 파이는 어떤 수야?","원의 둘레를 지름으로 나눈 값인데 3.14159로 끝없이 이어지는 무리수야.","KNOWLEDGE"
+"6.25 전쟁은 언제 끝났어?","1950년에 시작해서 1953년 정전협정으로 휴전 상태에 들어갔어. 아직 종전은 아니야.","KNOWLEDGE"
+"기준금리는 누가 정해?","한국은 한국은행 금융통화위원회가 결정해. 미국은 연준(Fed)이 정하지.","KNOWLEDGE"
+"뉴턴의 운동법칙 세 가지가 뭐야?","관성의 법칙, 가속도의 법칙, 작용반작용의 법칙이야.","KNOWLEDGE"
+"삼국시대 나라 세 개가 뭐야?","고구려, 백제, 신라야. 이후에 신라가 통일했지.","KNOWLEDGE"
+"환율이 오르면 어떻게 돼?","원화 가치가 떨어진다는 뜻이라 수입 물가는 오르고 수출 기업은 유리해져.","KNOWLEDGE"
+"미적분은 왜 배워?","변화율이나 넓이 같은 걸 계산하는 도구라서 물리, 경제 등 여러 분야에서 필수적이야.","KNOWLEDGE"
+"DNA랑 RNA 차이가 뭐야?","DNA는 이중나선이고 유전정보를 저장하는 역할, RNA는 단일가닥으로 정보를 전달하고 단백질 합성을 도와.","KNOWLEDGE"
+"고려는 언제 세워졌어?","918년에 왕건이 세웠고 936년에 후삼국을 통일했어.","KNOWLEDGE"
+"주식이랑 채권 차이가 뭐야?","주식은 회사 지분을 소유하는 거고 채권은 돈을 빌려주고 이자를 받는 거야.","KNOWLEDGE"
+"상대성이론 간단히 설명해줘","아인슈타인이 만든 이론인데 시간과 공간이 절대적이지 않고 관측자에 따라 달라진다는 내용이야.","KNOWLEDGE"
+"무한소수랑 유한소수 차이가 뭐야?","유한소수는 소수점 아래 자리가 끝나는 수고 무한소수는 끝없이 이어지는 수야.","KNOWLEDGE"
+"프랑스 혁명은 언제 일어났어?","1789년에 시작됐어. 왕정을 무너뜨리고 자유, 평등, 박애 이념이 퍼진 계기가 됐지.","KNOWLEDGE"
+"복리랑 단리 차이가 뭐야?","단리는 원금에만 이자가 붙고 복리는 이자에도 이자가 붙어서 시간이 지날수록 차이가 커져.","KNOWLEDGE"
+"오존층이 왜 중요해?","자외선을 막아주는 역할을 해서 지구 생물을 보호해줘. 파괴되면 피부암 같은 문제가 늘어날 수 있어.","KNOWLEDGE"
+"동학농민운동이 뭐야?","1894년에 전봉준이 이끈 농민 봉기인데 부패한 정치와 외세 침탈에 저항한 사건이야.","KNOWLEDGE"
+"주식시장에서 코스피랑 코스닥 차이가 뭐야?","코스피는 대형 우량기업 중심이고 코스닥은 중소, 벤처기업 중심 시장이야.","KNOWLEDGE"
+"방정식이랑 항등식 차이가 뭐야?","방정식은 특정 값에서만 성립하고 항등식은 모든 값에서 항상 성립해.","KNOWLEDGE"
+"세계 2차 대전은 언제 끝났어?","1945년에 끝났어. 독일 항복은 5월, 일본 항복은 8월이야.","KNOWLEDGE"
+"실업률은 어떻게 계산해?","경제활동인구 중에서 일자리를 구하지 못한 사람의 비율로 계산해.","KNOWLEDGE"
+"만유인력의 법칙이 뭐야?","모든 물체는 질량에 비례하고 거리 제곱에 반비례하는 힘으로 서로 끌어당긴다는 법칙이야.","KNOWLEDGE"
+"백제의 수도는 어디였어?","처음엔 한성이었다가 웅진(공주), 나중엔 사비(부여)로 옮겼어.","KNOWLEDGE"
+"주가지수 산출 방식이 뭐야?","시가총액 방식이 대표적인데 상장된 기업들의 시가총액 합을 기준 시점과 비교해서 계산해.","KNOWLEDGE"
+"확률이랑 통계 차이가 뭐야?","확률은 사건이 일어날 가능성을 다루고 통계는 이미 모은 데이터를 분석하는 학문이야.","KNOWLEDGE"
+"청동기 시대 특징이 뭐야?","청동으로 도구를 만들고 계급이 생기고 농경이 발달한 시대야.","KNOWLEDGE"
+"환경보호세는 뭐야?","환경오염을 유발하는 활동에 부과하는 세금인데 오염을 줄이려는 목적이 있어.","KNOWLEDGE"
+"질량이랑 무게 차이가 뭐야?","질량은 물질의 고유한 양이고 무게는 중력에 의해 받는 힘이야. 달에서는 무게가 줄어들지만 질량은 그대로야.","KNOWLEDGE"
+"임산부가 조심해야 할 음식이 뭐야?","생선회 같은 날음식이나 카페인 과다 섭취는 피하는 게 좋아.","KNOWLEDGE"
+"근의 공식이 뭐야?","이차방정식 ax²+bx+c=0의 해를 구하는 공식인데 x=(-b±√(b²-4ac))/2a야.","KNOWLEDGE"
+"신라의 삼국통일은 언제야?","676년에 나당전쟁에서 승리하면서 삼국통일을 완성했어.","KNOWLEDGE"
+"경상수지가 뭐야?","한 나라가 외국과 거래한 상품, 서비스, 소득 등의 수지를 나타내는 지표야.","KNOWLEDGE"
+"세포는 어떻게 구성돼?","핵, 세포질, 세포막으로 구성되고 세포 안에 미토콘드리아 같은 소기관들이 있어.","KNOWLEDGE"
+"고구려 광개토대왕은 어떤 왕이야?","영토를 크게 확장한 왕으로 유명하고 만주와 한반도 북부까지 지배했어.","KNOWLEDGE"
+"주식 배당금이 뭐야?","회사가 이익을 주주들에게 나눠주는 돈이야. 보통 분기나 연간으로 지급해.","KNOWLEDGE"
+"등차수열이랑 등비수열 차이가 뭐야?","등차수열은 일정한 수를 더해가는 수열이고 등비수열은 일정한 비율을 곱해가는 수열이야.","KNOWLEDGE"
+"빅뱅 이론이 뭐야?","우주가 아주 작은 한 점에서 폭발적으로 팽창하면서 생겨났다는 우주 기원 이론이야.","KNOWLEDGE"
+"병자호란은 언제야?","1636년에 청나라가 조선을 침략한 전쟁이야. 인조가 삼전도에서 항복했어.","KNOWLEDGE"
+"관세가 뭐야?","외국에서 수입하는 물건에 부과하는 세금이야. 국내 산업 보호 목적으로도 쓰여.","KNOWLEDGE"
+"이차함수 그래프는 어떤 모양이야?","포물선 모양이야. 계수가 양수면 아래로 볼록, 음수면 위로 볼록해.","KNOWLEDGE"
+"광복절은 무슨 날이야?","1945년 8월 15일 일제강점기에서 해방된 날을 기념하는 날이야.","KNOWLEDGE"
+"환율 방어가 뭐야?","정부나 중앙은행이 자국 통화 가치를 지키기 위해 외환시장에 개입하는 걸 말해.","KNOWLEDGE"
+"삼투압이 뭐야?","농도가 다른 두 용액 사이에서 물이 이동하려는 압력을 말해.","KNOWLEDGE"
+"갑오개혁이 뭐야?","1894년 조선이 근대적 제도를 도입하려고 시행한 개혁이야. 신분제 폐지 같은 내용이 담겼어.","KNOWLEDGE"
+"부가가치세가 뭐야?","상품이나 서비스가 거래될 때마다 부가된 가치에 매기는 세금이야. 한국은 보통 10%야.","KNOWLEDGE"
+"삼각함수 사인 코사인이 뭐야?","직각삼각형에서 각도와 변의 비율을 나타내는 함수야. 사인은 대변/빗변, 코사인은 밑변/빗변이야.","KNOWLEDGE"
+"산업혁명은 언제 시작됐어?","18세기 후반 영국에서 시작됐어. 증기기관 발명이 큰 계기가 됐지.","KNOWLEDGE"
+"기회비용이 뭐야?","어떤 선택을 할 때 포기해야 하는 가장 큰 가치를 말해.","KNOWLEDGE"
+"태풍이랑 허리케인 차이가 뭐야?","발생 지역만 다르고 원리는 같아. 태풍은 아시아, 허리케인은 대서양 쪽이야.","KNOWLEDGE"
+"고려청자가 유명한 이유가 뭐야?","비취색 유약과 상감기법이 세계적으로 인정받는 예술적 가치를 가지고 있어서야.","KNOWLEDGE"
+"주가수익비율 PER이 뭐야?","주가를 주당순이익으로 나눈 값인데 주가가 이익 대비 얼마나 고평가됐는지 보는 지표야.","KNOWLEDGE"
+"소인수분해가 뭐야?","자연수를 소수들의 곱으로 나타내는 걸 말해. 12는 2×2×3으로 분해돼.","KNOWLEDGE"
+"지구온난화 원인이 뭐야?","온실가스가 대기 중에 쌓여서 열을 가두는 게 주된 원인이야.","KNOWLEDGE"
+"고려 무신정변이 뭐야?","1170년에 무신들이 문신 중심 정치에 반발해서 정권을 잡은 사건이야.","KNOWLEDGE"
+"통화정책이 뭐야?","중앙은행이 금리나 통화량을 조절해서 경제를 안정시키려는 정책이야.","KNOWLEDGE"
+"미분이 뭐야?","어떤 함수의 순간 변화율을 구하는 수학 개념이야. 그래프의 기울기를 구한다고 생각하면 돼.","KNOWLEDGE"
+"원자랑 분자 차이가 뭐야?","원자는 물질을 이루는 가장 작은 단위고 분자는 원자들이 결합한 형태야.","KNOWLEDGE"
+"동아시아 유교문화가 왜 중요해?","가족 중심 가치관과 예의범절, 학문 존중 문화의 기반이 됐어.","KNOWLEDGE"
+"기축통화가 뭐야?","국제 거래에서 기준이 되는 통화를 말해. 지금은 미국 달러가 대표적이야.","KNOWLEDGE"
+"산성이랑 염기성 차이가 뭐야?","산성은 pH가 7보다 낮고 염기성은 7보다 높아. 7이면 중성이야.","KNOWLEDGE"
+"고구려 벽화가 유명한 이유가 뭐야?","당시 생활상, 문화, 사상을 생생하게 보여주는 귀중한 자료라서야.","KNOWLEDGE"
+"근로소득세는 어떻게 부과돼?","소득 구간별로 세율이 다르게 적용되는 누진세 방식이야.","KNOWLEDGE"
+"함수랑 방정식 차이가 뭐야?","함수는 입력값에 따라 출력값이 정해지는 관계고 방정식은 특정 조건을 만족하는 값을 찾는 식이야.","KNOWLEDGE"
+"화산 폭발은 왜 일어나?","지하의 마그마가 압력에 의해 지표면으로 분출하면서 일어나.","KNOWLEDGE"
+"한글날은 왜 있는 거야?","세종대왕이 훈민정음을 반포한 걸 기념하는 날이야. 10월 9일이야.","KNOWLEDGE"
+"물가지수는 어떻게 만들어?","여러 상품과 서비스 가격을 기준시점 대비 비교해서 지수로 만들어.","KNOWLEDGE"
+"음의 정수랑 양의 정수 차이가 뭐야?","0을 기준으로 큰 수는 양수, 작은 수는 음수야.","KNOWLEDGE"
+"온실효과가 뭐야?","대기 중 가스가 지구에서 나오는 열을 가둬서 지구를 따뜻하게 유지하는 현상이야.","KNOWLEDGE"
+"신라 화랑도가 뭐야?","신라의 청소년 수양 단체인데 무예와 도덕을 함께 배웠어.","KNOWLEDGE"
+"경제성장률은 어떻게 계산해?","이번 기간 GDP와 이전 기간 GDP를 비교해서 증가율로 계산해.","KNOWLEDGE"
+"로그가 뭐야?","어떤 수를 밑으로 몇 번 거듭제곱해야 특정 값이 나오는지 나타내는 개념이야.","KNOWLEDGE"
+"판구조론이 뭐야?","지구 표면이 여러 판으로 나뉘어 있고 이 판들이 움직인다는 이론이야.","KNOWLEDGE"
+"동학 사상이 뭐야?","최제우가 창시한 사상인데 인내천, 즉 사람이 곧 하늘이라는 평등사상이 핵심이야.","KNOWLEDGE"
+"공정거래위원회가 뭐하는 곳이야?","기업들의 불공정 거래나 독과점 행위를 감시하고 규제하는 정부기관이야.","KNOWLEDGE"
+"허수는 뭐야?","제곱해서 음수가 되는 수야. i로 표시하고 i²=-1이야.","KNOWLEDGE"
+"극지방 오로라는 왜 생겨?","태양풍의 입자가 지구 자기장과 부딪혀서 대기 중 기체를 자극하며 빛을 내는 거야.","KNOWLEDGE"
+"3.1운동은 언제 일어났어?","1919년 3월 1일에 일어난 독립운동이야. 전국적으로 만세운동이 퍼졌어.","KNOWLEDGE"
+"환율제도 종류가 뭐가 있어?","고정환율제와 변동환율제가 있어. 한국은 변동환율제를 채택하고 있어.","KNOWLEDGE"
+"수열의 극한이 뭐야?","수열의 항이 끝없이 진행될 때 어떤 값에 가까워지는지를 나타내는 개념이야.","KNOWLEDGE"
+"대륙이동설은 누가 주장했어?","독일 과학자 베게너가 주장했어. 대륙들이 원래 하나였다가 갈라졌다는 이론이야.","KNOWLEDGE"
+"동인도회사가 뭐야?","17세기 유럽 국가들이 아시아 무역을 위해 세운 특허 회사야.","KNOWLEDGE"
+"디지털세가 뭐야?","해외 IT 기업들의 국내 매출에 부과하려는 세금 논의를 말해.","KNOWLEDGE"
+"집합이 뭐야?","특정 조건을 만족하는 원소들의 모임을 말해. 수학의 기본 개념 중 하나야.","KNOWLEDGE"
+"빙하기는 왜 생겨?","지구 기후가 주기적으로 변하면서 기온이 크게 낮아지는 시기 때문에 생겨.","KNOWLEDGE"
+"고려의 대외무역은 어땠어?","벽란도를 중심으로 송, 아라비아 상인들과도 교류할 정도로 활발했어.","KNOWLEDGE"
+"공매도가 뭐야?","주식을 빌려서 먼저 팔고 나중에 싸게 사서 갚는 투자 방식이야.","KNOWLEDGE"
+"벡터랑 스칼라 차이가 뭐야?","벡터는 크기와 방향이 있고 스칼라는 크기만 있는 양이야.","KNOWLEDGE"
+"극한기후 현상 이유가 뭐야?","기후변화로 대기와 해양 순환이 불안정해지면서 폭염, 폭우 같은 극단적 날씨가 늘어나.","KNOWLEDGE"
+"임오군란이 뭐야?","1882년 구식 군인들이 차별대우에 반발해서 일으킨 반란이야.","KNOWLEDGE"
+"환율 하락은 뭘 의미해?","원화 가치가 오른다는 뜻이라 수입은 유리해지고 수출은 불리해질 수 있어.","KNOWLEDGE"
+"행렬이 뭐야?","숫자를 행과 열로 배열한 표 형태의 수학적 대상이야. 여러 방정식을 한번에 다룰 때 써.","KNOWLEDGE"
+"엘니뇨가 뭐야?","태평양 적도 부근 바닷물 온도가 평소보다 높아지는 현상인데 세계 곳곳 기후에 영향을 줘.","KNOWLEDGE"
+"고려의 몽골 침입은 몇 번이었어?","약 6차례에 걸쳐 침입을 받았고 결국 강화를 맺었어.","KNOWLEDGE"
+"주식 액면분할이 뭐야?","주식 한 주를 여러 주로 쪼개서 주당 가격을 낮추는 걸 말해.","KNOWLEDGE"
+"경우의 수는 어떻게 구해?","어떤 사건이 일어날 수 있는 모든 가짓수를 세는 걸 말해.","KNOWLEDGE"
+"자기장이 뭐야?","자석이나 전류 주변에 생기는 힘의 영역을 말해.","KNOWLEDGE"
+"발해는 누가 세웠어?","고구려 유민 대조영이 세운 나라야. 고구려 계승 의식이 강했어.","KNOWLEDGE"
+"기업공개 IPO가 뭐야?","비상장 기업이 처음으로 주식을 증권시장에 상장해서 일반인도 살 수 있게 하는 절차야.","KNOWLEDGE"
+"제곱근이 뭐야?","어떤 수를 제곱해서 특정 값이 나오게 하는 수야. 9의 제곱근은 3이지.","KNOWLEDGE"
+"오로라는 어느 지역에서 볼 수 있어?","북극이나 남극 근처 고위도 지역에서 잘 보여.","KNOWLEDGE"
+"조선의 과거제도가 뭐야?","관리를 뽑기 위한 시험 제도인데 문과, 무과, 잡과로 나뉘었어.","KNOWLEDGE"
+"환율 스와프가 뭐야?","서로 다른 통화를 일정 기간 교환했다가 나중에 다시 바꾸는 금융 거래야.","KNOWLEDGE"
+"피보나치 수열이 뭐야?","앞의 두 수를 더해서 다음 수를 만드는 수열이야. 1,1,2,3,5,8 이런 식이지.","KNOWLEDGE"
+"미세먼지는 왜 생겨?","자동차 배기가스, 공장 매연, 황사 등 다양한 원인으로 발생해.","KNOWLEDGE"
+"동학농민운동 결과는 어떻게 됐어?","진압됐지만 이후 갑오개혁에 영향을 줬고 반봉건, 반외세 의식을 남겼어.","KNOWLEDGE"
+"양적완화가 뭐야?","중앙은행이 돈을 풀어서 시중에 유동성을 공급하는 정책이야.","KNOWLEDGE"
+"확률변수가 뭐야?","어떤 실험 결과에 숫자를 대응시킨 변수를 말해.","KNOWLEDGE"
+"지진은 왜 일어나?","지각판이 움직이면서 쌓인 에너지가 갑자기 방출될 때 일어나.","KNOWLEDGE"
+"조선 후기 실학이 뭐야?","실생활에 도움이 되는 학문을 추구한 사상이야. 정약용 같은 학자가 대표적이야.","KNOWLEDGE"
+"스태그플레이션이 뭐야?","경기 침체와 물가 상승이 동시에 일어나는 현상이야.","KNOWLEDGE"
+"올해 개봉한 SF 영화 추천해줘","최근 SF는 '듄 파트2'가 볼만해, 스케일도 크고 스토리도 탄탄하더라","CREATIVE"
+"우울할 때 보기 좋은 영화 있어?","코미디 장르 추천해, '가디언즈 오브 갤럭시' 같은 거 보면 기분 풀려","CREATIVE"
+"크리스토퍼 놀란 영화 중에 뭐가 제일 나아?","개인적으론 '인터스텔라' 추천, 몰입감이 장난 아니야","CREATIVE"
+"아이랑 같이 볼만한 애니메이션 영화 뭐 있을까","'인사이드 아웃' 시리즈 괜찮아, 아이도 어른도 재밌게 봐","CREATIVE"
+"무서운 영화 하나 추천해줘","'유전'이나 '컨저링' 시리즈 추천, 분위기가 진짜 소름 돋아","CREATIVE"
+"로맨스 영화 볼만한 거 있어?","'라라랜드' 어때, 음악이랑 영상미가 예술이야","CREATIVE"
+"넷플릭스에서 볼만한 영화 뭐 있을까","요즘엔 '글래스 어니언' 추천, 추리물 좋아하면 딱이야","CREATIVE"
+"전쟁 영화 명작 좀 알려줘","'라이언 일병 구하기'는 무조건 봐야 돼, 오프닝부터 압도적이야","CREATIVE"
+"마블 영화 순서대로 보려면 뭐부터 봐야 해","'아이언맨 1편'부터 시작하는 게 제일 무난해","CREATIVE"
+"짧고 가볍게 볼 영화 추천해줘","'내 아내의 모든 것' 같은 로맨틱 코미디 어때, 부담 없이 볼 수 있어","CREATIVE"
+"좀비 영화 중에 재밌는 거 있어?","'부산행' 강추, 긴장감 최고고 감동도 있어","CREATIVE"
+"힐링되는 영화 추천해줘","'리틀 포레스트' 보면 마음이 편안해져","CREATIVE"
+"반전 있는 영화 뭐 있을까","'유주얼 서스펙트' 결말 보고 진짜 놀랐어","CREATIVE"
+"애니메이션 명작 하나 알려줘","'너의 이름은.' 안 보면 후회해, 영상미랑 스토리 다 좋아","CREATIVE"
+"최근에 재밌게 본 영화 있어?","요즘 '오펜하이머' 얘기 많이 나오더라, 몰입도 진짜 높아","CREATIVE"
+"킬링타임용 액션 영화 추천해줘","'존 윅' 시리즈 보면 시간 순삭이야","CREATIVE"
+"다큐멘터리 영화 볼만한 거 있어?","'아이엠 그레타' 추천, 생각할 거리 많아","CREATIVE"
+"시간여행 소재 영화 뭐가 재밌어?","'어바웃 타임' 좋아, 감동적이면서 로맨틱해","CREATIVE"
+"뮤지컬 영화 추천해줘","'위대한 쇼맨' 노래도 좋고 화려해","CREATIVE"
+"스릴러 영화 뭐 볼까?","'나이브스 아웃' 추천, 추리하는 재미가 쏠쏠해","CREATIVE"
+"우주 배경 영화 있어?","'그래비티' 보면 진짜 우주에 있는 느낌 들어","CREATIVE"
+"명절에 가족이랑 볼만한 영화 있어?","'극한직업' 어때, 웃기고 부담 없어","CREATIVE"
+"봉준호 감독 영화 중에 뭐가 좋아?","'기생충'은 무조건 봐야지, 짜임새가 완벽해","CREATIVE"
+"실화 바탕 영화 추천해줘","'설리: 허드슨강의 기적' 감동적이야","CREATIVE"
+"디즈니 명작 애니메이션 알려줘","'라이온 킹' 클래식이지만 지금 봐도 좋아","CREATIVE"
+"90년대 감성 영화 뭐 있을까?","'이터널 선샤인' 감성 제대로야","CREATIVE"
+"첩보 영화 추천해줘","'미션 임파서블' 시리즈 액션 진짜 화려해","CREATIVE"
+"판타지 영화 명작 알려줘","'반지의 제왕' 3부작은 기본이지","CREATIVE"
+"잔잔한 일본 영화 추천해줘","'스즈메의 문단속' 좋아, 감성적이야","CREATIVE"
+"여름에 보기 좋은 시원한 느낌 영화 있어?","물 배경 영화들 찾아봐, 시원한 느낌 나서 좋아","CREATIVE"
+"최근 흥행한 한국 영화 뭐 있어?","'파묘' 요즘 화제더라, 미스터리하고 몰입감 있어","CREATIVE"
+"크리스마스에 볼만한 영화 추천해줘","'나 홀로 집에' 매년 봐도 재밌어","CREATIVE"
+"인생 영화로 꼽을만한 거 추천해줘","'쇼생크 탈출'은 진짜 명작이야, 안 본 사람 없어야 돼","CREATIVE"
+"코미디 스페셜 볼만한 거 있어?","넷플릭스 코미디 스페셜들 볼만해, 웃음 포인트 확실해","CREATIVE"
+"히어로 영화 중에 제일 재밌는 거 뭐야?","'스파이더맨: 어크로스 더 스파이더버스' 영상미 미쳤어","CREATIVE"
+"심리 스릴러 영화 알려줘","'샤이닝' 보면 오싹해, 명작이야","CREATIVE"
+"시리즈로 볼만한 영화 프랜차이즈 있어?","'해리포터' 시리즈 정주행 추천","CREATIVE"
+"감동적인 가족 영화 추천해줘","'코코' 보면 눈물 안 참아져","CREATIVE"
+"우정 소재 영화 뭐 있을까?","'스탠 바이 미' 좋아, 잔잔하고 따뜻해","CREATIVE"
+"액션 코미디 영화 알려줘","'나쁜 녀석들' 시리즈 시원하고 웃겨","CREATIVE"
+"비오는 날 듣기 좋은 재즈 플레이리스트 추천해줘","빌 에반스 트리오 들어봐, 빗소리랑 찰떡이야","CREATIVE"
+"운동할 때 듣기 좋은 노래 추천해줘","신나는 힙합이나 EDM 위주로 들으면 텐션 올라가","CREATIVE"
+"드라이브할 때 듣기 좋은 노래 있어?","잔잔한 시티팝 플레이리스트 틀어봐, 분위기 좋아","CREATIVE"
+"요즘 인기 많은 케이팝 노래 뭐 있어?","뉴진스나 아이브 신곡 들어봐, 요즘 대세야","CREATIVE"
+"발라드 명곡 추천해줘","아이유의 '밤편지' 언제 들어도 좋아","CREATIVE"
+"공부할 때 듣기 좋은 음악 있을까?","가사 없는 로파이 힙합 틀어놓으면 집중 잘 돼","CREATIVE"
+"옛날 감성 팝송 추천해줘","퀸의 'Bohemian Rhapsody' 시대를 초월한 명곡이지","CREATIVE"
+"신나는 파티 음악 추천해줘","다프트 펑크 노래 틀면 분위기 확 살아나","CREATIVE"
+"이별 후에 듣기 좋은 노래 있어?","슬픈 발라드 몰아 듣는 것도 나쁘지 않아, 성시경 노래 추천해","CREATIVE"
+"클래식 입문하기 좋은 곡 뭐야?","비발디 사계부터 들어봐, 익숙한 멜로디라 편해","CREATIVE"
+"최근 나온 앨범 중에 괜찮은 거 있어?","요즘 화제인 아티스트 정규 앨범 한번 들어봐, 완성도 높다는 평 많아","CREATIVE"
+"인디밴드 추천해줘","잔나비 노래 들어봐, 감성적이고 독특해","CREATIVE"
+"신나는 트로트 노래 있어?","임영웅 노래 들어봐, 요즘 진짜 인기 많아","CREATIVE"
+"록발라드 명곡 알려줘","건즈 앤 로지스의 'November Rain' 강추","CREATIVE"
+"잠들기 전에 듣기 좋은 노래 추천해줘","잔잔한 어쿠스틱 노래 들으면 마음이 편안해져","CREATIVE"
+"뮤지컬 넘버 중에 좋은 거 있어?","'레미제라블'의 'Do You Hear the People Sing' 웅장하고 좋아","CREATIVE"
+"여름에 어울리는 노래 추천해줘","시원한 팝이나 레게 느낌 곡들 들어봐, 여름 감성 딱이야","CREATIVE"
+"랩 잘하는 아티스트 추천해줘","켄드릭 라마 들어봐, 라임이랑 메시지가 진짜 탄탄해","CREATIVE"
+"노래방 가면 부르기 좋은 곡 뭐 있을까?","신나는 곡으로는 god의 '거짓말' 부르면 분위기 좋아","CREATIVE"
+"카페에서 틀어놓기 좋은 음악 있어?","보사노바 스타일 음악 틀어놓으면 분위기 좋아져","CREATIVE"
+"90년대 가요 명곡 추천해줘","서태지와 아이들 노래 한번 들어봐, 지금 들어도 신선해","CREATIVE"
+"밴드 음악 중에 명반 뭐 있어?","라디오헤드의 'OK Computer' 앨범 통으로 들어봐","CREATIVE"
+"국악 느낌 나는 음악 추천해줘","이날치 밴드 노래 들어봐, 국악이랑 팝이 잘 섞였어","CREATIVE"
+"감성적인 OST 추천해줘","'어바웃 타임' OST 들어보면 진짜 여운 남아","CREATIVE"
+"최근 콘서트 다녀올만한 아티스트 있어?","요즘 내한 공연 많이 하니까 좋아하는 아티스트 스케줄 확인해봐","CREATIVE"
+"신나는 EDM 추천해줘","캘빈 해리스 노래 들으면 텐션 확 올라가","CREATIVE"
+"여행갈 때 듣기 좋은 플레이리스트 추천해줘","신나는 팝송 위주로 모아서 들어봐, 기분전환 돼","CREATIVE"
+"슬픈 노래 듣고 싶은데 뭐 있어?","정승환 노래 추천해, 감정선이 깊어","CREATIVE"
+"최신 힙합 트렌드 곡 뭐 있어?","요즘 트렌디한 국내 힙합 앨범 찾아 들어봐, 비트 좋은 거 많아","CREATIVE"
+"팝송 중에 신나는 곡 추천해줘","두아 리파 노래 들어봐, 신나고 중독성 있어","CREATIVE"
+"겨울에 어울리는 노래 추천해줘","잔잔한 캐롤이나 겨울 감성곡 틀어봐, 분위기 좋아","CREATIVE"
+"밴드 결성하려는데 참고할 곡 있어?","록밴드라면 라디오헤드나 콜드플레이 스타일 참고해봐","CREATIVE"
+"국내 인디 감성 발라드 추천해줘","페퍼톤스 노래 들어봐, 밝고 좋아","CREATIVE"
+"새벽 감성에 듣기 좋은 노래 있어?","자우림 노래 들어봐, 새벽 감성이랑 잘 어울려","CREATIVE"
+"최근 화제인 사운드트랙 뭐 있어?","요즘 화제 드라마 OST들 한번 찾아 들어봐, 반응 좋더라","CREATIVE"
+"요즘 할만한 게임 추천해줘","'발더스 게이트 3' 강추, 스토리랑 자유도 진짜 좋아","CREATIVE"
+"친구랑 같이 할 게임 있어?","'잇 테이크스 투' 해봐, 협동 게임 중 최고야","CREATIVE"
+"캐주얼하게 즐길 모바일 게임 추천해줘","'브롤스타즈' 가볍게 하기 좋아","CREATIVE"
+"스토리 좋은 RPG 게임 뭐 있어?","'엘든 링' 세계관이랑 스토리 진짜 몰입돼","CREATIVE"
+"FPS 게임 중에 뭐가 재밌어?","'발로란트' 요즘 많이들 하더라, 전략적이라 재밌어","CREATIVE"
+"힐링되는 게임 추천해줘","'동물의 숲' 느긋하게 하기 딱 좋아","CREATIVE"
+"퍼즐 게임 추천해줘","'포탈 2' 두뇌 자극되고 재밌어","CREATIVE"
+"오픈월드 게임 뭐가 좋아?","'젤다의 전설: 왕국의 눈물' 탐험하는 재미가 엄청나","CREATIVE"
+"레트로 감성 게임 있어?","'스타듀밸리' 도트그래픽에 힐링되는 농장 게임이야","CREATIVE"
+"무서운 공포 게임 추천해줘","'리틀 나이트메어' 분위기 진짜 오싹해","CREATIVE"
+"전략 시뮬레이션 게임 뭐 있을까?","'문명 6' 시간 순삭될 정도로 중독성 있어","CREATIVE"
+"콘솔 게임 뭐부터 시작하면 좋을까?","닌텐도 스위치라면 '마리오 카트'부터 해봐","CREATIVE"
+"요즘 인기 많은 e스포츠 종목 뭐야?","리그 오브 레전드가 여전히 대세야","CREATIVE"
+"격투 게임 추천해줘","'철권 8' 조작감 좋고 재밌어","CREATIVE"
+"초보자도 하기 쉬운 게임 있어?","'마인크래프트' 자유도 높고 진입장벽 낮아","CREATIVE"
+"스릴 넘치는 배틀로얄 게임 추천해줘","'배틀그라운드' 긴장감 최고야","CREATIVE"
+"감성적인 인디게임 추천해줘","'셀레스트' 추천, 스토리도 좋고 감동적이야","CREATIVE"
+"협동 좀비 게임 있어?","'레프트 4 데드' 친구들이랑 하면 진짜 재밌어","CREATIVE"
+"요즘 유행하는 리듬게임 뭐 있어?","리듬게임 장르 요즘 많이 나와, 손이 바빠질 정도로 재밌어","CREATIVE"
+"카드 게임 추천해줘","'하스스톤' 전략 짜는 재미 있어","CREATIVE"
+"육성 시뮬레이션 게임 있어?","요즘 다양한 캐릭터 육성 시뮬레이션 게임들 나와있어, 찾아봐","CREATIVE"
+"대전 액션 게임 뭐가 재밌어?","'스매시브라더스' 친구들이랑 하면 웃음 끊이질 않아","CREATIVE"
+"탐정, 추리 게임 추천해줘","'역전재판' 시리즈 스토리랑 반전 재밌어","CREATIVE"
+"우주 배경 게임 있어?","'노 맨즈 스카이' 탐험하는 재미 진짜 커","CREATIVE"
+"롤플레잉 모바일 게임 추천해줘","'원신' 그래픽도 좋고 콘텐츠 많아","CREATIVE"
+"자동차 레이싱 게임 뭐가 좋아?","'포르자 호라이즌' 그래픽도 예쁘고 스피드감 있어","CREATIVE"
+"방 탈출 게임 소재로 뭐가 재밌을까?","미스터리 서적 컨셉으로 만들면 몰입감 있을 거야","CREATIVE"
+"소울라이크 장르 게임 추천해줘","'세키로' 어렵지만 클리어하면 성취감 최고야","CREATIVE"
+"보드게임 추천해줘","'카탄' 친구들이랑 하기 딱 좋아","CREATIVE"
+"요즘 스트리머들이 많이 하는 게임 뭐야?","배틀로얄이나 마인크래프트 콘텐츠 많이 하더라","CREATIVE"
+"손흥민 최근 경기 결과 어때?","최근 경기에서 골 넣으면서 팀 승리에 기여했어","CREATIVE"
+"이번 시즌 프리미어리그 우승 후보 어디야?","맨시티랑 아스날이 유력하다고 보더라","CREATIVE"
+"야구 직관하기 좋은 팀 추천해줘","요즘 분위기 좋은 팀 경기 보러 가면 재밌어","CREATIVE"
+"축구 국가대표 다음 경기 언제야?","곧 국가대표 평가전 있으니까 일정 확인해봐","CREATIVE"
+"골프 입문하려는데 뭐부터 배워야 해?","그립이랑 스윙 자세부터 기본기 잡는 게 중요해","CREATIVE"
+"농구 좋아하는데 NBA 볼만한 팀 있어?","요즘 젊은 팀들 경기력이 좋아, 챙겨봐","CREATIVE"
+"마라톤 준비하려는데 조언 좀 해줘","처음엔 무리하지 말고 페이스 조절하면서 거리 늘려가","CREATIVE"
+"배드민턴 잘 치는 법 알려줘","손목 스냅이랑 풋워크 연습하면 실력 확 늘어","CREATIVE"
+"요즘 핫한 e스포츠 경기 있어?","LCK 결승전이 화제야, 챙겨볼만 해","CREATIVE"
+"최근 야구 트레이드 소식 있어?","시즌 중이라 트레이드 소식 종종 나오더라","CREATIVE"
+"테니스 초보인데 라켓 추천해줘","무게 가볍고 그립감 좋은 입문용 라켓부터 시작해봐","CREATIVE"
+"볼링 점수 잘 내는 팁 있어?","릴리즈 타이밍이랑 스핀 연습하면 점수 확 올라","CREATIVE"
+"클라이밍 시작하려는데 어때?","팔 힘보다 코어랑 밸런스가 더 중요해","CREATIVE"
+"겨울 스포츠 뭐 재밌어?","스키나 스노보드 한번 배워봐, 재밌어","CREATIVE"
+"유명한 축구 라이벌전 뭐가 있어?","엘 클라시코가 제일 유명하지","CREATIVE"
+"ㅁㄴㅇㄹ","질문을 이해하지 못했습니다. 다시 입력해주세요.","ANOMALY"
+"ㄱㄴㄷㄹ","무슨 말씀인지 파악이 어려워요. 다시 한 번 말씀해 주시겠어요?","ANOMALY"
+"ㅋㅌㅊㅍ","죄송하지만 내용을 알아듣지 못했어요. 다른 방식으로 질문해 주세요.","ANOMALY"
+"ㅂㅈㄷㄱ","입력하신 내용을 이해할 수 없습니다. 정확한 문장으로 다시 입력해 주세요.","ANOMALY"
+"ㅅㅎㅇㅁ","이해하지 못한 질문이에요. 조금 더 구체적으로 말씀해 주시겠어요?","ANOMALY"
+"ㄴㄹㅎㅋ","요청하신 내용을 파악하지 못했습니다. 다시 시도해 주세요.","ANOMALY"
+"ㅍㅌㅊㅋ","어떤 의미인지 알 수 없어요. 다시 한번 정리해서 말씀해 주세요.","ANOMALY"
+"ㅇㅁㄴㅇㄹㅎ","인식할 수 없는 입력입니다. 올바른 문장으로 다시 입력해 주세요.","ANOMALY"
+"ㄷㄷㄷㄷ","질문 내용을 확인하지 못했어요. 다시 입력 부탁드립니다.","ANOMALY"
+"ㅂㅂㅂㅂㅂ","무슨 뜻인지 이해하기 어렵네요. 다시 말씀해 주시겠어요?","ANOMALY"
+"ㅈㅈㅈㅈ","해당 입력은 인식되지 않았습니다. 다시 한번 확인 후 입력해 주세요.","ANOMALY"
+"ㄱㄱㄱㄱㄱ","죄송해요, 질문을 알아듣지 못했어요. 다른 표현으로 다시 물어봐 주세요.","ANOMALY"
+"ㅍㅍㅍㅍ","정확한 의미를 파악할 수 없습니다. 다시 입력해 주시길 바랍니다.","ANOMALY"
+"ㅊㅊㅊㅊㅊ","이해되지 않는 문장이에요. 조금 더 명확하게 적어주세요.","ANOMALY"
+"ㅌㅌㅌㅌ","질문을 인식하지 못했습니다. 다시 한번 입력해 주세요.","ANOMALY"
+"ㅅㅅㅅㅅㅅ","무슨 내용인지 잘 모르겠어요. 다시 말씀해주시겠어요?","ANOMALY"
+"ㄴㄴㄴㄴㄴ","알아들을 수 없는 입력입니다. 정상적인 문장으로 시도해 주세요.","ANOMALY"
+"ㄹㄹㄹㄹ","질문이 명확하지 않아요. 다시 정리해서 입력해 주세요.","ANOMALY"
+"ㄲㄸㅃㅆㅉ","이 내용은 이해하기 어렵습니다. 다시 질문해 주시겠어요?","ANOMALY"
+"ㄱㅅㄷㅈㅂ","요청을 처리할 수 없습니다. 올바른 형식으로 다시 입력해 주세요.","ANOMALY"
+"ㅁㅁㅁㄴㄴㄴ","죄송하지만 무슨 말인지 모르겠어요. 다시 한번 말해주실래요?","ANOMALY"
+"ㅎㄴㄷㄱㅅ","질문 의도를 파악하지 못했어요. 다시 입력 부탁드려요.","ANOMALY"
+"ㅈㄷㄱㅅㅂ","문장이 인식되지 않았습니다. 다시 시도해 주시기 바랍니다.","ANOMALY"
+"ㅋㄲㄸㅃㅆ","이해할 수 없는 내용이에요. 다른 방식으로 다시 질문해 주세요.","ANOMALY"
+"ㄴㅁㅇㄹㅎㅅ","정확히 어떤 걸 물어보시는지 모르겠어요. 다시 입력해 주세요.","ANOMALY"
+"ㅏㅑㅓㅕ","알 수 없는 입력입니다. 다시 한번 확인해 주세요.","ANOMALY"
+"ㅗㅛㅜㅠ","질문을 파악할 수 없어요. 조금 더 자세히 적어주시겠어요?","ANOMALY"
+"ㅡㅣㅐㅔ","죄송합니다, 이해하지 못했어요. 다시 입력 부탁드립니다.","ANOMALY"
+"ㅘㅙㅚㅝ","무엇을 말씀하시는지 이해하기 힘들어요. 다시 시도해 주세요.","ANOMALY"
+"ㅏㅏㅏㅏ","해당 문장을 인식하지 못했습니다. 다시 작성해 주세요.","ANOMALY"
+"ㅓㅓㅓㅓ","이해가 안 되는 질문이네요. 다시 한번 물어봐 주시겠어요?","ANOMALY"
+"ㅜㅜㅜㅜ","질문 내용이 불명확합니다. 정확하게 다시 입력해 주세요.","ANOMALY"
+"ㅗㅗㅗㅗ","어떤 답변을 드려야 할지 모르겠어요. 다시 말씀해 주세요.","ANOMALY"
+"ㅣㅣㅣㅣ","문의하신 내용을 알아채지 못했습니다. 다시 입력해 주시겠어요?","ANOMALY"
+"ㅐㅐㅐㅐ","죄송해요, 이해가 잘 안 돼요. 다시 한번 적어주세요.","ANOMALY"
+"ㅑㅑㅑㅑ","정상적인 질문으로 인식되지 않았습니다. 다시 입력해 주세요.","ANOMALY"
+"ㅔㅔㅔㅔ","무슨 뜻으로 입력하신 건지 모르겠어요. 다시 부탁드려요.","ANOMALY"
+"ㅝㅝㅝㅝ","질문을 해석할 수 없습니다. 다른 표현으로 다시 입력해 주세요.","ANOMALY"
+"ㅟㅟㅟㅟ","이 입력은 의미를 알 수 없어요. 다시 한번 시도해 주시겠어요?","ANOMALY"
+"ㅢㅢㅢㅢ","죄송하지만 요청을 이해하지 못했습니다. 다시 입력해 주세요.","ANOMALY"
+"ㅋㅋㅋㅋㅋㅋ","질문을 이해하지 못했습니다. 다시 입력해주세요.","ANOMALY"
+"ㅋㅋㅋ","무슨 말씀인지 파악이 어려워요. 다시 한 번 말씀해 주시겠어요?","ANOMALY"
+"ㅎㅎㅎㅎㅎ","죄송하지만 내용을 알아듣지 못했어요. 다른 방식으로 질문해 주세요.","ANOMALY"
+"ㅎㅎ","입력하신 내용을 이해할 수 없습니다. 정확한 문장으로 다시 입력해 주세요.","ANOMALY"
+"ㅠㅠㅠㅠ","이해하지 못한 질문이에요. 조금 더 구체적으로 말씀해 주시겠어요?","ANOMALY"
+"ㅠㅠ","요청하신 내용을 파악하지 못했습니다. 다시 시도해 주세요.","ANOMALY"
+"ㅜㅜㅜㅜㅜ","어떤 의미인지 알 수 없어요. 다시 한번 정리해서 말씀해 주세요.","ANOMALY"
+"ㅜㅜ","인식할 수 없는 입력입니다. 올바른 문장으로 다시 입력해 주세요.","ANOMALY"
+"zzzzzzz","질문 내용을 확인하지 못했어요. 다시 입력 부탁드립니다.","ANOMALY"
+"zzz","무슨 뜻인지 이해하기 어렵네요. 다시 말씀해 주시겠어요?","ANOMALY"
+"haha ha ha ha","해당 입력은 인식되지 않았습니다. 다시 한번 확인 후 입력해 주세요.","ANOMALY"
+"ㅋㅎㅋㅎㅋㅎ","죄송해요, 질문을 알아듣지 못했어요. 다른 표현으로 다시 물어봐 주세요.","ANOMALY"
+"lolololol","정확한 의미를 파악할 수 없습니다. 다시 입력해 주시길 바랍니다.","ANOMALY"
+"ㅗㅗㅗㅗㅗ","이해되지 않는 문장이에요. 조금 더 명확하게 적어주세요.","ANOMALY"
+"킄킄킄","질문을 인식하지 못했습니다. 다시 한번 입력해 주세요.","ANOMALY"
+"흐흐흐흐흐","무슨 내용인지 잘 모르겠어요. 다시 말씀해주시겠어요?","ANOMALY"
+"크크크크","알아들을 수 없는 입력입니다. 정상적인 문장으로 시도해 주세요.","ANOMALY"
+"흑흑흑흑","질문이 명확하지 않아요. 다시 정리해서 입력해 주세요.","ANOMALY"
+"헐헐헐헐헐","이 내용은 이해하기 어렵습니다. 다시 질문해 주시겠어요?","ANOMALY"
+"어어어어어어","요청을 처리할 수 없습니다. 올바른 형식으로 다시 입력해 주세요.","ANOMALY"
+"음음음음음","죄송하지만 무슨 말인지 모르겠어요. 다시 한번 말해주실래요?","ANOMALY"
+"그그그그그","질문 의도를 파악하지 못했어요. 다시 입력 부탁드려요.","ANOMALY"
+"응응응응응","문장이 인식되지 않았습니다. 다시 시도해 주시기 바랍니다.","ANOMALY"
+"하하하하하하하","이해할 수 없는 내용이에요. 다른 방식으로 다시 질문해 주세요.","ANOMALY"
+"히히히히히","정확히 어떤 걸 물어보시는지 모르겠어요. 다시 입력해 주세요.","ANOMALY"
+"asdfkjh 123","알 수 없는 입력입니다. 다시 한번 확인해 주세요.","ANOMALY"
+"qwerqwer","질문을 파악할 수 없어요. 조금 더 자세히 적어주시겠어요?","ANOMALY"
+"zxcvbnm","죄송합니다, 이해하지 못했어요. 다시 입력 부탁드립니다.","ANOMALY"
+"asdasdasd","무엇을 말씀하시는지 이해하기 힘들어요. 다시 시도해 주세요.","ANOMALY"
+"qweqweqwe","해당 문장을 인식하지 못했습니다. 다시 작성해 주세요.","ANOMALY"
+"lkjhlkjh","이해가 안 되는 질문이네요. 다시 한번 물어봐 주시겠어요?","ANOMALY"
+"mnbvcxz","질문 내용이 불명확합니다. 정확하게 다시 입력해 주세요.","ANOMALY"
+"poiuytrewq","어떤 답변을 드려야 할지 모르겠어요. 다시 말씀해 주세요.","ANOMALY"
+"asdfghjkl","문의하신 내용을 알아채지 못했습니다. 다시 입력해 주시겠어요?","ANOMALY"
+"qazwsxedc","죄송해요, 이해가 잘 안 돼요. 다시 한번 적어주세요.","ANOMALY"
+"zaqwsxcde","정상적인 질문으로 인식되지 않았습니다. 다시 입력해 주세요.","ANOMALY"
+"tyuiopasdf","무슨 뜻으로 입력하신 건지 모르겠어요. 다시 부탁드려요.","ANOMALY"
+"vbnmasdf","질문을 해석할 수 없습니다. 다른 표현으로 다시 입력해 주세요.","ANOMALY"
+"xcvbqwer","이 입력은 의미를 알 수 없어요. 다시 한번 시도해 주시겠어요?","ANOMALY"
+"rewqasdf","죄송하지만 요청을 이해하지 못했습니다. 다시 입력해 주세요.","ANOMALY"
+"fdsazxcv","질문을 이해하지 못했습니다. 다시 입력해주세요.","ANOMALY"
+"jklasdf","무슨 말씀인지 파악이 어려워요. 다시 한 번 말씀해 주시겠어요?","ANOMALY"
+"uiopqwer","죄송하지만 내용을 알아듣지 못했어요. 다른 방식으로 질문해 주세요.","ANOMALY"
+"ghjklzxc","입력하신 내용을 이해할 수 없습니다. 정확한 문장으로 다시 입력해 주세요.","ANOMALY"
+"bnmqwerty","이해하지 못한 질문이에요. 조금 더 구체적으로 말씀해 주시겠어요?","ANOMALY"
+"wsxedcrfv","요청하신 내용을 파악하지 못했습니다. 다시 시도해 주세요.","ANOMALY"
+"tgbyhnujm","어떤 의미인지 알 수 없어요. 다시 한번 정리해서 말씀해 주세요.","ANOMALY"
+"ikolp;'[","인식할 수 없는 입력입니다. 올바른 문장으로 다시 입력해 주세요.","ANOMALY"
+"qazxswedc","질문 내용을 확인하지 못했어요. 다시 입력 부탁드립니다.","ANOMALY"
+"mlpoiknjb","무슨 뜻인지 이해하기 어렵네요. 다시 말씀해 주시겠어요?","ANOMALY"
+"asd123zxc","해당 입력은 인식되지 않았습니다. 다시 한번 확인 후 입력해 주세요.","ANOMALY"
+"1a2b3c4d","죄송해요, 질문을 알아듣지 못했어요. 다른 표현으로 다시 물어봐 주세요.","ANOMALY"
+"a1b2c3d4e5","정확한 의미를 파악할 수 없습니다. 다시 입력해 주시길 바랍니다.","ANOMALY"
+"123abc456","이해되지 않는 문장이에요. 조금 더 명확하게 적어주세요.","ANOMALY"
+"zxc987vbn","질문을 인식하지 못했습니다. 다시 한번 입력해 주세요.","ANOMALY"
+"qwe456rty","무슨 내용인지 잘 모르겠어요. 다시 말씀해주시겠어요?","ANOMALY"
+"9a8s7d6f5","알아들을 수 없는 입력입니다. 정상적인 문장으로 시도해 주세요.","ANOMALY"
+"kjh789asd","질문이 명확하지 않아요. 다시 정리해서 입력해 주세요.","ANOMALY"
+"090a0s0d","이 내용은 이해하기 어렵습니다. 다시 질문해 주시겠어요?","ANOMALY"
+"1q2w3e4r","요청을 처리할 수 없습니다. 올바른 형식으로 다시 입력해 주세요.","ANOMALY"
+"5t6y7u8i","죄송하지만 무슨 말인지 모르겠어요. 다시 한번 말해주실래요?","ANOMALY"
+"0987654321asdf","질문 의도를 파악하지 못했어요. 다시 입력 부탁드려요.","ANOMALY"
+"a1s2d3f4g5h6","문장이 인식되지 않았습니다. 다시 시도해 주시기 바랍니다.","ANOMALY"
+"zzz111xxx","이해할 수 없는 내용이에요. 다른 방식으로 다시 질문해 주세요.","ANOMALY"
+"qq11ww22","정확히 어떤 걸 물어보시는지 모르겠어요. 다시 입력해 주세요.","ANOMALY"
+"12ab34cd56","알 수 없는 입력입니다. 다시 한번 확인해 주세요.","ANOMALY"
+"x9y8z7","질문을 파악할 수 없어요. 조금 더 자세히 적어주시겠어요?","ANOMALY"
+"3f2g1h","죄송합니다, 이해하지 못했어요. 다시 입력 부탁드립니다.","ANOMALY"
+"8j7k6l5","무엇을 말씀하시는지 이해하기 힘들어요. 다시 시도해 주세요.","ANOMALY"
+"456asd789","해당 문장을 인식하지 못했습니다. 다시 작성해 주세요.","ANOMALY"
+"!@#$%","이해가 안 되는 질문이네요. 다시 한번 물어봐 주시겠어요?","ANOMALY"
+"&*()_+","질문 내용이 불명확합니다. 정확하게 다시 입력해 주세요.","ANOMALY"
+"~!@#$%^&*()","어떤 답변을 드려야 할지 모르겠어요. 다시 말씀해 주세요.","ANOMALY"
+"?!?!?!","문의하신 내용을 알아채지 못했습니다. 다시 입력해 주시겠어요?","ANOMALY"
+"....","죄송해요, 이해가 잘 안 돼요. 다시 한번 적어주세요.","ANOMALY"
+",,,,,","정상적인 질문으로 인식되지 않았습니다. 다시 입력해 주세요.","ANOMALY"
+";;;;;","무슨 뜻으로 입력하신 건지 모르겠어요. 다시 부탁드려요.","ANOMALY"
+":::::","질문을 해석할 수 없습니다. 다른 표현으로 다시 입력해 주세요.","ANOMALY"
+"/////","이 입력은 의미를 알 수 없어요. 다시 한번 시도해 주시겠어요?","ANOMALY"
+"\\\\\","죄송하지만 요청을 이해하지 못했습니다. 다시 입력해 주세요.","ANOMALY"

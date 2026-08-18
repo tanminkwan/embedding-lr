@@ -1,0 +1,231 @@
+"질의","응답","카테고리"
+"Oracle에서 테이블스페이스 사용률 확인하는 쿼리 알려줘","```sql
+SELECT tablespace_name,
+       round(used_space*8/1024,2) used_mb,
+       round(tablespace_size*8/1024,2) total_mb,
+       round(used_percent,2) pct
+FROM dba_tablespace_usage_metrics;
+```
+- used_percent 90% 넘으면 알람 걸어두는 게 좋음
+- autoextend 켜져 있어도 디스크 자체가 꽉차면 소용없음, df -h도 같이 확인","IT"
+"ORA-01555 스냅샷 too old 에러 뜨는데 원인이 뭐야","확인 순서
+1. undo_retention 파라미터 값 확인, 너무 짧으면 발생
+2. undo tablespace 크기 부족한지 dba_data_files로 확인
+3. 장시간 실행되는 배치/리포트 쿼리가 있는지 확인 (긴 트랜잭션이 undo 재사용을 막음)
+4. fetch across commit 패턴(커밋 자주 하면서 같은 커서 유지) 코드 있는지 확인
+- 놓치기 쉬운 포인트: undo tablespace guarantee retention 옵션 꺼져있으면 공간 부족 시 undo가 덮어써짐","IT"
+"Oracle에서 특정 세션이 잡고 있는 락 확인하려면","```sql
+SELECT s.sid, s.serial#, s.username, o.object_name, l.locked_mode
+FROM v$locked_object l, dba_objects o, v$session s
+WHERE l.object_id = o.object_id
+AND l.session_id = s.sid;
+```
+- blocking session은 v$session.blocking_session 컬럼으로 바로 확인 가능","IT"
+"어제까지 잘 돌던 쿼리 실행계획이 갑자기 바뀌었어, 왜 이런 거야","확인 순서
+1. 옵티마이저 통계 최근 수집 시점 확인 (dba_tab_statistics.last_analyzed)
+2. bind peeking 이슈인지 확인 - 바인드 값에 따라 카디널리티 추정이 달라짐
+3. 히스토그램 유무 확인, 컬럼 데이터 분포 치우쳐 있으면 통계 재수집 필요
+4. SPM(SQL Plan Baseline) 적용 여부 확인
+- 놓치기 쉬운 포인트: 파티션 테이블이면 파티션별 통계 따로 확인해야 함","IT"
+"Oracle 아카이브 로그 오래된 것 지우고 싶은데 방법","```sql
+RMAN> DELETE ARCHIVELOG ALL COMPLETED BEFORE 'SYSDATE-3';
+```
+- rm으로 직접 지우면 컨트롤파일 정보랑 안 맞아서 나중에 crosscheck 필요해짐
+- 삭제 전엔 백업 완료된 것만 지워지는지 REPORT OBSOLETE로 먼저 확인","IT"
+"RAC 환경에서 노드 간 인터커넥트 지연 때문에 성능 저하 의심되는데 어떻게 확인해","확인 순서
+1. gv$cluster_interconnects로 인터커넥트 사용 NIC 확인
+2. gc cr/current block busy 대기 이벤트 비중 AWR/ASH로 확인
+3. os 레벨 netstat/ifconfig로 패킷 드랍, 재전송률 확인
+4. private network 대역폭 병목인지 (public network랑 분리 안 된 경우 흔함)
+- 놓치기 쉬운 포인트: 인터커넥트 스위치가 이중화 안 돼있으면 SPOF, 케이블 상태도 물리적으로 점검","IT"
+"Oracle AWR 리포트 뽑는 방법 알려줘","```sql
+@$ORACLE_HOME/rdbms/admin/awrrpt.sql
+```
+- 시작/종료 snap id 입력하면 됨
+- awrrpti.sql 쓰면 특정 인스턴스만 뽑을 수 있음 (RAC일 때 유용)","IT"
+"ORA-00257 archiver error 뜨면서 DB가 멈췄어","확인 순서
+1. archive log destination 디스크 용량 확인 (df -h)
+2. 공간 부족이면 백업 완료된 아카이브 로그부터 삭제 또는 다른 위치로 이동
+3. FRA(flash recovery area) 사용 중이면 db_recovery_file_dest_size 늘리기
+4. 삭제 후 alter system archive log current로 즉시 반영 확인
+- 놓치기 쉬운 포인트: 공간 확보해도 DB는 자동으로 안 풀릴 때 있음, alter system 명령으로 강제 트리거 필요할 수 있음","IT"
+"인덱스 리빌드는 언제 해줘야 해","- dba_indexes.blevel이 4 이상으로 계속 올라가면 검토
+- 대량 delete 이후 leaf node 낭비 심할 때
+- 무조건 정기적으로 하는 건 비추, 실제 단편화 확인하고 판단","IT"
+"RMAN 백업이 계속 실패하는데 뭐부터 봐야 해","확인 순서
+1. rman log에서 정확한 ORA 에러 코드 확인
+2. 대상 디스크/테이프 용량 확인
+3. controlfile autobackup 경로 접근 권한 확인
+4. 이전 백업 세트가 expired 상태로 남아있는지 crosscheck backup으로 확인
+- 놓치기 쉬운 포인트: 병렬 채널 수(parallelism) 과다 설정 시 I/O 경합으로 타임아웃 나기도 함","IT"
+"Tibero에서 현재 접속 세션 확인하는 커맨드","```sql
+SELECT sid, uid, status, program FROM v$session;
+```
+- status가 ACTIVE인데 오래 걸리는 세션은 v$sql_text로 실행 쿼리 같이 확인","IT"
+"Tibero 인스턴스가 비정상 종료됐는데 복구 절차가 어떻게 돼","확인 순서
+1. tbdown 로그(tbsvr trace)에서 종료 원인 확인 - abort인지 crash인지
+2. tbboot로 재기동 시도, mount 단계에서 멈추면 컨트롤파일 상태 확인
+3. crash recovery는 redo 로그로 자동 롤포워드 되는지 alert 로그 확인
+4. 미디어 손상 의심되면 RMAN 대응 백업으로 복구
+- 놓치기 쉬운 포인트: 강제 종료(kill -9) 이력 있으면 데이터파일 fuzzy 여부부터 확인해야 함","IT"
+"Tibero 아카이브 모드 켜져 있는지 확인하려면","```sql
+SELECT log_mode FROM v$database;
+```
+- ARCHIVELOG면 활성화 상태, NOARCHIVELOG면 비활성 상태","IT"
+"Tibero에서 락 경합 발생 중인지 확인하는 방법","확인 순서
+1. v$lock으로 lock_type, lmode, request 확인해서 대기 세션 파악
+2. blocking 세션의 sid로 v$session 조인해서 실행 중인 SQL 확인
+3. 장시간 잡고 있는 트랜잭션이면 커밋/롤백 안 된 애플리케이션 로직 의심
+4. 필요시 alter system kill session으로 강제 종료
+- 놓치기 쉬운 포인트: 배치 스케줄 겹칠 때 자주 발생, 크론 시간대 확인 필수","IT"
+"Tibero 테이블스페이스 자동 확장 설정하는 법","```sql
+ALTER TABLESPACE ts_data
+ADD DATAFILE '/data/ts_data02.dbf' SIZE 1G
+AUTOEXTEND ON NEXT 100M MAXSIZE 10G;
+```
+- MAXSIZE UNLIMITED로 두면 디스크 풀로 장애날 수 있으니 상한 꼭 지정","IT"
+"PostgreSQL 슬로우쿼리 로그 남기려면 어떻게 설정해","```conf
+log_min_duration_statement = 1000
+```
+- postgresql.conf에서 설정, 단위는 ms
+- 1000이면 1초 넘는 쿼리만 로그에 남음","IT"
+"PostgreSQL에서 쿼리가 락 대기로 멈춰있는데 어떻게 확인해","확인 순서
+1. pg_locks와 pg_stat_activity 조인해서 대기 프로세스와 blocking pid 확인
+```sql
+SELECT blocked_locks.pid AS blocked_pid,
+       blocking_locks.pid AS blocking_pid
+FROM pg_catalog.pg_locks blocked_locks
+JOIN pg_catalog.pg_locks blocking_locks
+  ON blocking_locks.locktype = blocked_locks.locktype
+ AND blocking_locks.database IS NOT DISTINCT FROM blocked_locks.database
+ AND blocking_locks.relation IS NOT DISTINCT FROM blocked_locks.relation
+ AND blocking_locks.pid != blocked_locks.pid
+WHERE NOT blocked_locks.granted;
+```
+2. blocking_pid의 쿼리 내용 pg_stat_activity.query로 확인
+3. 필요시 pg_terminate_backend(pid)로 강제 종료
+- 놓치기 쉬운 포인트: idle in transaction 상태로 오래 물고 있는 세션이 원인인 경우가 제일 흔함","IT"
+"PostgreSQL 테이블이 vacuum이 안 돌아서 bloat 심한 것 같은데 뭐부터 확인해","확인 순서
+1. pg_stat_user_tables.n_dead_tup으로 데드튜플 수 확인
+2. autovacuum 설정값 autovacuum_vacuum_scale_factor 확인, 너무 크면 안 돌음
+3. 장시간 open 트랜잭션 있는지 확인 (vacuum이 오래된 트랜잭션 때문에 못 지움)
+4. 급하면 수동으로 VACUUM (ANALYZE) 테이블명 실행
+- 놓치기 쉬운 포인트: replication slot이 살아있는데 안 쓰이면 WAL도 안 지워지고 vacuum도 막힘","IT"
+"PostgreSQL replication lag 확인하는 쿼리","```sql
+SELECT client_addr, state,
+       pg_wal_lsn_diff(sent_lsn, replay_lsn) AS lag_bytes
+FROM pg_stat_replication;
+```
+- lag_bytes 계속 늘어나면 스탠바이 서버 I/O나 네트워크 병목 의심","IT"
+"PostgreSQL WAL 디렉토리 용량이 계속 차오르는데 원인이 뭘까","확인 순서
+1. pg_stat_replication에서 replication slot이 있는지, lag 심한 slot 있는지 확인
+2. 사용 안 하는 slot은 pg_drop_replication_slot으로 정리
+3. archive_command 설정된 경우 아카이브 스크립트가 실패해서 WAL이 안 지워지는지 확인 (archiver 로그 확인)
+4. checkpoint 주기가 너무 길게 잡혀있는지 확인 (max_wal_size, checkpoint_timeout)
+- 놓치기 쉬운 포인트: archive_command 스크립트 리턴코드가 0이 아니면 계속 쌓임, 조용히 실패하는 경우 많음","IT"
+"PostgreSQL 실행계획 확인하는 방법","```sql
+EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE status = 'PAID';
+```
+- ANALYZE 붙이면 실제 실행해서 소요시간까지 나옴, 운영 DB에서는 조심해서 써야 함","IT"
+"PostgreSQL에서 too many clients already 에러가 떠","확인 순서
+1. max_connections 설정값과 현재 pg_stat_activity 카운트 비교
+2. 커넥션풀(pgbouncer 등) 설정이 max_connections보다 큰지 확인
+3. idle 커넥션이 많으면 애플리케이션 커넥션풀 반환 로직 점검
+4. 급하면 max_connections 늘리기 전에 shared_buffers 등 메모리 파라미터도 같이 재계산해야 함
+- 놓치기 쉬운 포인트: max_connections 늘리면 그만큼 메모리 더 잡아먹으니 서버 메모리 한도 먼저 확인","IT"
+"PostgreSQL 인덱스가 실제로 쓰이고 있는지 확인하는 법","```sql
+SELECT indexrelname, idx_scan FROM pg_stat_user_indexes
+WHERE relname = 'orders';
+```
+- idx_scan이 0에 가까우면 안 쓰이는 인덱스, 삭제 검토 대상","IT"
+"PostgreSQL streaming replication 구성할 때 기본적으로 설정해야 하는 파라미터 뭐가 있어","- primary: wal_level = replica, max_wal_senders 여유있게 설정
+- primary: archive_mode on (필요시)
+- standby: primary_conninfo에 접속 정보, standby.signal 파일 생성
+- pg_hba.conf에 replication 계정 접속 허용 추가","IT"
+"PostgreSQL autovacuum이 너무 자주 돌아서 부하 되는데 튜닝 어떻게 해","확인 순서
+1. autovacuum_vacuum_cost_delay 값 확인, 너무 작으면 I/O 부하 큼
+2. 테이블별로 개별 설정 가능 (ALTER TABLE ... SET autovacuum_vacuum_scale_factor)
+3. 큰 테이블은 scale_factor 낮추고 threshold는 절대값으로 별도 설정
+4. autovacuum_max_workers 늘려서 병렬로 짧게 끝내는 것도 방법
+- 놓치기 쉬운 포인트: 무조건 늦추면 dead tuple 쌓여서 오히려 나중에 더 큰 부하로 돌아옴","IT"
+"MySQL 슬로우쿼리 로그 켜는 방법","```sql
+SET GLOBAL slow_query_log = 'ON';
+SET GLOBAL long_query_time = 1;
+```
+- long_query_time 단위는 초, 1이면 1초 넘는 쿼리 기록
+- 로그 파일 경로는 slow_query_log_file 변수로 확인","IT"
+"MySQL에서 락 때문에 쿼리가 멈춰있는데 확인 방법","확인 순서
+1. performance_schema.data_lock_waits로 대기 관계 확인 (5.7 이상)
+2. SHOW ENGINE INNODB STATUS로 TRANSACTIONS 섹션에서 락 상태 확인
+3. blocking 트랜잭션의 트랜잭션 시작 시각 확인해서 오래 걸린 배치인지 확인
+4. 필요시 KILL <thread_id>로 종료
+- 놓치기 쉬운 포인트: auto-commit 꺼놓고 커밋 안 하는 애플리케이션 코드가 원인인 경우 많음","IT"
+"MySQL replication 지연 확인하려면","```sql
+SHOW REPLICA STATUS\G
+```
+- Seconds_Behind_Source 값 확인 (구버전은 Seconds_Behind_Master)
+- 계속 늘어나면 슬레이브 I/O 스레드나 SQL 스레드 상태 같이 확인","IT"
+"MySQL InnoDB 버퍼풀 사이즈 확인하고 바꾸는 법","```sql
+SHOW VARIABLES LIKE 'innodb_buffer_pool_size';
+SET GLOBAL innodb_buffer_pool_size = 8589934592;
+```
+- 물리 메모리의 60~70% 정도가 일반적인 권장 비율
+- 온라인 변경 가능하지만 재조정 중 순간적으로 성능 영향 있을 수 있음","IT"
+"MySQL에서 데드락이 자주 발생하는데 원인 파악 방법","확인 순서
+1. SHOW ENGINE INNODB STATUS의 LATEST DETECTED DEADLOCK 섹션 확인
+2. 어떤 쿼리끼리 서로 다른 순서로 락을 잡았는지 확인
+3. 인덱스 없어서 풀스캔하며 불필요하게 많은 로우 락 잡는지 확인
+4. 트랜잭션 내 테이블 접근 순서를 애플리케이션 코드 레벨에서 통일시켜야 함
+- 놓치기 쉬운 포인트: gap lock 때문에 발생하는 경우 많음, isolation level을 READ COMMITTED로 낮추면 완화되기도 함","IT"
+"MySQL binlog 용량이 너무 커지는데 관리 방법","확인 순서
+1. expire_logs_days(구버전) 또는 binlog_expire_logs_seconds 설정값 확인
+2. 설정이 너무 길게 잡혀있으면 짧게 조정
+3. 복제 슬레이브가 아직 안 읽은 binlog는 지우면 복제 깨지니 주의
+4. 수동 정리는 PURGE BINARY LOGS BEFORE 사용
+- 놓치기 쉬운 포인트: 슬레이브 지연 심할 때 binlog 강제로 지우면 복제 자체가 끊어짐","IT"
+"MySQL 실행계획 보는 방법","```sql
+EXPLAIN SELECT * FROM orders WHERE user_id = 100;
+```
+- type이 ALL이면 풀스캔, index/range/ref 순으로 효율적
+- key 컬럼이 NULL이면 인덱스 안 탄 것","IT"
+"MySQL 복제가 갑자기 끊겼는데 복구 어떻게 해","확인 순서
+1. SHOW REPLICA STATUS로 Last_Error, Last_SQL_Error 확인
+2. 중복키/데이터 불일치 에러면 해당 트랜잭션 skip 여부 판단 (SET GLOBAL sql_slave_skip_counter)
+3. 근본 원인 안 고치고 skip만 반복하면 데이터 정합성 깨지니 pt-table-checksum 같은 걸로 검증 필요
+4. 심하면 마스터에서 다시 풀백업 받아서 재구성
+- 놓치기 쉬운 포인트: GTID 기반 복제면 skip 방식이 다름, gtid_next 세팅해서 빈 트랜잭션 주입해야 함","IT"
+"MySQL 테이블 단편화 확인하는 법","```sql
+SELECT table_name, data_free FROM information_schema.tables
+WHERE table_schema = 'mydb';
+```
+- data_free 값 크면 OPTIMIZE TABLE로 정리 (InnoDB는 내부적으로 재생성 방식)","IT"
+"MySQL too many connections 에러 뜨는데","확인 순서
+1. SHOW VARIABLES LIKE 'max_connections'와 현재 접속 수(SHOW STATUS LIKE 'Threads_connected') 비교
+2. 커넥션풀 설정이 max_connections 넘게 잡혀있는지 애플리케이션 쪽 확인
+3. wait_timeout 너무 길어서 유휴 커넥션이 안 끊기는지 확인
+4. 임시로 max_connections 늘릴 땐 open_files_limit도 같이 확인해야 함
+- 놓치기 쉬운 포인트: 커넥션 늘리기 전에 실제로 필요한 건지, 커넥션 누수(leak) 코드부터 의심해봐야 함","IT"
+"백업 전략에서 풀백업이랑 증분백업 차이가 뭐야","- 풀백업: 전체 데이터 통째로, 복구 빠르지만 용량/시간 많이 듦
+- 증분백업: 이전 백업 이후 변경분만, 용량 작지만 복구 시 여러 백업 순서대로 적용해야 함
+- 보통 주 1회 풀 + 매일 증분 조합으로 운영","IT"
+"DB 서버 CPU가 갑자기 급증했는데 확인 순서 알려줘","확인 순서
+1. top/ps로 어떤 프로세스가 CPU 먹는지 확인 (DB 프로세스인지 다른 프로세스인지부터)
+2. DB 프로세스면 현재 실행 중인 세션 목록에서 CPU/실행시간 긴 세션 확인
+3. 특정 쿼리가 원인이면 실행계획 급변 여부 확인 (통계정보 최신인지)
+4. 배치/크론 작업 겹침, 락 대기로 인한 스핀락 등도 확인
+- 놓치기 쉬운 포인트: 통계 자동 수집 작업 자체가 CPU 잡아먹는 경우도 있음, 수집 스케줄 확인 필요","IT"
+"Oracle undo tablespace 부족하다고 나오는데 어떻게 해결해","확인 순서
+1. dba_free_space로 undo tablespace 여유 공간 확인
+2. 장시간 실행되는 대량 DML 트랜잭션 있는지 v$transaction으로 확인
+3. undo_retention 값이 지나치게 크게 잡혀있는지 확인
+4. 임시 조치로 undo 데이터파일 추가, 근본적으로는 배치 커밋 주기 조정
+- 놓치기 쉬운 포인트: guarantee retention 옵션 켜져 있으면 공간 부족 시 신규 트랜잭션 자체가 막힘","IT"
+"PostgreSQL pg_dump랑 pg_basebackup 차이가 뭐야","- pg_dump: 논리 백업, SQL/커스텀 포맷으로 특정 DB/테이블 단위 백업 가능
+- pg_basebackup: 물리 백업, 클러스터 전체를 바이너리 그대로 복사, PITR 구성 기반
+- 대용량이면 pg_basebackup이 빠르고, 부분 복구/버전 다른 DB로 이전할 땐 pg_dump가 유리","IT"
+"Oracle RAC에서 split brain 상황 발생하면 어떻게 대응해야 해","확인 순서
+1. CRS 로그(crsd, cssd)에서 노드 간 heartbeat 끊긴 시점 확인
+2. voting disk 접근 가능 여부 각 노드에서 확인
+3. quorum 노드 수 미달로 강제 재부팅(fencing) 된 노드가 있는지 확인
+4. 네트워크 스위치/인터커넥트 이중화 상태 점검 후 재기동
+- 놓치기 쉬운 포인트: split brain 방지가 voting disk의 핵심 역할이라 voting disk 자체 이중화(정족수) 상태를 평소에 모니터링해둬야 함","IT"

@@ -1,0 +1,257 @@
+"질의","응답","카테고리"
+"스위치에서 특정 포트가 어떤 VLAN에 물려있는지 어떻게 확인해?","```
+show interfaces switchport
+```
+- Access Mode VLAN 항목에서 현재 VLAN 확인
+- 트렁크 포트면 Trunking VLANs 항목에서 허용 목록 확인","IT"
+"STP에서 포트가 blocking 상태인지 어떻게 확인해?","```
+show spanning-tree interface gi1/0/1
+```
+- Role이 Altn/Back이면 blocking 상태
+- Root Bridge 우선순위도 같이 확인해서 의도한 토폴로지인지 체크","IT"
+"방화벽에 새 allow 룰 넣었는데 여전히 차단되는데 정책 순서 때문일까?","확인 순서:
+1. 위쪽에 있는 deny 룰이 먼저 매치되고 있는지 hit count 확인
+2. 새 룰이 올바른 방향(inbound/outbound)에 들어갔는지 확인
+3. 룰 저장 후 commit/apply 여부 확인
+4. 소스/목적지 조건에 NAT 이전/이후 주소 헷갈렸는지 확인
+- top-down 매치 방식이라 순서만 바꿔도 해결되는 경우가 많음","IT"
+"iptables에서 특정 룰만 골라서 삭제하려면?","```
+iptables -L INPUT --line-numbers
+iptables -D INPUT 3
+```
+- 라인 번호로 지정 삭제가 제일 안전
+- 저장 안 하면 재부팅 시 초기화되니 저장 명령 별도 실행 필요","IT"
+"클라이언트에서 SSL handshake failure 뜨는데 원인이 뭘까?","확인 순서:
+1. openssl s_client로 서버 인증서 체인 확인
+```
+openssl s_client -connect host:443 -servername host
+```
+2. 클라이언트-서버 간 지원 TLS 버전/cipher suite 겹치는지 확인
+3. 중간 인증서 누락 여부 (Root만 있고 Intermediate 빠진 경우 흔함)
+4. 서버 시간 오차로 인증서 유효기간 벗어난 경우
+- 방화벽/프록시가 SNI 기반으로 차단하는 경우도 놓치기 쉬움","IT"
+"인증서 체인 파일 만들 때 순서는 어떻게 돼?","- Leaf(서버 인증서) → Intermediate → Root 순서로 이어 붙임
+- Root는 클라이언트가 이미 신뢰하고 있어서 생략 가능한 경우 많음
+- 순서 틀리면 일부 클라이언트에서 체인 검증 실패","IT"
+"L4 LB에서 특정 백엔드만 계속 헬스체크 fail 뜨는데 뭐부터 봐야해?","확인 순서:
+1. LB에서 해당 백엔드로 직접 확인
+```
+curl -v http://backend_ip:port/health
+```
+2. 헬스체크 URI, 포트, 기대 응답 코드 설정값 확인
+3. 백엔드 서버 프로세스/포트 리스닝 상태 확인
+4. 서버 방화벽에서 LB IP 허용 여부 확인
+5. 타임아웃 값이 너무 짧게 잡혀있는지 확인
+- 헬스체크 interval/threshold와 실제 앱 응답 시간 안 맞으면 flapping 발생","IT"
+"Site-to-Site VPN 터널이 자꾸 끊기는데 원인 후보가 뭐가 있을까?","확인 순서:
+1. Phase1/Phase2 SA 상태 확인
+```
+show crypto isakmp sa
+show crypto ipsec sa
+```
+2. 양쪽 PSK, IKE 버전, 암호화 알고리즘 일치 여부
+3. NAT-T 필요한 구간인데 비활성화된 경우
+4. DPD(Dead Peer Detection) 타임아웃 설정 확인
+5. 상대측 ISP 회선 불안정 여부
+- MTU 문제로 fragmentation 발생해서 간헐적 끊김 나는 경우도 흔함","IT"
+"특정 포트로 오가는 패킷만 tcpdump로 캡처하려면?","```
+tcpdump -i eth0 port 443 -w capture.pcap
+```
+- 특정 호스트로 좁히려면 and host 조건 추가
+- 캡처 크기 크면 -c로 패킷 수 제한 걸어두는 게 안전","IT"
+"특정 도메인의 A 레코드만 조회하려면?","```
+dig +short example.com A
+```
+- 특정 네임서버로 직접 질의하려면 @ns_ip 옵션 추가
+- 캐시 영향 배제하려면 +trace로 루트부터 확인","IT"
+"방화벽 TCP 세션 타임아웃 기본값이 왜 중요해?","- 오래 걸리는 배치/파일전송이 타임아웃보다 길면 중간에 세션 끊김
+- 기본값이 보통 3600초 전후라 장시간 유지되는 커넥션은 별도 정책 필요
+- 타임아웃 늘리면 방화벽 세션 테이블 메모리 사용량도 같이 늘어남","IT"
+"L4 로드밸런서에서 round robin이랑 least connection 차이가 뭐야?","- round robin은 순서대로 균등 분배, 서버 부하 상태는 고려 안함
+- least connection은 현재 연결 수 가장 적은 서버로 우선 배분
+- 세션 길이가 서버마다 크게 다르면 least connection이 더 안정적","IT"
+"L7 LB에서 특정 path로 들어온 요청이 원하는 백엔드로 안 가는데 뭐 봐야해?","확인 순서:
+1. path 매칭 rule 순서 확인 (먼저 매치되는 룰이 우선 적용되는 구조인 경우 많음)
+2. 정규식/prefix 매칭 오타 여부
+3. Host 헤더 기반 라우팅과 병행 시 두 조건 충돌 여부
+4. 백엔드 pool에 실제로 해당 서버 등록됐는지 확인
+- 캐시된 라우팅 테이블 때문에 설정 반영 안 된 것처럼 보이는 경우 있음, LB reload 필요","IT"
+"TLS 1.2랑 1.3 핸드셰이크 차이가 뭐야?","- 1.3은 핸드셰이크 라운드트립이 1번으로 줄어서 더 빠름
+- 1.3은 약한 cipher suite들(RC4, CBC 등) 제거됨
+- 0-RTT 재접속 지원하지만 리플레이 공격 가능성 있어 사용 시 주의","IT"
+"인증서 만료일 커맨드로 바로 확인하는 법?","```
+openssl x509 -enddate -noout -in cert.pem
+```
+- 원격 서버 것도 s_client로 받아서 파이프 연결하면 바로 확인 가능
+- 만료 임박 알림은 모니터링에 등록해두는 게 안전","IT"
+"OSPF neighbor가 계속 DOWN/INIT 상태에서 안 올라오는데 뭐부터 봐야해?","확인 순서:
+1. 인터페이스 상태와 IP 서브넷 일치 여부
+```
+show ip ospf neighbor
+show ip ospf interface
+```
+2. Area ID, 인증 방식/키 일치 여부
+3. Hello/Dead 타임 설정 불일치
+4. MTU 불일치 (DB 교환 단계에서 멈추는 전형적 증상)
+5. 중간 방화벽/ACL에서 OSPF 멀티캐스트(224.0.0.5) 차단 여부
+- MTU 미스매치는 neighbor가 EXSTART에서 멈추는 게 특징","IT"
+"같은 IP인데 접속 때마다 다른 장비로 붙는 것 같은데 ARP 문제인지 어떻게 확인해?","확인 순서:
+1. 해당 IP의 ARP 응답이 매번 다른 MAC으로 오는지 확인
+```
+arp -a | grep 192.168.1.10
+```
+2. 중복 IP 할당(DHCP static + 수동 할당 충돌) 여부 확인
+3. VRRP/HSRP 가상 IP인 경우 정상 동작(활성 노드 변경)인지 구분
+4. 스위치 mac address-table에서 해당 MAC이 여러 포트에 학습되는지 확인
+- gratuitous ARP 스푸핑 의심되면 포트 보안이나 DAI(Dynamic ARP Inspection) 적용 검토","IT"
+"특정 구간에서만 큰 패킷이 안 나가는 것 같은데 MTU 문제인지 어떻게 확인해?","확인 순서:
+1. DF 비트 설정하고 크기 늘려가며 ping 테스트
+```
+ping -M do -s 1472 target_ip
+```
+2. 응답 없으면 크기 줄여가며 임계값 찾기
+3. 터널 구간(VPN, GRE) 있으면 오버헤드 고려해서 MTU 재계산
+4. 중간 장비에서 ICMP fragmentation needed 차단 여부 확인
+- PMTUD 차단된 환경이면 큰 패킷만 조용히 드랍돼서 원인 찾기 어려움","IT"
+"특정 내부 IP가 NAT 되어 나가는데도 외부에서 접속 응답이 안 오는데 뭘 확인해야해?","확인 순서:
+1. NAT 매핑 테이블에서 실제 세션 생성됐는지 확인
+```
+show nat rule detail | include 10.0.0.5
+show session all | include 10.0.0.5
+```
+2. static NAT vs dynamic pool 설정 꼬였는지 확인
+3. 반대 방향(inbound) 허용 정책 별도로 있는지 확인
+4. ISP 구간에서 해당 외부 IP 라우팅 안 되고 있는지 확인
+- NAT은 됐는데 리턴 트래픽 라우팅 안 되는 케이스가 의외로 많음","IT"
+"스위치에서 특정 포트 트래픽을 분석용으로 미러링하려면?","```
+monitor session 1 source interface gi1/0/5
+monitor session 1 destination interface gi1/0/10
+```
+- destination 포트는 일반 트래픽 용도로 같이 못 씀
+- 미러링 대역폭이 destination 포트 용량 넘으면 드랍 발생","IT"
+"BGP 피어가 계속 flapping 하는데 원인 후보가 뭐가 있을까?","확인 순서:
+1. 로그에서 flap 원인 메시지 확인 (hold timer expired인지, reset인지)
+```
+show ip bgp neighbor x.x.x.x
+```
+2. 물리 회선 불안정 여부 (interface error/drop 카운터 확인)
+3. Hold timer/Keepalive 값 양쪽 불일치
+4. 최대 prefix 제한 초과로 세션 강제 종료되는 경우
+5. MTU나 TCP MSS 문제로 대량 업데이트 시 세션 끊기는 경우
+- 회선은 멀쩡한데 keepalive 처리 지연으로 flap 나는 경우도 있어서 CPU 부하도 같이 체크","IT"
+"만료 임박한 SSL 인증서 갱신할 때 순서가 어떻게 돼?","- 기존 개인키 재사용 여부 결정 후 CSR 생성
+```
+openssl req -new -key server.key -out server.csr
+```
+- CA에 CSR 제출 후 발급받은 인증서로 교체
+- 교체 후 서비스 재시작하고 체인 검증까지 확인","IT"
+"DNS 레코드 바꿨는데 일부 지역에서만 반영이 안 되는데 왜 그래?","확인 순서:
+1. TTL 값 확인, 이전 TTL이 길면 캐시 만료까지 대기 필요
+```
+dig example.com A +noall +answer
+```
+2. 로컬 리졸버/ISP DNS 캐시 여부 (외부 공용 DNS로 재조회해서 비교)
+3. Secondary 네임서버로 zone transfer 제대로 됐는지 확인
+4. Anycast/GSLB 구성이면 특정 리전만 반영 지연될 수 있음
+- 각 네임서버에 직접 @옵션으로 질의해서 비교하는 게 제일 빠른 확인 방법","IT"
+"스위치 포트 채널(LACP) 묶인 상태 확인하려면?","```
+show etherchannel summary
+```
+- 각 포트 상태가 P(bundled)인지 확인
+- I나 D 상태면 협상 실패한 것이므로 상대 장비 설정도 같이 확인","IT"
+"원격 사용자 VPN 클라이언트 인증이 계속 실패하는데 확인 순서가 어떻게 돼?","확인 순서:
+1. 인증서 기반이면 클라이언트 인증서 유효기간/체인 확인
+2. AD/RADIUS 연동이면 서버 로그에서 reject 사유 확인
+3. 그룹 정책(허용된 사용자 그룹) 매핑 확인
+4. 클라이언트 시간 동기화 어긋나서 토큰/인증서 검증 실패하는 경우
+- 계정 잠금 정책 때문에 반복 실패 시 자동 lock 걸리는 경우도 흔함","IT"
+"tcpdump로 SYN flood 의심 상황인지 어떻게 확인해?","확인 순서:
+1. SYN만 캡처해서 특정 목적지로 몰리는지 확인
+```
+tcpdump -i eth0 'tcp[tcpflags] & tcp-syn != 0 and tcp[tcpflags] & tcp-ack == 0'
+```
+2. 출발지 IP 분산도 확인 (분산되면 스푸핑 의심)
+3. 서버 SYN backlog 큐 상태 확인
+4. 방화벽/IPS에서 SYN cookie 설정 여부 확인
+- 정상 트래픽 급증과 구분하려면 SYN 대비 완료된 handshake(ACK) 비율을 같이 봐야함","IT"
+"서버가 어떤 cipher suite 지원하는지 확인하는 법?","```
+nmap --script ssl-enc-ciphers -p 443 host
+```
+- openssl s_client로도 개별 cipher 지정해서 연결 테스트 가능
+- 취약한 cipher(RC4, 3DES 등) 남아있으면 점검 대상으로 표시","IT"
+"Nginx 리버스 프록시에서 502 Bad Gateway 뜨는데 원인이 뭘까?","확인 순서:
+1. 백엔드 서버 프로세스 살아있는지, 포트 리스닝 확인
+2. nginx error.log에서 upstream 관련 에러 메시지 확인
+```
+tail -f /var/log/nginx/error.log
+```
+3. 백엔드 응답 타임아웃 설정이 너무 짧은지 확인
+4. upstream 헤더 크기가 proxy_buffer 설정보다 큰 경우
+- keepalive 연결이 백엔드에서 갑자기 끊긴 경우도 502로 나타남, upstream keepalive 설정 확인 필요","IT"
+"DNS round robin이랑 GSLB 차이가 뭐야?","- round robin은 여러 IP를 순서대로 응답만 해줄 뿐 서버 상태는 모름
+- GSLB는 헬스체크 기반으로 살아있는 서버/가까운 리전으로 응답 조정
+- 장애 서버 자동 제외가 필요하면 GSLB 써야함","IT"
+"스위치 포트가 err-disabled 상태로 막혔는데 어떻게 풀어?","```
+shutdown
+no shutdown
+```
+- 반복적으로 발생하면 원인(포트 보안 위반, BPDU guard 등) 먼저 확인
+- errdisable recovery 기능 켜두면 자동 복구 시간 설정 가능","IT"
+"IPSec VPN이랑 SSL VPN 차이가 뭐야?","- IPSec은 네트워크 계층에서 전체 트래픽 암호화, 클라이언트 설정 필요
+- SSL VPN은 브라우저/클라이언트로 특정 애플리케이션 접근 위주, 접근성 좋음
+- 사이트간 상시 연결은 IPSec, 재택 개별 접속은 SSL VPN이 일반적","IT"
+"특정 트래픽이 방화벽에서 왜 차단됐는지 로그에서 원인을 못 찾겠는데 어떻게 접근해야해?","확인 순서:
+1. 소스/목적지 IP, 포트로 로그 필터링
+```
+show log traffic | match "10.0.0.5"
+```
+2. 매치된 정책 이름 확인 후 해당 정책 조건 재검토
+3. 세션 로그가 아예 없으면 라우팅 단계에서 이미 드랍된 것일 수 있음
+4. 인터페이스 zone 설정 오류로 트래픽이 엉뚱한 정책 zone 타는지 확인
+- 로그에 아예 안 잡히면 방화벽 이전 단계(스위치/라우팅) 문제일 가능성부터 배제","IT"
+"L7 LB에서 세션 유지(sticky session) 어떻게 설정해?","- 쿠키 기반 또는 소스 IP 기반 persistence 옵션 설정
+- 쿠키 기반이 서버 재시작/스케일링에도 더 안정적
+- 세션 정보를 서버 로컬에만 두면 sticky 끊겼을 때 로그아웃 발생하니 세션 스토어 분리 고려","IT"
+"앱에서 인증서 갱신 후 연결이 안 되는데 certificate pinning 때문일 수도 있대, 어떻게 확인해?","확인 순서:
+1. 앱이 특정 인증서/공개키를 pinning 하고 있는지 개발팀 확인
+2. 서버 인증서를 pinning된 값과 비교 (지문/공개키 해시)
+```
+openssl x509 -noout -pubkey -in newcert.pem | openssl pkey -pubin -outform der | openssl dgst -sha256
+```
+3. Intermediate 인증서까지 바뀐 경우 pinning 대상 범위 확인
+- pinning 걸린 앱은 서버 인증서만 바꾸면 무조건 실패하니 앱 업데이트가 선행돼야 함","IT"
+"트렁크 링크에서 특정 VLAN 트래픽이 이상하게 새는데 원인이 뭘까?","확인 순서:
+1. 양쪽 스위치 native vlan 설정 일치 여부 확인
+```
+show interfaces trunk
+```
+2. native vlan mismatch 관련 CDP/로그 경고 확인
+3. 802.1Q 태깅 안 된 트래픽이 다른 native vlan으로 넘어가는지 확인
+- native vlan 불일치는 보안 문제로도 이어질 수 있어서(VLAN hopping) 우선순위 높게 봐야함","IT"
+"traceroute 결과에서 특정 홉에 * * * 뜨는 건 뭘 의미해?","- 해당 홉에서 응답 없음, ICMP time-exceeded 차단하는 장비인 경우 많음
+- 이후 홉이 정상 응답하면 실제 장애는 아닐 가능성 높음
+- 마지막 홉까지 계속 실패하면 그 구간에서 실제 단절 의심","IT"
+"DNSSEC 적용한 도메인이 일부 리졸버에서 조회 실패하는데 원인이 뭘까?","확인 순서:
+1. DNSSEC 체인 검증 도구로 서명 유효성 확인
+```
+dig +dnssec example.com
+```
+2. DS 레코드가 상위 도메인에 정확히 등록됐는지 확인
+3. 키 롤오버 중이면 구 서명/신 서명 겹치는 기간(TTL) 고려했는지 확인
+4. 서버 시간 오차로 서명 유효기간 벗어난 경우
+- 리졸버마다 DNSSEC 검증 강도가 달라서 특정 리졸버에서만 실패하는 게 정상적인 케이스도 있음","IT"
+"Nginx에서 SSL termination 설정할 때 최소한 뭘 넣어야해?","```
+listen 443 ssl;
+ssl_certificate /etc/nginx/cert.pem;
+ssl_certificate_key /etc/nginx/key.pem;
+```
+- 인증서 파일에 체인까지 포함(cert+intermediate)했는지 확인
+- ssl_protocols에서 TLS 1.0/1.1 제외 권장","IT"
+"내부망에서 외부 도메인으로 접속하면 안 되는데 외부에서는 잘 되는 상황, 원인이 뭘까?","확인 순서:
+1. 내부에서 외부 IP로 나갔다가 자기 자신에게 돌아오는 hairpin NAT 지원 여부 확인
+2. 방화벽에 hairpin NAT 정책 별도로 추가돼 있는지 확인
+3. 내부 DNS가 외부 IP 그대로 응답하는지, split-DNS로 내부 IP 응답하게 바꿔야 하는지 확인
+- 근본적으로는 split-DNS 구성이 hairpin NAT보다 안정적인 해결책","IT"
+"브라우저에서 인증서 이름 불일치(SAN mismatch) 에러 뜨는데 원인이 뭐야?","- 접속한 도메인이 인증서의 CN/SAN 목록에 포함 안 된 경우
+- 로드밸런서 뒤에서 여러 도메인 서비스할 때 SNI 라우팅이 잘못돼서 다른 인증서 나가는 경우도 흔함
+- 인증서 재발급 시 SAN 목록에 필요한 도메인 전부 포함했는지 확인","IT"

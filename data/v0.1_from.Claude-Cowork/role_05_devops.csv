@@ -1,0 +1,196 @@
+"질의","응답","카테고리"
+"도커 컨테이너 로그 확인하는 명령어 뭐야?","```
+docker logs <container_id>
+```
+- 실시간으로 보려면 -f 옵션
+- 최근 N줄만 보려면 --tail 100","IT"
+"도커 이미지 레이어 캐시가 뭐야?","- 각 Dockerfile 명령어(RUN, COPY 등)마다 레이어 생성되고 캐시됨
+- 이전 레이어랑 내용 같으면 재사용, 다르면 그 이후 전부 재빌드
+- 자주 바뀌는 COPY는 아래쪽에 둬야 캐시 효율 좋아짐","IT"
+"kubectl로 파드 상태 확인하는 명령어?","```
+kubectl get pods -n <namespace>
+kubectl describe pod <pod_name> -n <namespace>
+```
+- describe로 Events 항목 보면 원인 나옴","IT"
+"Deployment랑 ReplicaSet 차이가 뭐야?","- ReplicaSet: 지정한 개수만큼 Pod 유지시켜주는 컨트롤러
+- Deployment: ReplicaSet을 관리하면서 롤링 업데이트, 롤백 기능까지 제공
+- 실무에선 ReplicaSet 직접 안 만들고 Deployment로 관리함","IT"
+"Helm chart랑 release 차이가 뭐야?","- chart: 배포할 리소스 템플릿 묶음(패키지)
+- release: chart를 특정 클러스터에 실제로 설치한 인스턴스
+- 같은 chart로 release 여러 개 만들 수 있음(namespace/이름 다르게)","IT"
+"Jenkins pipeline job이랑 freestyle job 차이가 뭐야?","- freestyle: GUI로 빌드 스텝 설정, 단순 작업에 적합
+- pipeline: Jenkinsfile(코드)로 빌드 과정 정의, 버전 관리 가능하고 복잡한 흐름 구성 쉬움
+- 요즘은 대부분 pipeline(Jenkinsfile) 방식 씀","IT"
+"GitLab CI에서 stage랑 job 차이가 뭐야?","- stage: build, test, deploy 같은 실행 단계 그룹
+- job: 실제 실행되는 작업 단위, 특정 stage에 속함
+- 같은 stage에 있는 job들은 병렬 실행됨","IT"
+"도커 멀티스테이지 빌드는 왜 쓰는거야?","- 빌드용 이미지랑 실행용 이미지 분리해서 최종 이미지 용량 줄임
+- 빌드 도구, 소스코드가 최종 이미지에 안 남음
+- 보안(불필요 툴 제거)이랑 배포 속도에도 유리","IT"
+"ConfigMap이랑 Secret 차이가 뭐야?","- ConfigMap: 평문 설정값 저장(환경변수, 설정파일)
+- Secret: base64 인코딩 저장, 비밀번호/토큰 등 민감정보용
+- base64는 암호화 아니니까 RBAC으로 접근 제어 따로 해야 함","IT"
+"Prometheus랑 Grafana 역할 차이가 뭐야?","- Prometheus: 메트릭 수집/저장, 알림 규칙(Alertmanager 연동)
+- Grafana: 수집된 메트릭을 시각화하는 대시보드 툴
+- Prometheus 단독으로도 웹 UI 있지만 시각화는 Grafana가 훨씬 나음","IT"
+"kubectl exec으로 컨테이너 접속하는 명령어?","```
+kubectl exec -it <pod_name> -n <namespace> -- /bin/bash
+```
+- 컨테이너 여러 개면 -c <container_name>으로 지정","IT"
+"도커 컨테이너 재시작 정책 옵션 뭐 있어?","- no: 재시작 안 함(기본값)
+- on-failure: 비정상 종료시에만 재시작
+- always: 항상 재시작
+- unless-stopped: 수동으로 멈춘 경우 제외하고 항상 재시작","IT"
+"쿠버네티스 네임스페이스는 왜 나눠 쓰는거야?","- 리소스 논리적 격리(팀별, 환경별)
+- 리소스 쿼터, 네트워크 정책을 네임스페이스 단위로 적용 가능
+- 이름 충돌 없이 같은 리소스명 여러 네임스페이스에서 사용 가능","IT"
+"Helm values.yaml은 뭐하는 파일이야?","- chart 템플릿에 주입할 변수값 정의하는 파일
+- --set이나 -f로 오버라이드 가능
+- 환경별(dev/prod) values 파일 따로 관리하는 게 일반적","IT"
+"GitLab CI runner 종류가 뭐가 있어?","- shared runner: 여러 프로젝트가 공용으로 쓰는 runner
+- specific runner: 특정 프로젝트/그룹 전용 runner
+- group runner: 그룹 내 프로젝트들이 공유
+- 보안/자원 격리 필요하면 specific runner 씀","IT"
+"ELK 스택 구성 요소가 뭐야?","- Elasticsearch: 로그 저장/검색 엔진
+- Logstash: 로그 수집/가공(파이프라인)
+- Kibana: 시각화 UI
+- 최근엔 Logstash 대신 Filebeat 많이 씀(가벼움)","IT"
+"쿠버네티스 Service 타입 종류 뭐 있어?","- ClusterIP: 클러스터 내부 통신용(기본값)
+- NodePort: 노드 포트로 외부 노출
+- LoadBalancer: 클라우드 LB 연동
+- ExternalName: 외부 DNS 이름 매핑","IT"
+"Jenkins agent(node)가 뭐야?","- 실제 빌드가 실행되는 서버/컨테이너
+- master는 스케줄링만, 빌드는 agent에서 실행
+- 라벨(label)로 특정 agent에 job 지정 가능","IT"
+"도커 네트워크 종류 뭐 있어?","- bridge: 기본 네트워크, 컨테이너 간 통신
+- host: 호스트 네트워크 그대로 사용
+- none: 네트워크 없음
+- overlay: 여러 호스트 걸친 스웜/클러스터 통신용","IT"
+"liveness probe랑 readiness probe 차이가 뭐야?","- liveness: 컨테이너가 살아있는지 체크, 실패하면 재시작
+- readiness: 트래픽 받을 준비 됐는지 체크, 실패하면 서비스에서 제외(재시작은 안 함)
+- 둘 다 실패시 동작 다르니 헷갈리면 안 됨","IT"
+"Pod가 CrashLoopBackOff 상태인데 뭐부터 봐야돼?","확인 순서:
+1. kubectl describe pod <pod> 로 Events, Exit Code 확인
+2. kubectl logs <pod> --previous 로 이전 컨테이너 로그 확인
+3. Exit Code 1: 애플리케이션 에러 로그 확인
+4. Exit Code 137: OOMKilled 여부, resources.limits 확인
+5. liveness probe 설정이 너무 빡빡한지(initialDelaySeconds) 확인
+- 놓치기 쉬운 포인트: configmap/secret 마운트 경로 오타로 앱이 못 뜨는 경우 많음","IT"
+"도커 이미지 빌드가 너무 느린데 어떻게 최적화해?","확인 순서:
+1. Dockerfile 레이어 순서 확인 - 자주 바뀌는 COPY는 아래로
+2. .dockerignore로 불필요 파일(node_modules, .git) 제외
+3. 멀티스테이지 빌드로 빌드 의존성 분리
+4. BuildKit 캐시 마운트 사용 (--mount=type=cache)
+5. base 이미지 alpine/slim으로 경량화
+- 놓치기 쉬운 포인트: CI에서 캐시 레이어 안 남기고 매번 fresh clone하면 캐시 효과 없음","IT"
+"HPA 설정했는데 스케일 아웃이 안 되는데 왜 그래?","확인 순서:
+1. kubectl top pod 로 metrics-server 정상 동작하는지 확인
+2. kubectl describe hpa <name> 로 current/target 메트릭 값 확인
+3. Deployment에 resources.requests 설정 안 돼있으면 HPA가 CPU% 계산 못함
+4. minReplicas/maxReplicas 값 확인
+5. behavior(stabilizationWindowSeconds) 설정으로 스케일 지연되는 건 아닌지 확인
+- 놓치기 쉬운 포인트: requests 안 걸어두면 utilization 계산 자체가 안 됨","IT"
+"PVC가 Pending 상태에서 안 넘어가는데 뭐 확인해야돼?","확인 순서:
+1. kubectl describe pvc <name> 로 Events 확인
+2. StorageClass 존재 여부, 이름 오타 확인
+3. 요청한 accessMode를 지원하는 PV/StorageClass인지 확인
+4. 동적 프로비저닝이면 provisioner(CSI 드라이버) 파드 상태 확인
+5. 용량이 노드/스토리지 백엔드 가용량 초과하는지 확인
+- 놓치기 쉬운 포인트: ReadWriteMany 요청했는데 스토리지가 RWO만 지원하는 경우 많음","IT"
+"Jenkins 파이프라인 빌드가 실패했는데 어디부터 봐?","확인 순서:
+1. Console Output에서 실패 stage/step 확인
+2. Jenkinsfile 문법(특히 credentials, withEnv 블록) 확인
+3. agent 라벨 매칭되는 노드 있는지 확인
+4. 워크스페이스 디스크 용량, 이전 빌드 잔여 프로세스 확인
+5. Plugin 버전 호환성(특히 Jenkinsfile 업데이트 후) 확인
+- 놓치기 쉬운 포인트: credentials ID는 맞는데 스코프(global/folder)가 안 맞으면 조용히 실패함","IT"
+"GitLab CI job이 pending에서 안 넘어가는데 원인이 뭐야?","확인 순서:
+1. 사용 가능한 runner가 있는지, tag 매칭되는지 확인
+2. runner가 실제로 online인지 (gitlab-runner list)
+3. concurrent 설정값 대비 실행중인 job 수 확인
+4. only/except, rules 조건으로 job 자체가 스킵되는 건 아닌지 확인
+- 놓치기 쉬운 포인트: .gitlab-ci.yml에 tags 지정했는데 해당 tag 가진 runner가 없으면 영원히 pending","IT"
+"Pod가 계속 Pending 상태로 안 뜨는데 원인이 뭐야?","확인 순서:
+1. kubectl describe pod 로 Events의 스케줄링 실패 사유 확인
+2. 노드 리소스(CPU/Memory) 부족 여부 확인
+3. nodeSelector/affinity/taint-toleration 조건 맞는지 확인
+4. PVC가 먼저 Pending이면 Pod도 같이 못 뜸
+- 놓치기 쉬운 포인트: taint 걸린 노드에 toleration 안 넣어서 스케줄 안 되는 경우 흔함","IT"
+"Helm upgrade 실패했을 때 롤백 어떻게 해?","```
+helm rollback <release> <revision>
+helm history <release>
+```
+- 실패 원인은 대부분 values 문법 오류, 템플릿 렌더링 에러, 리소스 충돌
+- helm upgrade --dry-run --debug 로 먼저 렌더링 결과 확인하고 배포하는 습관 들여야 함","IT"
+"Grafana 대시보드에 메트릭이 하나도 안 보이는데 뭐부터 확인해?","확인 순서:
+1. Grafana Data Source 연결 상태(Test 버튼) 확인
+2. Prometheus에서 직접 쿼리해서 데이터 있는지 확인(/graph 페이지)
+3. 대시보드 쿼리의 label/job명이 실제 타겟이랑 일치하는지 확인
+4. 시간 범위(time range) 설정이 데이터 있는 구간인지 확인
+- 놓치기 쉬운 포인트: Prometheus는 정상인데 대시보드 변수(variable) 값이 안 맞아서 안 보이는 경우 많음","IT"
+"로그가 Kibana에 안 들어오는데 어떻게 확인해?","확인 순서:
+1. Filebeat/Logstash 프로세스 살아있는지, 로그 경로 맞는지 확인
+2. Elasticsearch 인덱스 생성됐는지 확인(GET _cat/indices)
+3. Kibana index pattern이 실제 인덱스명과 일치하는지 확인
+4. Elasticsearch 디스크 워터마크(low/high) 초과로 write block 걸렸는지 확인
+- 놓치기 쉬운 포인트: 디스크 85% 넘으면 ES가 자동으로 read-only 걸어버림","IT"
+"Ingress에서 502 에러 뜨는데 원인 뭐야?","확인 순서:
+1. 백엔드 Pod가 실제로 Running & Ready인지 확인
+2. Service의 selector와 Pod label 일치하는지 확인
+3. targetPort와 컨테이너 실제 리스닝 포트 일치하는지 확인
+4. Ingress controller 로그에서 upstream 연결 에러 확인
+- 놓치기 쉬운 포인트: readinessProbe 실패로 엔드포인트에서 빠진 Pod한테 트래픽 몰리는 경우","IT"
+"ImagePullBackOff 뜨는데 어떻게 해결해?","확인 순서:
+1. kubectl describe pod 로 정확한 에러 메시지 확인
+2. 이미지 이름/태그 오타 확인
+3. 프라이빗 레지스트리면 imagePullSecrets 설정 확인
+4. 레지스트리 인증 토큰 만료 여부 확인
+- 놓치기 쉬운 포인트: 이미지는 있는데 latest 태그 캐시 문제로 잘못된 버전 당겨오는 경우 있음","IT"
+"Pod가 OOMKilled로 자꾸 죽는데 어떻게 대응해?","확인 순서:
+1. kubectl describe pod 에서 Reason: OOMKilled 확인
+2. resources.limits.memory 값 확인, 실제 사용량보다 낮게 잡혔는지 체크
+3. 애플리케이션 메모리 릭 여부(JVM이면 heap dump) 확인
+4. limits를 늘리거나 requests/limits 갭 줄여서 재배포
+- 놓치기 쉬운 포인트: JVM 쓰면 -Xmx를 컨테이너 limit보다 낮게 설정해야 함, 안 그러면 컨테이너 레벨에서 먼저 죽음","IT"
+"Jenkins 빌드 에이전트가 offline으로 뜨는데 원인이 뭐야?","확인 순서:
+1. 에이전트 서버/컨테이너가 실제로 살아있는지 확인
+2. JNLP/SSH 연결 방식이면 네트워크, 방화벽, 포트(50000) 확인
+3. 에이전트 디스크 용량 부족 여부 확인
+4. Jenkins master와 agent 간 Java 버전/인증서 불일치 확인
+- 놓치기 쉬운 포인트: 디스크 풀(disk full)이면 에이전트가 자동으로 offline 처리됨","IT"
+"도커 컨테이너 디스크 용량 부족한데 어떻게 정리해?","```
+docker system df
+docker system prune -a --volumes
+```
+- 사용 안 하는 이미지, 중지된 컨테이너, dangling 볼륨까지 다 정리됨(운영 환경에서는 신중히)
+- 로그 파일(json-file 드라이버)이 계속 쌓여서 용량 차지하는 경우도 많으니 log-opts max-size 설정 확인","IT"
+"쿠버네티스 파드 안에서 DNS 조회가 안 되는데 뭐 확인해?","확인 순서:
+1. kubectl exec 로 파드 안에서 nslookup kubernetes.default 테스트
+2. CoreDNS Pod 상태(Running) 확인
+3. Pod의 dnsPolicy 설정 확인(ClusterFirst 기본값 맞는지)
+4. NetworkPolicy가 DNS(53포트) 트래픽 막고 있는지 확인
+- 놓치기 쉬운 포인트: NetworkPolicy egress 규칙 걸어두고 kube-dns로 나가는 53포트 빼먹는 경우 흔함","IT"
+"Prometheus 타겟이 down으로 뜨는데 원인 뭐야?","확인 순서:
+1. Prometheus 웹 UI Targets 페이지에서 에러 메시지 확인
+2. 타겟 Pod/서비스의 /metrics 엔드포인트 직접 curl 테스트
+3. ServiceMonitor/scrape config의 포트, path 설정 확인
+4. NetworkPolicy나 방화벽으로 Prometheus에서 타겟으로 접근 막혀있는지 확인
+- 놓치기 쉬운 포인트: 타겟 Pod 재배포되면서 label 바뀌면 ServiceMonitor selector랑 안 맞아서 스크랩 대상에서 빠짐","IT"
+"GitLab CI cache가 매번 미스나는데 왜 그래?","확인 순서:
+1. cache key 설정 확인(브랜치명 기반이면 브랜치마다 캐시 분리됨)
+2. cache paths가 실제 의존성 설치 경로랑 일치하는지 확인
+3. runner가 distributed cache(S3 등) 설정 안 돼있고 매번 다른 runner 잡히는지 확인
+4. cache와 artifacts를 혼동해서 쓰고 있는 건 아닌지 확인
+- 놓치기 쉬운 포인트: shared runner 여러 대 쓰면 로컬 캐시라서 runner 바뀔 때마다 캐시 미스남, distributed cache 설정 필요","IT"
+"Deployment 롤아웃이 멈춰있는데 어떻게 확인해?","확인 순서:
+1. kubectl rollout status deployment/<name> 로 진행 상황 확인
+2. 새 ReplicaSet의 Pod가 Pending/CrashLoop인지 kubectl get rs, pods 확인
+3. maxSurge/maxUnavailable 값 때문에 대기 중인 건 아닌지 확인
+4. readinessProbe 실패로 새 Pod가 Ready 안 되는지 확인
+- 놓치기 쉬운 포인트: 새 이미지가 ImagePullBackOff면 롤아웃이 그 지점에서 영원히 멈춤, kubectl rollout undo로 일단 되돌리는 게 우선","IT"
+"NetworkPolicy 적용했더니 파드 간 통신이 안 되는데 뭐가 문제야?","확인 순서:
+1. 적용된 NetworkPolicy의 podSelector가 의도한 Pod에 걸려있는지 확인
+2. ingress/egress 규칙에 필요한 포트/프로토콜 빠진 거 없는지 확인
+3. 같은 네임스페이스만 허용했는데 다른 네임스페이스에서 접근하는 건 아닌지 확인
+4. CNI 플러그인이 NetworkPolicy를 실제로 지원하는지 확인(flannel은 기본 미지원)
+- 놓치기 쉬운 포인트: default deny 정책 걸어두고 DNS(kube-dns) 허용 규칙 빼먹으면 전체 통신 마비됨","IT"

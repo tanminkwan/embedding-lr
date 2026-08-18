@@ -79,25 +79,50 @@ src/embedding_lr/
 
 ## 4. 데이터 흐름 상세
 
+학습 경로(Phase 1~4)는 **파일**을 입출력으로 삼는 배치 흐름이고, 추론 경로(Phase 5)는
+**REST API 요청 본문(request body)**을 입력으로, **분류 결과**를 출력으로 삼는 실시간
+흐름이다. 두 경로는 `text_cleaner`(전처리)와 `aipro_client`(AIPro+ 호출)를 동일하게
+공유하며, 학습 경로의 최종 산출물(`model_<ver>.pkl`)이 추론 경로로 넘어가는 유일한
+접점이다.
+
 ```mermaid
 flowchart TD
-    A["prompt/*.md"] -->|LLM| B["role_01~09_*.csv"]
-    B -->|"dataset.combine (재조합)"| C["data.csv"]
-    C -->|"dataset.split (클래스별 3:1:1, seed 고정 분할)"| D["train.csv / test.csv / val.csv"]
-
-    subgraph PHASE2["embedding.pipeline (Phase 2)"]
+    subgraph TRAIN["학습 경로 — 파일 기반 (Phase 1~4)"]
         direction TD
-        E["text_cleaner.strip_fences()"] --> F["aipro_client.embed()"]
-        F -->|"AIPro+ POST /api/embeddings"| G["cache.py (MD5 source 필터, 중복 스킵)"]
-        G -->|"AIPro+ POST /api/rag/knowledge"| H["train/test/val_vectors.parquet (1024D + label)"]
+        A["prompt/*.md"] -->|LLM| B["role_01~09_*.csv"]
+        B -->|"dataset.combine (재조합)"| C["data.csv"]
+        C -->|"dataset.split (클래스별 3:1:1, seed 고정 분할)"| D["train.csv / test.csv / val.csv"]
+
+        subgraph PHASE2["embedding.pipeline (Phase 2)"]
+            direction TD
+            E["text_cleaner.strip_fences()"] --> F["aipro_client.embed()"]
+            F -->|"AIPro+ POST /api/embeddings"| G["cache.py (MD5 source 필터, 중복 스킵)"]
+            G -->|"AIPro+ POST /api/rag/knowledge"| H["train/test/val_vectors.parquet (1024D + label)"]
+        end
+
+        D --> E
+        H -->|"training.trainer (GridSearchCV: C, solver, max_iter)"| I["model_&lt;ver&gt;.pkl + hyperparams.json"]
+        I -->|"evaluation (val_vectors + model)"| J["eval_report_&lt;ver&gt;.md/json"]
+        J -->|목표 달성 시 승격| K["model_&lt;ver&gt;.pkl (파일)"]
     end
 
-    D --> E
-    H -->|"training.trainer (GridSearchCV: C, solver, max_iter)"| I["model_&lt;ver&gt;.pkl + hyperparams.json"]
-    I -->|"evaluation (val_vectors + model)"| J["eval_report_&lt;ver&gt;.md/json"]
-    J -->|목표 달성 시 승격| K["inference.predictor 로드"]
-    K --> L["inference.api (FastAPI POST /classify)"]
+    subgraph INFER["추론 경로 — REST API 기반 (Phase 5)"]
+        direction TD
+        M["POST /classify<br/>request body (질의+응답 JSON)"] -->|"inference.api"| N["text_cleaner.strip_fences()"]
+        N --> O["aipro_client.embed()"]
+        O -->|"AIPro+ POST /api/embeddings"| P["predictor.predict_proba()"]
+        P --> Q["classification 결과<br/>(label + 클래스별 확률) → HTTP response"]
+    end
+
+    K -->|"inference.predictor 로드 (1회, 서비스 기동 시)"| P
 ```
+
+- **입력이 파일이 아님**: 추론 경로는 `train/test/val.csv` 같은 파일을 거치지 않고, HTTP
+  요청 본문(질의+응답 JSON)을 바로 `text_cleaner`에 넣는다.
+- **출력이 파일이 아님**: 추론 결과도 파일로 쓰지 않고, `predict_proba()` 결과를 즉시
+  HTTP 응답(label, 클래스별 확률)으로 반환한다.
+- `model_<ver>.pkl`은 서비스 기동 시 1회 로드되며, 요청마다 다시 읽지 않는다(추론 경로의
+  유일한 "파일" 접점).
 
 ## 5. 기술 스택 및 라이브러리
 

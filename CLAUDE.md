@@ -95,25 +95,25 @@
 `docs/` 아래 flat하게 저장하고, 아래 패턴을 따른다.
 
 ```
-[P<phase>_]<Topic>_<DocType>.md
+[P<phase>_]<DocType>_<Topic>.md
 ```
 
 - **`P<phase>`**: 특정 Phase(0~4, [[Scope_Definition]] 로드맵 기준)에 종속된 문서에만
   붙인다. 프로젝트 전체를 다루는 문서(아키텍처 설계 등)는 접두사를 생략한다.
-- **`<Topic>`**: 문서가 다루는 대상. 가능하면 관련 코드 모듈명과 맞춰 추적성을 확보한다
-  (예: `Embedding`, `Training`, `DataPreprocessing`).
-- **`<DocType>`**: 아래 4개 값 중 하나로 고정한다.
+- **`<DocType>`**: 아래 4개 값(한글) 중 하나로 고정한다.
 
   | DocType | 의미 | 3절 단계 |
   |---|---|---|
-  | `Requirements` | 요구사항 정의서 | 1 |
-  | `Design` | 설계서 | 2 |
-  | `Review` | 정규 4단계 밖에서 발생하는 점검/조사 문서(데이터 품질 점검, 사고 분석 등) | (보조) |
-  | `TestReport` | 테스트 결과서 — 실행 결과·등급별 커버리지(2절) 수치를 반드시 포함 | 4 |
+  | `요구사항정의서` | 요구사항 정의서 | 1 |
+  | `설계서` | 설계서 | 2 |
+  | `검토서` | 정규 4단계 밖에서 발생하는 점검/조사 문서(데이터 품질 점검, 사고 분석 등) | (보조) |
+  | `테스트결과서` | 테스트 결과서 — 실행 결과·등급별 커버리지(2절) 수치를 반드시 포함 | 4 |
 
+- **`<Topic>`**: 문서가 다루는 대상. 가능하면 관련 코드 모듈명과 맞춰 추적성을 확보한다
+  (예: `Embedding`, `Training`, `DataPreprocessing`).
 - 문서를 새 버전으로 다시 쓸 때는 기존 파일을 덮어쓰지 않고 `_v2`, `_v3`처럼 버전을
   붙인 새 파일로 추가한다(5절 "입출력 보존" 원칙과 동일한 취지) — 이전 버전은 보존.
-- 예: `P1_DataGeneration_Requirements.md`, `P2_Embedding_Design.md`,
-  `P3_Training_TestReport.md`, `Architecture_Design.md`(현재 존재).
+- 예: `P1_요구사항정의서_DataGeneration.md`, `P2_설계서_Embedding.md`,
+  `P3_테스트결과서_Training.md`, `설계서_Architecture.md`(현재 존재).
 - `Scope_Definition.md`는 이 규칙 제정 이전에 작성된 프로젝트 최초 요구사항 문서로,
   이름을 바꾸지 않고 예외로 유지한다(다수 문서가 `[[Scope_Definition]]`으로 참조 중).

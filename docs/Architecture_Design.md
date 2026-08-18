@@ -43,8 +43,9 @@ src/embedding_lr/
 │   └── split.py            # data.csv → train/test/val.csv (클래스별 3:1:1, seed 고정)
 ├── embedding/               # Phase 2
 │   ├── aipro_client.py      # EmbeddingClient 구현체 — AIPro+ API(localhost:28000) HTTP 호출
+│   ├── collection.py        # 입력 경로(`data/<version>/...`)에서 version 자동 추출 + AIPro+ POST /api/collections (name=version) 콜렉션 보장
 │   ├── cache.py             # MD5 해시로 source 필터 조회 후 중복 임베딩 스킵
-│   └── pipeline.py          # csv → text_cleaner → rag_client → cache → parquet 저장
+│   └── pipeline.py          # csv → text_cleaner → collection.ensure → aipro_client → cache → parquet 저장
 ├── training/                # Phase 3
 │   ├── trainer.py           # Classifier 구현체 — sklearn LogisticRegression + GridSearchCV
 │   └── persistence.py       # joblib save/load, 버전 관리(model_<ver>.pkl)
@@ -85,22 +86,36 @@ src/embedding_lr/
 공유하며, 학습 경로의 최종 산출물(`model_<ver>.pkl`)이 추론 경로로 넘어가는 유일한
 접점이다.
 
+Phase 2 진입 시 입력 경로(`data/<version>/train.csv` 등)에서 **`version`을 자동 추출**하고,
+이 값을 그대로 AIPro+ `POST /api/collections`의 `name`으로 등록한다(`collection.py`). 이후
+같은 버전의 임베딩 upsert(`POST /api/rag/knowledge`)는 이 콜렉션에 귀속되어, 데이터
+버전이 바뀌면 자동으로 별도 콜렉션으로 분리된다 — 하드코딩 없이 버전과 콜렉션이 1:1로
+매핑된다([[CLAUDE.md]] 4절).
+
+**의도(재사용성)**: 콜렉션을 버전 단위로 고정해두면, 같은 버전 데이터로 재학습을
+반복할 때(하이퍼파라미터 튜닝 등 여러 회차 재실행) 매 회차마다 AIPro+ 임베딩 API를
+다시 부르지 않고 해당 콜렉션에 이미 적재된 벡터를 그대로 재사용할 수 있다. 콜렉션
+분리(버전 단위) + `cache.py`의 MD5 중복 판별(레코드 단위)이 함께 작동해 재임베딩 비용을
+최소화한다 — [[Scope_Definition]] 8절 Golden Rule 3 "재사용성 극대화" 및 4.5절
+루프백 표의 "기존 임베딩 재사용" 대응과 동일한 목적.
+
 ```mermaid
 flowchart TD
     subgraph TRAIN["학습 경로 — 파일 기반 (Phase 1~4)"]
         direction TD
         A["prompt/*.md"] -->|LLM| B["role_01~09_*.csv"]
         B -->|"dataset.combine (재조합)"| C["data.csv"]
-        C -->|"dataset.split (클래스별 3:1:1, seed 고정 분할)"| D["train.csv / test.csv / val.csv"]
+        C -->|"dataset.split (클래스별 3:1:1, seed 고정 분할)"| D["data/&lt;version&gt;/train.csv / test.csv / val.csv"]
 
         subgraph PHASE2["embedding.pipeline (Phase 2)"]
             direction TD
-            E["text_cleaner.strip_fences()"] --> F["aipro_client.embed()"]
+            D --> V["collection.ensure_collection(version)<br/>(경로에서 version 자동 추출)"]
+            V -->|"AIPro+ POST /api/collections (name=version)"| E["text_cleaner.strip_fences()"]
+            E --> F["aipro_client.embed()"]
             F -->|"AIPro+ POST /api/embeddings"| G["cache.py (MD5 source 필터, 중복 스킵)"]
-            G -->|"AIPro+ POST /api/rag/knowledge"| H["train/test/val_vectors.parquet (1024D + label)"]
+            G -->|"AIPro+ POST /api/rag/knowledge (collection=version)"| H["train/test/val_vectors.parquet (1024D + label)"]
         end
 
-        D --> E
         H -->|"training.trainer (GridSearchCV: C, solver, max_iter)"| I["model_&lt;ver&gt;.pkl + hyperparams.json"]
         I -->|"evaluation (val_vectors + model)"| J["eval_report_&lt;ver&gt;.md/json"]
         J -->|목표 달성 시 승격| K["model_&lt;ver&gt;.pkl (파일)"]

@@ -27,7 +27,7 @@
 | 용도 | API 태그 | 엔드포인트 | 설명 |
 |---|---|---|---|
 | 임베딩 벡터 생성 | LLM | `POST /api/embeddings` | 텍스트 목록 → 임베딩 벡터 배열 반환 |
-| 콜렉션 생성·관리 | RAG Management | `POST /api/collections` | 벡터 공간(콜렉션) 생성 |
+| 콜렉션 생성·관리 | RAG Management | `POST /api/collections` | 벡터 공간(콜렉션) 생성. `name`은 작업 시 입력 데이터 경로(`data/<version>/...`)에서 자동 추출한 **데이터 version 값**을 그대로 사용 — 데이터 버전마다 별도 콜렉션으로 분리됨 |
 | 도메인(분류) 관리 | RAG Management | `POST /api/domains` | 데이터를 그룹화할 도메인 생성 |
 | 지식 데이터 등록 | RAG Data | `POST /api/rag/knowledge` | 임베딩 + 메타데이터를 벡터 저장소에 적재 (Upsert 지원) |
 | 유사도 검색 | RAG Data | `POST /api/rag/search` | 쿼리 벡터와 유사한 데이터 검색 (코사인 유사도) |

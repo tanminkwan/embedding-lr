@@ -79,29 +79,24 @@ src/embedding_lr/
 
 ## 4. 데이터 흐름 상세
 
-```
-prompt/*.md ──(LLM)──▶ role_01~09_*.csv
-                             │ dataset.combine (재조합)
-                             ▼
-                          data.csv
-                             │ dataset.split (클래스별 3:1:1, seed 고정 분할)
-                             ▼
-              train.csv / test.csv / val.csv
-                             │ embedding.pipeline
-                             │   text_cleaner.strip_fences()
-                             │   aipro_client.embed() ── AIPro+ POST /api/embeddings
-                             │   cache.py (MD5 source 필터로 중복 스킵) ── AIPro+ POST /api/rag/knowledge
-                             ▼
-   train_vectors.parquet / test_vectors.parquet / val_vectors.parquet  (1024D + label)
-                             │ training.trainer (GridSearchCV: C, solver, max_iter)
-                             ▼
-                     model_<ver>.pkl + hyperparams.json
-                             │ evaluation (val_vectors + model)
-                             ▼
-                   eval_report_<ver>.md/json
-                             │ (목표 달성 시 승격)
-                             ▼
-          inference.predictor 로드 ──▶ inference.api (FastAPI POST /classify)
+```mermaid
+flowchart TD
+    A["prompt/*.md"] -->|LLM| B["role_01~09_*.csv"]
+    B -->|"dataset.combine (재조합)"| C["data.csv"]
+    C -->|"dataset.split (클래스별 3:1:1, seed 고정 분할)"| D["train.csv / test.csv / val.csv"]
+
+    subgraph PHASE2["embedding.pipeline (Phase 2)"]
+        direction TD
+        E["text_cleaner.strip_fences()"] --> F["aipro_client.embed()"]
+        F -->|"AIPro+ POST /api/embeddings"| G["cache.py (MD5 source 필터, 중복 스킵)"]
+        G -->|"AIPro+ POST /api/rag/knowledge"| H["train/test/val_vectors.parquet (1024D + label)"]
+    end
+
+    D --> E
+    H -->|"training.trainer (GridSearchCV: C, solver, max_iter)"| I["model_&lt;ver&gt;.pkl + hyperparams.json"]
+    I -->|"evaluation (val_vectors + model)"| J["eval_report_&lt;ver&gt;.md/json"]
+    J -->|목표 달성 시 승격| K["inference.predictor 로드"]
+    K --> L["inference.api (FastAPI POST /classify)"]
 ```
 
 ## 5. 기술 스택 및 라이브러리

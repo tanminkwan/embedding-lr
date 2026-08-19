@@ -55,11 +55,14 @@ CSV), Phase 1 코드는 그 원본을 JSONL로 변환하는 일만 한다.
 | [P1_Data_Preprocessing_Review.md](docs/P1_Data_Preprocessing_Review.md) | v0.1 데이터 결함 검토(CSV 이스케이프 오류, 분할 시드 미고정) |
 | [P1_설계서_DataPreparation.md](docs/P1_설계서_DataPreparation.md) | **Phase 1** 데이터 준비(CSV→JSONL 변환)/조합/분할 설계 — `DataRepository` 기반 원본 형식 추상화, `dataset.combine`/`dataset.split` 시그니처 |
 | [P2_설계서_TextCleaning.md](docs/P2_설계서_TextCleaning.md) | **Phase 2** 텍스트 전처리(`text_cleaner`) 설계 — 코드펜스 구분자 제거/스택 트레이스 라인 제거/공백 정규화 |
+| [P0_테스트결과서_Common_v2.md](docs/P0_테스트결과서_Common_v2.md) | **Phase 0** 공통 모듈 테스트 결과 v2 — `EmbeddingVector` → `KnowledgeRecord`/`KnowledgeItem` 모델 변경 반영 재실행 |
+| [P2_설계서_Embedding.md](docs/P2_설계서_Embedding.md) | **Phase 2** 임베딩 변환 설계 — AIPro+ 도메인/콜렉션 등록·조회, 콜렉션명 생성 규칙, 재등록 스킵 로직, 파이프라인 오케스트레이션 |
+| [P2_테스트결과서_Embedding.md](docs/P2_테스트결과서_Embedding.md) | **Phase 2** 임베딩 변환 테스트 실행 결과·등급별 커버리지 |
 
 ## 진행 상황
 
-Phase 0(공통 모듈)과 Phase 1(데이터 준비)까지 코드가 구현·테스트된 상태다. Phase
-2(임베딩 변환) 이후는 아직 착수 전이다.
+Phase 0(공통 모듈)~Phase 2(임베딩 변환)까지 코드가 구현·테스트된 상태다. Phase
+3(모델 학습) 이후는 아직 착수 전이다.
 
 | 영역 | 상태 | 비고 |
 |---|---|---|
@@ -74,7 +77,8 @@ Phase 0(공통 모듈)과 Phase 1(데이터 준비)까지 코드가 구현·테�
 | **Phase 1** 코드+테스트(`csv_repository`/`jsonl_repository`/`dataset.combine`/`dataset.split`/`cli.run_phase1`/`cli.run_phase1_5`) | 완료 | 신규 모듈 100% 커버리지, Docker 내부에서 실행 |
 | Phase 1 데이터(v0.1 → v0.2) | 완료 | `data/v0.1_from.Claude-Cowork/role_03_network.csv`의 CSV 이스케이프 오류를 원본에서 직접 수정(P1_Data_Preprocessing_Review 3.1절) → `cli.run_phase1`/`run_phase1_5`로 실제 변환·조합·분할 실행 → `data/v0.2/{role_01~09,data,train,test,val}.jsonl` 생성(1,000건, 클래스당 200건, train/test/val 120/40/40) |
 | **Phase 2** 텍스트 전처리(`text_cleaner`) 설계+코드+테스트 | 완료 | 코드펜스 구분자 제거(본문 보존)/스택 트레이스 라인 제거/공백 정규화 3규칙, 순서 고정, 100% 커버리지 — P2_설계서_TextCleaning.md |
-| Phase 2(임베딩 변환)~5 코드 | 미착수 | |
+| **Phase 2** 임베딩 변환 설계+코드+테스트(`collection`/`aipro_client`/`embedding_server_client`/`registration`/`knowledge_writer`/`pipeline`/`cli.run_phase2`) | 완료 | AIPro+ 도메인/콜렉션 idempotent 등록 → `POST /api/rag/knowledge` 레코드별 개별 등록(bulk-upload 미사용) → `GET /api/rag/knowledge` 일괄 조회 → `*_vectors.parquet` 저장, 콜렉션 건수 일치 시 재등록 스킵, `embed()`는 어디서도 호출 안 함. Phase 2 범위 97%/프로젝트 전체 99% 커버리지, 98 tests passed — 실제 AIPro+는 호출하지 않고 respx/fake로 테스트. P2_설계서_Embedding.md/P2_테스트결과서_Embedding.md |
+| Phase 3(모델 학습)~5 코드 | 미착수 | |
 | Docker: `Dockerfile.pipeline` 뼈대 | 완료 | Phase 0 공통 모듈 테스트 실행용. 호스트가 사내 프록시 경유 환경이면 `docker build --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy --build-arg no_proxy=$no_proxy`로 프록시를 넘겨야 `pip install`이 성공함(자동 상속 안 됨) |
 | Docker: `Dockerfile.inference`, `docker-compose.yml` | 미착수 | |
 | Loki/Grafana 연동 | 미착수 | P0_설계서_Logging.md 7절에 향후 방침만 기록, 지금은 stdout 로그까지만 |

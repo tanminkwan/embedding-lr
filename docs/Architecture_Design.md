@@ -12,16 +12,16 @@
 것을 가능하게 한다.
 
 ```
-[Phase 1] 데이터 생성        prompt/*.md → role_01~09_*.csv
-[Phase 1.5] 데이터 조합/분할  role_*.csv → data.csv → train/test/val.csv
-[Phase 2] 임베딩 변환        train/test/val.csv → *_vectors.parquet (AIPro+ API 호출)
+[Phase 1] 데이터 생성        prompt/*.md → role_01~09_*.jsonl
+[Phase 1.5] 데이터 조합/분할  role_*.jsonl → data.jsonl → train/test/val.jsonl
+[Phase 2] 임베딩 변환        train/test/val.jsonl → *_vectors.parquet (AIPro+ API 호출)
 [Phase 3] 모델 학습          *_vectors.parquet → model_<ver>.pkl (GridSearchCV)
 [Phase 4] 검증               val_vectors.parquet + model.pkl → eval_report.md/json
 [Phase 5] 추론 서비스        FastAPI 상시 서비스, model_<ver>.pkl 로드 후 실시간 분류
 ```
 
 각 화살표는 "파일 경로"이며, 다음 Phase의 CLI는 이 경로를 `--input` 인자로 받는다.
-상류 원본(`role_*.csv`)을 하류 결과가 절대 덮어쓰지 않는다([[P1_Data_Preprocessing_Review]]
+상류 원본(`role_*.jsonl`)을 하류 결과가 절대 덮어쓰지 않는다([[P1_Data_Preprocessing_Review]]
 사고 재발 방지 — role → data → train/test/val 순서만 허용).
 
 ## 2. 모듈 구조 (SOLID — SRP/DIP 중심)
@@ -34,19 +34,19 @@ src/embedding_lr/
 │   ├── models.py          # QueryRecord, EmbeddingVector, PredictionResult (dataclass/pydantic)
 │   └── interfaces.py      # Protocol: EmbeddingClient, VectorStore, Classifier, DataRepository
 ├── preprocessing/
-│   └── text_cleaner.py    # 코드펜스(```) 제거 등 — Phase2와 추론에서 공유
+│   └── text_cleaner.py    # 코드펜스 구분자 제거 + 스택 트레이스 라인 제거 + 공백 정규화 (P2_설계서_TextCleaning 참고) — Phase2와 추론에서 공유
 ├── data_generation/       # Phase 1
 │   ├── prompt_loader.py
-│   └── csv_writer.py
+│   └── jsonl_writer.py
 ├── dataset/                # Phase 1.5
-│   ├── combine.py          # role_*.csv → data.csv 재조합
-│   └── split.py            # data.csv → train/test/val.csv (클래스별 3:1:1, seed 고정)
+│   ├── combine.py          # role_*.jsonl → data.jsonl 재조합
+│   └── split.py            # data.jsonl → train/test/val.jsonl (클래스별 3:1:1, seed 고정)
 ├── embedding/               # Phase 2
 │   ├── aipro_client.py      # EmbeddingClient 구현체 — AIPro+ API(localhost:28000) HTTP 호출
 │   ├── collection.py        # 순수 로직 — version+split(경로에서 자동 추출) → 콜렉션명 `<version>_<train|test|validation>` 생성 규칙 (외부 의존성 없음)
 │   ├── registration.py      # AIPro+ 사전 등록 보장(HTTP 호출) — ensure_domain(DOMAIN_NAME, 최초 1회) + ensure_collection(collection.collection_name(version, split)), 둘 다 이미 존재하면 무시(idempotent)
 │   ├── knowledge_writer.py  # category(라벨)를 source 필드로 매핑해 AIPro+ POST /api/rag/knowledge 적재 (중복 판별 없음, 콜렉션 전체 재적재)
-│   └── pipeline.py          # csv → text_cleaner → registration.ensure_domain/ensure_collection → aipro_client → knowledge_writer → parquet 저장
+│   └── pipeline.py          # jsonl → text_cleaner → registration.ensure_domain/ensure_collection → aipro_client → knowledge_writer → parquet 저장
 ├── training/                # Phase 3
 │   ├── trainer.py           # Classifier 구현체 — sklearn LogisticRegression + GridSearchCV
 │   └── persistence.py       # joblib save/load, 버전 관리(model_<ver>.pkl)
@@ -89,7 +89,7 @@ src/embedding_lr/
 
 Phase 2 진입 시 `registration.ensure_domain()`이 프로젝트 고정 도메인(`DOMAIN_NAME`
 상수)이 AIPro+에 존재하는지 먼저 보장한다(최초 실행 시 1회 생성, 이후 실행은 존재
-확인만 하고 통과 — idempotent). 그다음 입력 경로(`data/<version>/{train,test,val}.csv`)
+확인만 하고 통과 — idempotent). 그다음 입력 경로(`data/<version>/{train,test,val}.jsonl`)
 에서 **`version`과 `split`(train/test/validation)을 자동 추출**해 `collection.py`의
 순수 함수로 `<version>_<split>` 콜렉션명을 만들고, 이를 `registration.ensure_collection()`
 이 그대로 AIPro+ `POST /api/collections`의 `name`으로(위 고정 도메인 하위에) 등록한다.
@@ -110,15 +110,15 @@ Phase 2 진입 시 `registration.ensure_domain()`이 프로젝트 고정 도메�
 flowchart TD
     subgraph TRAIN["학습 경로 — 파일 기반 (Phase 1~4)"]
         direction TD
-        A["prompt/*.md"] -->|LLM| B["role_01~09_*.csv"]
-        B -->|"dataset.combine (재조합)"| C["data.csv"]
-        C -->|"dataset.split (클래스별 3:1:1, seed 고정 분할)"| D["data/&lt;version&gt;/train.csv / test.csv / val.csv"]
+        A["prompt/*.md"] -->|LLM| B["role_01~09_*.jsonl"]
+        B -->|"dataset.combine (재조합)"| C["data.jsonl"]
+        C -->|"dataset.split (클래스별 3:1:1, seed 고정 분할)"| D["data/&lt;version&gt;/train.jsonl / test.jsonl / val.jsonl"]
 
         subgraph PHASE2["embedding.pipeline (Phase 2, split별 독립 실행)"]
             direction TD
             D --> U["registration.ensure_domain(DOMAIN_NAME)<br/>(최초 1회, idempotent)"]
             U -->|"AIPro+ POST /api/domains"| V["registration.ensure_collection(<br/>collection.collection_name(version, split))"]
-            V -->|"AIPro+ POST /api/collections (name=version_split, domain=DOMAIN_NAME)"| E["text_cleaner.strip_fences()"]
+            V -->|"AIPro+ POST /api/collections (name=version_split, domain=DOMAIN_NAME)"| E["text_cleaner.clean_text()"]
             E --> F["aipro_client.embed()"]
             F -->|"AIPro+ POST /api/embeddings"| G["knowledge_writer.py (source=label 매핑)"]
             G -->|"AIPro+ POST /api/rag/knowledge (collection=version_split)"| H["train/test/val_vectors.parquet (1024D + label)"]
@@ -131,7 +131,7 @@ flowchart TD
 
     subgraph INFER["추론 경로 — REST API 기반 (Phase 5)"]
         direction TD
-        M["POST /classify<br/>request body (질의+응답 JSON)"] -->|"inference.api"| N["text_cleaner.strip_fences()"]
+        M["POST /classify<br/>request body (질의+응답 JSON)"] -->|"inference.api"| N["text_cleaner.clean_text()"]
         N --> O["aipro_client.embed()"]
         O -->|"AIPro+ POST /api/embeddings"| P["predictor.predict_proba()"]
         P --> Q["classification 결과<br/>(label + 클래스별 확률) → HTTP response"]
@@ -140,7 +140,7 @@ flowchart TD
     K -->|"inference.predictor 로드 (1회, 서비스 기동 시)"| P
 ```
 
-- **입력이 파일이 아님**: 추론 경로는 `train/test/val.csv` 같은 파일을 거치지 않고, HTTP
+- **입력이 파일이 아님**: 추론 경로는 `train/test/val.jsonl` 같은 파일을 거치지 않고, HTTP
   요청 본문(질의+응답 JSON)을 바로 `text_cleaner`에 넣는다.
 - **출력이 파일이 아님**: 추론 결과도 파일로 쓰지 않고, `predict_proba()` 결과를 즉시
   HTTP 응답(label, 클래스별 확률)으로 반환한다.
@@ -152,8 +152,8 @@ flowchart TD
 | 영역 | 선택 | 이유 |
 |---|---|---|
 | 언어 | Python 3.11+ | 기존 스코프(scikit-learn, AIPro+ API 클라이언트)와 정합 |
-| 데이터 처리 | pandas | CSV/표 형태 데이터, 클래스별 stratified split에 용이 |
-| 임베딩 벡터 저장 | pyarrow / parquet | 1024D float 배열을 CSV보다 효율적으로 저장·로드 |
+| 데이터 처리 | pandas | JSONL(`read_json(lines=True)`)/표 형태 데이터, 클래스별 stratified split에 용이 |
+| 임베딩 벡터 저장 | pyarrow / parquet | 1024D float 배열을 JSONL보다 효율적으로 저장·로드 |
 | 분류 모델 | scikit-learn (`LogisticRegression`, `GridSearchCV`, `train_test_split`, `accuracy_score`, `f1_score`, `confusion_matrix`) | Scope Definition에서 이미 확정된 선택 |
 | 모델 직렬화 | joblib | sklearn 모델 저장 표준 |
 | HTTP 클라이언트 | httpx | AIPro+ API 호출(`/api/embeddings`, `/api/rag/knowledge`, `/api/rag/search`, `localhost:28000`), 타임아웃/재시도 설정 용이, 추론 서비스에서 async 재사용 가능 |
@@ -168,7 +168,7 @@ flowchart TD
 
 | 후보 | 용도 | 도입 시점 |
 |---|---|---|
-| 커스텀 데이터 검증 함수(pandera 등) | Phase 1.5 조합 직후 CSV 스키마/라벨 값 검증 — [[P1_Data_Preprocessing_Review]]의 이스케이프 오류 같은 사고를 자동 감지 | Phase 1.5 구현 시 |
+| 커스텀 데이터 검증 함수(pandera 등) | Phase 1.5 조합 직후 JSONL 스키마/라벨 값 검증 — [[P1_Data_Preprocessing_Review]]의 이스케이프 오류 같은 사고를 자동 감지 | Phase 1.5 구현 시 |
 | mlflow (로컬 파일 백엔드) | 하이퍼파라미터 탐색 결과 실험 추적 | 재학습 반복이 많아질 때만, 과설계 방지를 위해 초기엔 `hyperparams.json` 기록으로 충분 |
 
 ## 6. Docker 구성

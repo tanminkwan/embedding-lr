@@ -27,10 +27,10 @@ DATA_SPLITS = ["train", "test", "validation"]
 # AIPro+ 프로젝트 고정 도메인명 — Scope_Definition 2.1절 "사전 등록 순서" 1단계
 DOMAIN_NAME = "embedding_lr"
 
-# CSV 컬럼명(Scope_Definition 3절 산출물, data.csv 실제 헤더와 일치)
-CSV_COLUMN_QUERY = "질의"
-CSV_COLUMN_RESPONSE = "응답"
-CSV_COLUMN_CATEGORY = "카테고리"
+# JSONL 레코드 키(Scope_Definition 3절 산출물, data.jsonl 실제 키와 일치)
+JSON_KEY_QUERY = "질의"
+JSON_KEY_RESPONSE = "응답"
+JSON_KEY_CATEGORY = "카테고리"
 ```
 
 - `CLASS_LABELS`의 순서는 `predict_proba()` 출력 순서(사이킷런 `classes_` 정렬,
@@ -38,7 +38,7 @@ CSV_COLUMN_CATEGORY = "카테고리"
   하지 않고 이 상수를 참조한다.
 - 5-class와 IT/NON_IT 집계 로직(`evaluation/metrics.py`, `inference/predictor.py`)은
   `IT_LABEL`/`NON_IT_LABELS`만 참조하고 문자열 리터럴을 쓰지 않는다.
-- 파일명 `val.csv`는 콜렉션명에서는 축약 없이 `validation`으로 표기한다 — `collection.py`가
+- 파일명 `val.jsonl`은 콜렉션명에서는 축약 없이 `validation`으로 표기한다 — `collection.py`가
   파일 stem `val`을 `DATA_SPLITS`의 `validation`으로 매핑한다.
 
 ## 2. `config.py` — 환경 설정 (pydantic-settings)
@@ -72,10 +72,10 @@ class Settings(BaseSettings):
 
 ```python
 class QueryRecord(BaseModel):
-    """CSV 한 행 / 추론 요청 1건에 대응"""
-    query: str        # CSV_COLUMN_QUERY
-    response: str      # CSV_COLUMN_RESPONSE
-    category: str | None = None   # CSV_COLUMN_CATEGORY — 학습 데이터는 필수, 추론 요청은 없음(예측 대상)
+    """JSONL 레코드 1건 / 추론 요청 1건에 대응"""
+    query: str        # JSON_KEY_QUERY
+    response: str      # JSON_KEY_RESPONSE
+    category: str | None = None   # JSON_KEY_CATEGORY — 학습 데이터는 필수, 추론 요청은 없음(예측 대상)
 
 class EmbeddingVector(BaseModel):
     """AIPro+ POST /api/embeddings 응답 1건 + 적재용 메타데이터"""
@@ -137,7 +137,7 @@ class ModelNotFoundError(EmbeddingLRError):
     """model_<ver>.pkl 로드 실패 — 추론 서비스 기동 시"""
 
 class DataValidationError(EmbeddingLRError):
-    """CSV 스키마/라벨 값 불일치 — dataset.combine/split 단계"""
+    """JSONL 스키마/라벨 값 불일치 — dataset.combine/split 단계"""
 ```
 
 - 모든 Phase CLI(`run_phaseN.py`)는 `EmbeddingLRError` 하위 예외만 잡아

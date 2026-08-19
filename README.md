@@ -17,9 +17,9 @@ Logistic Regression을 결합해, 실시간 쿼리를 5-class로 분류하는 �
 ## 파이프라인
 
 ```
-[Phase 1] 데이터 생성        prompt/*.md → role_01~09_*.csv
-[Phase 1.5] 데이터 조합/분할  role_*.csv → data.csv → train/test/val.csv
-[Phase 2] 임베딩 변환        train/test/val.csv → *_vectors.parquet (AIPro+ 호출)
+[Phase 1] 데이터 생성        prompt/*.md → role_01~09_*.jsonl
+[Phase 1.5] 데이터 조합/분할  role_*.jsonl → data.jsonl → train/test/val.jsonl
+[Phase 2] 임베딩 변환        train/test/val.jsonl → *_vectors.parquet (AIPro+ 호출)
 [Phase 3] 모델 학습          *_vectors.parquet → model_<ver>.pkl (GridSearchCV)
 [Phase 4] 검증               val_vectors.parquet + model.pkl → eval_report.md/json
 [Phase 5] 추론 서비스        FastAPI 상시 서비스, model_<ver>.pkl 로드 후 실시간 분류
@@ -50,6 +50,7 @@ Logistic Regression을 결합해, 실시간 쿼리를 5-class로 분류하는 �
 | [P0_테스트결과서_Common.md](docs/P0_테스트결과서_Common.md) | **Phase 0** 공통 모듈 테스트 실행 결과·등급별 커버리지 |
 | [P1_DataGeneration_Requirements.md](docs/P1_DataGeneration_Requirements.md) | Phase 1(데이터 생성) 요구사항 정의서 — v0.2 재생성 포함 |
 | [P1_Data_Preprocessing_Review.md](docs/P1_Data_Preprocessing_Review.md) | v0.1 데이터 결함 검토(CSV 이스케이프 오류, 분할 시드 미고정) |
+| [P2_설계서_TextCleaning.md](docs/P2_설계서_TextCleaning.md) | **Phase 2** 텍스트 전처리(`text_cleaner`) 설계 — 코드펜스 구분자 제거/스택 트레이스 라인 제거/공백 정규화 |
 
 ## 진행 상황
 
@@ -65,8 +66,9 @@ Logistic Regression을 결합해, 실시간 쿼리를 5-class로 분류하는 �
 | **Phase 0** 로깅 표준 설계 | 완료 | P0_설계서_Logging.md |
 | **Phase 0** 공통 모듈 코드+테스트(`config`/`constants`/`domain`/`exceptions`/`run_context`/`logging_config`) | 완료 | 23 tests passed, A+B 등급 커버리지 100% — P0_테스트결과서_Common.md, Docker(`docker/Dockerfile.pipeline`) 내부에서 실행 |
 | **Phase 0** 임베딩 캐싱 설계 변경 | 완료 | MD5 해시 기반 레코드 중복 판별 제거 → `source` 필드에 분류 라벨값 저장, 콜렉션을 `<version>_<train\|test\|validation>`로 분리. 도메인(`DOMAIN_NAME`, 프로젝트 고정 1개)·콜렉션 모두 사전 등록 후에만 지식 데이터 등록 가능(둘 다 이미 존재하면 재등록하지 않음) — Scope_Definition.md 2.1절/Architecture_Design.md 참고 |
-| Phase 1 요구사항 정의 | 완료 | v0.2 재생성 요구사항까지 정의됨, 설계서(P1_DataGeneration_Design)는 미작성 |
-| Phase 1 데이터(v0.1) | 생성됨, 결함 있음 | `data/v0.1_from.Claude-Cowork/` — CSV 이스케이프 오류 1건, 분할 시드 미고정 (P1_Data_Preprocessing_Review 참고) |
+| Phase 1 요구사항 정의 | 완료 | v0.2 재생성 요구사항까지 정의됨(CSV→**JSONL** 포맷 전환 포함, CSV 이스케이프 사고 재발 원천 차단), 설계서(P1_DataGeneration_Design)는 미작성 |
+| Phase 1 데이터(v0.1) | 생성됨, 결함 있음(구 CSV 포맷) | `data/v0.1_from.Claude-Cowork/` — CSV 이스케이프 오류 1건, 분할 시드 미고정 (P1_Data_Preprocessing_Review 참고). v0.2부터 JSONL로 재생성 예정 |
+| **Phase 2** 텍스트 전처리(`text_cleaner`) 설계 | 완료 | 코드펜스 구분자 제거(본문 보존)/스택 트레이스 라인 제거/공백 정규화 3규칙, 순서 고정 — P2_설계서_TextCleaning.md |
 | Phase 1~5 코드 | 미착수 | |
 | Docker: `Dockerfile.pipeline` 뼈대 | 완료 | Phase 0 공통 모듈 테스트 실행용. 호스트가 사내 프록시 경유 환경이면 `docker build --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy --build-arg no_proxy=$no_proxy`로 프록시를 넘겨야 `pip install`이 성공함(자동 상속 안 됨) |
 | Docker: `Dockerfile.inference`, `docker-compose.yml` | 미착수 | |

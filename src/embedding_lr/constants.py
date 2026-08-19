@@ -10,6 +10,6 @@ DATA_SPLITS = ["train", "test", "validation"]
 
 DOMAIN_NAME = "embedding_lr"
 
-CSV_COLUMN_QUERY = "질의"
-CSV_COLUMN_RESPONSE = "응답"
-CSV_COLUMN_CATEGORY = "카테고리"
+JSON_KEY_QUERY = "질의"
+JSON_KEY_RESPONSE = "응답"
+JSON_KEY_CATEGORY = "카테고리"

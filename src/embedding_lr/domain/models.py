@@ -6,7 +6,7 @@ from embedding_lr.constants import CLASS_LABELS, EMBEDDING_DIM, IT_LABEL
 
 
 class QueryRecord(BaseModel):
-    """CSV 한 행 / 추론 요청 1건에 대응"""
+    """JSONL 레코드 1건 / 추론 요청 1건에 대응"""
 
     query: str
     response: str

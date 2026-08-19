@@ -14,4 +14,4 @@ class ModelNotFoundError(EmbeddingLRError):
 
 
 class DataValidationError(EmbeddingLRError):
-    """CSV 스키마/라벨 값 불일치 — dataset.combine/split 단계"""
+    """JSONL 스키마/라벨 값 불일치 — dataset.combine/split 단계"""

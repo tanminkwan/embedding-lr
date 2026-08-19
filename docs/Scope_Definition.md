@@ -16,7 +16,7 @@
   | `CREATIVE` | 창작/엔터테인먼트 — 영화, 음악, 게임, 스포츠, 소설 | NON_IT |
   | `ANOMALY` | 무의미 입력 — 랜덤 문자열, 의미 없는 텍스트, 반복 문자 | NON_IT |
 - **기술 스택 및 프로세스**:
-  - **텍스트 전처리**: 노이즈(스택 트레이스, 코드 블록 등) 제거로 데이터 순도 확보
+  - **텍스트 전처리**: 임베딩에 불필요하거나 분류 판단을 왜곡시키는 **형식적 노이즈만** 제거하고, 의미 있는 본문 신호는 보존한다 — ①마크다운 코드펜스 구분자(\`\`\`, \`\`\`bash 등)만 제거하고 본문 명령어는 유지(백틱 유무가 IT를 암시하는 표면적 지름길 학습 방지, [[P1_Data_Preprocessing_Review]] 3.2절 참고) ②스택 트레이스/트레이스백 라인(`Exception`, `Caused by`, `at ...(`, `Traceback`) 제거 ③과도한 공백·연속 개행 정규화(collapse)
   - **임베딩 생성·저장·조회**: 기존 구축된 **AIPro+** API를 호출하여 처리 (직접 구현하지 않음 — 아래 2.1절 참고)
   - **분류 학습**: Scikit-learn Logistic Regression 모델 학습 및 추론
 
@@ -27,7 +27,7 @@
 | 용도 | API 태그 | 엔드포인트 | 설명 |
 |---|---|---|---|
 | 도메인(분류) 관리 | RAG Management | `POST /api/domains` | 데이터를 그룹화할 도메인 생성. **프로젝트당 1개 고정 도메인**(`DOMAIN_NAME` 상수, 예: `embedding_lr`)만 사용하며, 최초 실행 시 1회 생성(이미 존재하면 무시)하고 이후 모든 콜렉션이 이 도메인 하위에 귀속됨 |
-| 콜렉션 생성·관리 | RAG Management | `POST /api/collections` | 벡터 공간(콜렉션) 생성. 위 고정 도메인 하위에, 입력 데이터 경로(`data/<version>/{train,test,val}.csv`)에서 자동 추출한 **데이터 version** + **용도(train/test/validation) 구분**을 조합한 `<version>_<train\|test\|validation>` 값을 `name`으로 사용 — 데이터 버전 × 용도별로 별도 콜렉션으로 분리됨. 실행 시마다 존재 여부를 먼저 확인하고, 이미 존재하면 재생성하지 않고 그대로 사용(idempotent) |
+| 콜렉션 생성·관리 | RAG Management | `POST /api/collections` | 벡터 공간(콜렉션) 생성. 위 고정 도메인 하위에, 입력 데이터 경로(`data/<version>/{train,test,val}.jsonl`)에서 자동 추출한 **데이터 version** + **용도(train/test/validation) 구분**을 조합한 `<version>_<train\|test\|validation>` 값을 `name`으로 사용 — 데이터 버전 × 용도별로 별도 콜렉션으로 분리됨. 실행 시마다 존재 여부를 먼저 확인하고, 이미 존재하면 재생성하지 않고 그대로 사용(idempotent) |
 | 임베딩 벡터 생성 | LLM | `POST /api/embeddings` | 텍스트 목록 → 임베딩 벡터 배열 반환 |
 | 지식 데이터 등록 | RAG Data | `POST /api/rag/knowledge` | 임베딩 + 메타데이터를 벡터 저장소에 적재 (Upsert 지원) |
 | 유사도 검색 | RAG Data | `POST /api/rag/search` | 쿼리 벡터와 유사한 데이터 검색 (코사인 유사도) |
@@ -84,7 +84,10 @@ NON_IT를 4개 하위 카테고리로 세분화하여 각각 별도의 프롬프
 | 테스트(Test) | 40건 | 200건 | 200 | 하이퍼파라미터 튜닝 |
 | 검증(Validation) | 40건 | 200건 | 200 | 최종 정확도 평가 |
 
-- 출력 형식: CSV (컬럼: `질의`, `응답`, `카테고리`)
+- 출력 형식: **JSONL**(레코드 1개 = JSON 객체 1줄, 키: `질의`, `응답`, `카테고리`) — 애초 CSV로
+  계획했으나, 멀티라인·따옴표·쉼표가 섞인 응답 텍스트에서 CSV 이스케이프 규칙(RFC4180)이
+  실제로 데이터 손상을 일으킨 사고([[P1_Data_Preprocessing_Review]] 3.1절)가 있어 이런
+  이스케이프 처리 자체가 필요 없는 JSONL로 전환한다
 - 카테고리 값: `IT`, `DAILY`, `KNOWLEDGE`, `CREATIVE`, `ANOMALY`
 - 최종 리포팅 시 IT 외 4개 카테고리를 NON_IT로 집계하여 이진 성능도 함께 측정
 
@@ -105,7 +108,7 @@ NON_IT를 4개 하위 카테고리로 세분화하여 각각 별도의 프롬프
 ### 4.2 학습 파이프라인
 
 ```
-CSV 데이터 (1,000건, 5 클래스 × 200건)
+JSONL 데이터 (1,000건, 5 클래스 × 200건)
   │
   ├─ 학습셋 600건 (클래스당 120건) ──┐
   ├─ 테스트셋 200건 (클래스당 40건) ─┤
@@ -187,7 +190,7 @@ CSV 데이터 (1,000건, 5 클래스 × 200건)
 
 | 구현 항목 | 상세 |
 |---|---|
-| 합성 데이터 생성 | LLM 프롬프트 기반 CSV 1,000건 (5 클래스 × 200건), 균등 분배 |
+| 합성 데이터 생성 | LLM 프롬프트 기반 JSONL 1,000건 (5 클래스 × 200건), 균등 분배 |
 | 임베딩 변환 및 적재 | AIPro+ API 호출로 1024D 벡터 생성, source=라벨값 저장, train/test/validation별 콜렉션 분리 적재 |
 | 분류 모델 학습 | Scikit-learn Logistic Regression, 하이퍼파라미터 탐색, 테스트셋 기반 튜닝 |
 | 성능 검증 | 검증셋 200건 대상 Accuracy/F1 평가, Confusion Matrix, 목표 미달 시 루프백 |
@@ -201,7 +204,7 @@ CSV 데이터 (1,000건, 5 클래스 × 200건)
 | Phase | 명칭 | 작업 내용 | 주요 산출물 | 브랜치(예시) |
 |---|---|---|---|---|
 | **Phase 0** | **범위 정의 + 공통 모듈 기반 구축** | 작업 Scope 확정 및 본 문서 통합, Phase 1~5 공용 모듈(`config`/`constants`/`domain`/`exceptions`/`workflow`/`logging_config`) 설계·구현 | Scope Definition 문서, `P0_설계서_Common.md`/`P0_설계서_Logging.md`/`P0_테스트결과서_Common.md`, 공통 모듈 코드+테스트 | `feature/phase0` |
-| **Phase 1** | **데이터 생성** | LLM 활용 IT/NON_IT 합성 데이터 생성, 프롬프트 정제 | `data.csv` (1,000건, 라벨 포함) | `feature/phase1` |
+| **Phase 1** | **데이터 생성** | LLM 활용 IT/NON_IT 합성 데이터 생성, 프롬프트 정제 | `data.jsonl` (1,000건, 라벨 포함) | `feature/phase1` |
 | **Phase 2** | **임베딩 변환** | AIPro+ API 호출로 1024D 벡터 변환, source=라벨값 저장, train/test/validation별 콜렉션 분리 적재 | 임베딩 스크립트, 콜렉션/적재 로직 | `feature/phase2` |
 | **Phase 3** | **모델 학습** | 1024D 벡터 기반 Logistic Regression 학습, 하이퍼파라미터 탐색 | 학습 스크립트, `.pkl` 모델 파일 | `feature/phase3` |
 | **Phase 4** | **검증·정화** | 검증셋 평가 (Accuracy/F1), 오탐 분석, 루프백 정화 | 평가 리포트, 추론 파이프라인 코드 | `feature/phase4` |

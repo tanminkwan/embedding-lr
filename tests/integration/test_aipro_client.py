@@ -147,3 +147,18 @@ class TestClose:
         client.close()
 
         assert client._client.is_closed
+
+
+class TestAuthHeader:
+    def test_sends_bearer_header_when_token_is_set(self):
+        client = AIProClient(_settings())
+
+        assert client._client.headers["Authorization"] == "Bearer test-token"
+
+    def test_omits_authorization_header_when_token_is_empty(self):
+        settings = _settings()
+        settings.aipro_api_token = ""
+
+        client = AIProClient(settings)
+
+        assert "Authorization" not in client._client.headers

@@ -14,9 +14,12 @@ class AIProClient:
     """AIPro+(localhost:28000) API 호출을 감싼다 — Scope_Definition 2.1절."""
 
     def __init__(self, settings: Settings) -> None:
+        headers = {}
+        if settings.aipro_api_token:
+            headers["Authorization"] = f"Bearer {settings.aipro_api_token}"
         self._client = httpx.Client(
             base_url=settings.aipro_base_url,
-            headers={"Authorization": f"Bearer {settings.aipro_api_token}"},
+            headers=headers,
             timeout=settings.aipro_timeout_seconds,
         )
 

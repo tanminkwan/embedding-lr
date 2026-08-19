@@ -26,20 +26,20 @@
 
 | 용도 | API 태그 | 엔드포인트 | 설명 |
 |---|---|---|---|
+| 도메인(분류) 관리 | RAG Management | `POST /api/domains` | 데이터를 그룹화할 도메인 생성. **프로젝트당 1개 고정 도메인**(`DOMAIN_NAME` 상수, 예: `embedding_lr`)만 사용하며, 최초 실행 시 1회 생성(이미 존재하면 무시)하고 이후 모든 콜렉션이 이 도메인 하위에 귀속됨 |
+| 콜렉션 생성·관리 | RAG Management | `POST /api/collections` | 벡터 공간(콜렉션) 생성. 위 고정 도메인 하위에, 입력 데이터 경로(`data/<version>/{train,test,val}.csv`)에서 자동 추출한 **데이터 version** + **용도(train/test/validation) 구분**을 조합한 `<version>_<train\|test\|validation>` 값을 `name`으로 사용 — 데이터 버전 × 용도별로 별도 콜렉션으로 분리됨. 실행 시마다 존재 여부를 먼저 확인하고, 이미 존재하면 재생성하지 않고 그대로 사용(idempotent) |
 | 임베딩 벡터 생성 | LLM | `POST /api/embeddings` | 텍스트 목록 → 임베딩 벡터 배열 반환 |
-| 콜렉션 생성·관리 | RAG Management | `POST /api/collections` | 벡터 공간(콜렉션) 생성. `name`은 작업 시 입력 데이터 경로(`data/<version>/...`)에서 자동 추출한 **데이터 version 값**을 그대로 사용 — 데이터 버전마다 별도 콜렉션으로 분리됨 |
-| 도메인(분류) 관리 | RAG Management | `POST /api/domains` | 데이터를 그룹화할 도메인 생성 |
 | 지식 데이터 등록 | RAG Data | `POST /api/rag/knowledge` | 임베딩 + 메타데이터를 벡터 저장소에 적재 (Upsert 지원) |
 | 유사도 검색 | RAG Data | `POST /api/rag/search` | 쿼리 벡터와 유사한 데이터 검색 (코사인 유사도) |
 | 일괄 삭제 | RAG Data | `DELETE /api/rag/bulk-delete` | 조건부 대량 삭제 (재학습 시 데이터 정화용) |
 
 - **인증**: Bearer Token (HTTPBearer) 방식
 - **핵심 이점**: 임베딩 모델 로딩, GPU/메모리 관리, 벡터 인덱싱을 모두 기존 인프라에 위임하므로 본 프로젝트는 **분류 로직에만 집중** 가능
-- **임베딩 캐싱(재사용) 전략**:
-  - 지식 데이터 등록(`POST /api/rag/knowledge`) 시 `source` 필드에 **원문 텍스트의 해시값**을 저장한다.
-  - 임베딩 요청 전, 해당 해시값으로 `source` 필터 조회하여 기등록 건인지 판별한다. 이미 존재하면 임베딩 API 호출을 건너뛴다.
-  - 해시 알고리즘은 **MD5**로 고정한다 (32자, 중복 판별 용도로 충분).
-  - 이를 통해 모델 재학습(하이퍼파라미터 조정 등) 시 동일 데이터의 재임베딩을 방지하고, 데이터 자체가 변경(재생성·재라벨링)된 경우에만 해시가 달라져 자연스럽게 재임베딩이 수행된다.
+- **사전 등록 순서**: 임베딩 요청 전에 반드시 ①도메인(`DOMAIN_NAME`, 최초 1회) → ②콜렉션(`<version>_<split>`, 버전/용도마다) 순으로 존재를 보장한 뒤에만 `POST /api/rag/knowledge` 적재를 수행한다 — 콜렉션·도메인이 없는 상태로 지식 데이터를 등록할 수 없다. 둘 다 **이미 존재하면 재등록(재생성)하지 않고 기존 것을 그대로 사용**한다 — 매 실행마다 존재 확인 후 없을 때만 생성.
+- **지식 데이터 등록 전략(레코드 단위 중복 판별 없음)**:
+  - Train/Test/Validation 각 데이터셋 전체를 한 번의 배치로 콜렉션에 통째로 적재하는 방식이므로, 해시 비교 등 레코드 단위 중복 판별은 두지 않는다 — 대신 콜렉션 자체를 데이터 version × 용도(train/test/validation) 단위로 분리해 관리한다(위 콜렉션 표 참고).
+  - 지식 데이터 등록(`POST /api/rag/knowledge`) 시 `source` 필드에는 **분류 라벨값**(`카테고리`, 5-class 중 하나: `IT`/`DAILY`/`KNOWLEDGE`/`CREATIVE`/`ANOMALY`)을 저장한다 — 이를 통해 콜렉션 내에서도 라벨 기준으로 데이터를 조회·추적할 수 있다.
+  - 재학습(하이퍼파라미터 조정 등) 시에는 동일 콜렉션(`<version>_<split>`)을 대상으로 전체 재임베딩·재적재(Upsert)를 수행한다.
 
 ## 3. 학습 데이터 확보 전략
 
@@ -111,11 +111,13 @@ CSV 데이터 (1,000건, 5 클래스 × 200건)
   ├─ 테스트셋 200건 (클래스당 40건) ─┤
   └─ 검증셋 200건 (클래스당 40건) ──┘
          │
+    [사전 등록] 도메인(DOMAIN_NAME, 최초 1회) → 콜렉션(<version>_<train|test|validation>)
+         │
     [AIPro+] POST /api/embeddings
          │
     1024D 벡터 배열
          │
-    [캐싱] source=MD5(원문) 로 Qdrant 적재
+    [적재] source=label(카테고리) 로 Qdrant 적재 (collection=<version>_<train|test|validation>)
          │
     Multi-class Logistic Regression 학습 (5 클래스)
          │
@@ -186,7 +188,7 @@ CSV 데이터 (1,000건, 5 클래스 × 200건)
 | 구현 항목 | 상세 |
 |---|---|
 | 합성 데이터 생성 | LLM 프롬프트 기반 CSV 1,000건 (5 클래스 × 200건), 균등 분배 |
-| 임베딩 변환 및 캐싱 | AIPro+ API 호출로 1024D 벡터 생성, MD5 해시 기반 중복 방지, Qdrant 적재 |
+| 임베딩 변환 및 적재 | AIPro+ API 호출로 1024D 벡터 생성, source=라벨값 저장, train/test/validation별 콜렉션 분리 적재 |
 | 분류 모델 학습 | Scikit-learn Logistic Regression, 하이퍼파라미터 탐색, 테스트셋 기반 튜닝 |
 | 성능 검증 | 검증셋 200건 대상 Accuracy/F1 평가, Confusion Matrix, 목표 미달 시 루프백 |
 | 추론 파이프라인 | 텍스트 입력 → 전처리 → 임베딩 → LR 분류 → 카테고리 + 신뢰도 출력 |
@@ -198,13 +200,13 @@ CSV 데이터 (1,000건, 5 클래스 × 200건)
 
 | Phase | 명칭 | 작업 내용 | 주요 산출물 | 브랜치(예시) |
 |---|---|---|---|---|
-| **Phase 0** | **범위 정의** | 작업 Scope 확정 및 본 문서 통합 | Scope Definition 문서 | `feature/phase0` |
+| **Phase 0** | **범위 정의 + 공통 모듈 기반 구축** | 작업 Scope 확정 및 본 문서 통합, Phase 1~5 공용 모듈(`config`/`constants`/`domain`/`exceptions`/`workflow`/`logging_config`) 설계·구현 | Scope Definition 문서, `P0_설계서_Common.md`/`P0_설계서_Logging.md`/`P0_테스트결과서_Common.md`, 공통 모듈 코드+테스트 | `feature/phase0` |
 | **Phase 1** | **데이터 생성** | LLM 활용 IT/NON_IT 합성 데이터 생성, 프롬프트 정제 | `data.csv` (1,000건, 라벨 포함) | `feature/phase1` |
-| **Phase 2** | **임베딩 변환** | AIPro+ API 호출로 1024D 벡터 변환, MD5 캐싱, Qdrant 적재 | 임베딩 스크립트, 캐싱 로직 | `feature/phase2` |
+| **Phase 2** | **임베딩 변환** | AIPro+ API 호출로 1024D 벡터 변환, source=라벨값 저장, train/test/validation별 콜렉션 분리 적재 | 임베딩 스크립트, 콜렉션/적재 로직 | `feature/phase2` |
 | **Phase 3** | **모델 학습** | 1024D 벡터 기반 Logistic Regression 학습, 하이퍼파라미터 탐색 | 학습 스크립트, `.pkl` 모델 파일 | `feature/phase3` |
 | **Phase 4** | **검증·정화** | 검증셋 평가 (Accuracy/F1), 오탐 분석, 루프백 정화 | 평가 리포트, 추론 파이프라인 코드 | `feature/phase4` |
 
 ## 8. 작업 원칙 (Golden Rules)
 1. **요구사항-산출물 페어링**: 채팅으로 생성되는 요구사항(프롬프트)은 `docs/prompts/`에 버저닝하여 저장하고, 이에 대응하는 산출물 역시 쌍(Pair)으로 최신화한다.
 2. **이식성(Portability) 확보**: 배포 및 실행 환경 구성 시 패키지 의존성 및 컨테이너 환경을 명확히 명시한다.
-3. **재사용성 극대화**: MD5 해시 기반 임베딩 캐시를 활용하여 불필요한 재임베딩을 방지하고, 모델 재학습 비용을 최소화한다.
+3. **추적성 확보**: 데이터 version × 용도(train/test/validation)별로 콜렉션을 분리하고, `source` 필드에 분류 라벨값을 저장하여 재학습·분석 시 콜렉션/라벨 단위로 데이터를 추적할 수 있게 한다.

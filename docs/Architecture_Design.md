@@ -29,10 +29,10 @@
 ```
 src/embedding_lr/
 ├── config.py              # .env 로딩 (pydantic-settings)
-├── constants.py           # 고정 도메인 상수: 5개 클래스 라벨, 해시 알고리즘(MD5), 임베딩 차원(1024)
+├── constants.py           # 고정 도메인 상수: 5개 클래스 라벨, 데이터 split 종류(train/test/validation), 임베딩 차원(1024)
 ├── domain/
 │   ├── models.py          # QueryRecord, EmbeddingVector, PredictionResult (dataclass/pydantic)
-│   └── interfaces.py      # Protocol: EmbeddingClient, VectorCache, Classifier, DataRepository
+│   └── interfaces.py      # Protocol: EmbeddingClient, VectorStore, Classifier, DataRepository
 ├── preprocessing/
 │   └── text_cleaner.py    # 코드펜스(```) 제거 등 — Phase2와 추론에서 공유
 ├── data_generation/       # Phase 1
@@ -43,9 +43,10 @@ src/embedding_lr/
 │   └── split.py            # data.csv → train/test/val.csv (클래스별 3:1:1, seed 고정)
 ├── embedding/               # Phase 2
 │   ├── aipro_client.py      # EmbeddingClient 구현체 — AIPro+ API(localhost:28000) HTTP 호출
-│   ├── collection.py        # 입력 경로(`data/<version>/...`)에서 version 자동 추출 + AIPro+ POST /api/collections (name=version) 콜렉션 보장
-│   ├── cache.py             # MD5 해시로 source 필터 조회 후 중복 임베딩 스킵
-│   └── pipeline.py          # csv → text_cleaner → collection.ensure → aipro_client → cache → parquet 저장
+│   ├── collection.py        # 순수 로직 — version+split(경로에서 자동 추출) → 콜렉션명 `<version>_<train|test|validation>` 생성 규칙 (외부 의존성 없음)
+│   ├── registration.py      # AIPro+ 사전 등록 보장(HTTP 호출) — ensure_domain(DOMAIN_NAME, 최초 1회) + ensure_collection(collection.collection_name(version, split)), 둘 다 이미 존재하면 무시(idempotent)
+│   ├── knowledge_writer.py  # category(라벨)를 source 필드로 매핑해 AIPro+ POST /api/rag/knowledge 적재 (중복 판별 없음, 콜렉션 전체 재적재)
+│   └── pipeline.py          # csv → text_cleaner → registration.ensure_domain/ensure_collection → aipro_client → knowledge_writer → parquet 저장
 ├── training/                # Phase 3
 │   ├── trainer.py           # Classifier 구현체 — sklearn LogisticRegression + GridSearchCV
 │   └── persistence.py       # joblib save/load, 버전 관리(model_<ver>.pkl)
@@ -86,18 +87,24 @@ src/embedding_lr/
 공유하며, 학습 경로의 최종 산출물(`model_<ver>.pkl`)이 추론 경로로 넘어가는 유일한
 접점이다.
 
-Phase 2 진입 시 입력 경로(`data/<version>/train.csv` 등)에서 **`version`을 자동 추출**하고,
-이 값을 그대로 AIPro+ `POST /api/collections`의 `name`으로 등록한다(`collection.py`). 이후
-같은 버전의 임베딩 upsert(`POST /api/rag/knowledge`)는 이 콜렉션에 귀속되어, 데이터
-버전이 바뀌면 자동으로 별도 콜렉션으로 분리된다 — 하드코딩 없이 버전과 콜렉션이 1:1로
-매핑된다([[CLAUDE.md]] 4절).
+Phase 2 진입 시 `registration.ensure_domain()`이 프로젝트 고정 도메인(`DOMAIN_NAME`
+상수)이 AIPro+에 존재하는지 먼저 보장한다(최초 실행 시 1회 생성, 이후 실행은 존재
+확인만 하고 통과 — idempotent). 그다음 입력 경로(`data/<version>/{train,test,val}.csv`)
+에서 **`version`과 `split`(train/test/validation)을 자동 추출**해 `collection.py`의
+순수 함수로 `<version>_<split>` 콜렉션명을 만들고, 이를 `registration.ensure_collection()`
+이 그대로 AIPro+ `POST /api/collections`의 `name`으로(위 고정 도메인 하위에) 등록한다.
+이후 같은 버전·용도의 임베딩 upsert(`POST /api/rag/knowledge`)는 이 콜렉션에 귀속되어,
+데이터 버전 또는 용도(train/test/validation)가 바뀌면 자동으로 별도 콜렉션으로
+분리된다 — 하드코딩 없이 버전×용도와 콜렉션이 1:1로 매핑된다([[CLAUDE.md]] 4절).
+도메인·콜렉션이 모두 사전 등록되어 있어야 `knowledge_writer.py`의 지식 데이터 적재가
+성립한다 — [[Scope_Definition]] 2.1절 "사전 등록 순서" 참고.
 
-**의도(재사용성)**: 콜렉션을 버전 단위로 고정해두면, 같은 버전 데이터로 재학습을
-반복할 때(하이퍼파라미터 튜닝 등 여러 회차 재실행) 매 회차마다 AIPro+ 임베딩 API를
-다시 부르지 않고 해당 콜렉션에 이미 적재된 벡터를 그대로 재사용할 수 있다. 콜렉션
-분리(버전 단위) + `cache.py`의 MD5 중복 판별(레코드 단위)이 함께 작동해 재임베딩 비용을
-최소화한다 — [[Scope_Definition]] 8절 Golden Rule 3 "재사용성 극대화" 및 4.5절
-루프백 표의 "기존 임베딩 재사용" 대응과 동일한 목적.
+**의도(추적성)**: 항상 콜렉션 전체(train/test/validation 각각)를 한 번의 배치로 재적재하는
+구조이므로, 레코드 단위 중복 판별(해시 비교 등)은 두지 않는다 — 재학습 시에는 해당
+콜렉션을 전체 재임베딩·재적재(Upsert)한다. 대신 `knowledge_writer.py`가
+`POST /api/rag/knowledge` 호출 시 `source` 필드에 **분류 라벨값**(카테고리)을 저장하여,
+콜렉션 내에서도 라벨 단위로 데이터를 조회·추적할 수 있게 한다 — [[Scope_Definition]]
+8절 Golden Rule 3 "추적성 확보"와 동일한 목적.
 
 ```mermaid
 flowchart TD
@@ -107,13 +114,14 @@ flowchart TD
         B -->|"dataset.combine (재조합)"| C["data.csv"]
         C -->|"dataset.split (클래스별 3:1:1, seed 고정 분할)"| D["data/&lt;version&gt;/train.csv / test.csv / val.csv"]
 
-        subgraph PHASE2["embedding.pipeline (Phase 2)"]
+        subgraph PHASE2["embedding.pipeline (Phase 2, split별 독립 실행)"]
             direction TD
-            D --> V["collection.ensure_collection(version)<br/>(경로에서 version 자동 추출)"]
-            V -->|"AIPro+ POST /api/collections (name=version)"| E["text_cleaner.strip_fences()"]
+            D --> U["registration.ensure_domain(DOMAIN_NAME)<br/>(최초 1회, idempotent)"]
+            U -->|"AIPro+ POST /api/domains"| V["registration.ensure_collection(<br/>collection.collection_name(version, split))"]
+            V -->|"AIPro+ POST /api/collections (name=version_split, domain=DOMAIN_NAME)"| E["text_cleaner.strip_fences()"]
             E --> F["aipro_client.embed()"]
-            F -->|"AIPro+ POST /api/embeddings"| G["cache.py (MD5 source 필터, 중복 스킵)"]
-            G -->|"AIPro+ POST /api/rag/knowledge (collection=version)"| H["train/test/val_vectors.parquet (1024D + label)"]
+            F -->|"AIPro+ POST /api/embeddings"| G["knowledge_writer.py (source=label 매핑)"]
+            G -->|"AIPro+ POST /api/rag/knowledge (collection=version_split)"| H["train/test/val_vectors.parquet (1024D + label)"]
         end
 
         H -->|"training.trainer (GridSearchCV: C, solver, max_iter)"| I["model_&lt;ver&gt;.pkl + hyperparams.json"]
@@ -182,8 +190,8 @@ docker/
 
 | 계층 | 대상 | 방식 |
 |---|---|---|
-| 단위 | `text_cleaner`, `cache`(해시 판별), `metrics` | 순수 함수, 외부 의존성 없음 |
-| 단위(모킹) | `aipro_client`, `predictor` | `EmbeddingClient` Protocol을 fake로 교체 또는 respx로 HTTP 모킹 |
+| 단위 | `text_cleaner`, `collection`(콜렉션명 생성 규칙: `version_split`), `metrics` | 순수 함수, 외부 의존성 없음 |
+| 단위(모킹) | `aipro_client`, `registration`, `knowledge_writer`, `predictor` | `EmbeddingClient`/`VectorStore` Protocol을 fake로 교체 또는 respx로 HTTP 모킹 |
 | 통합 | `embedding.pipeline`, `training.trainer` | 소규모 fixture 데이터로 end-to-end 실행, 실제 AIPro+는 호출하지 않음 |
 | E2E(수동/선택) | 전체 파이프라인 | 실제 AIPro+(`localhost:28000`) 대상, CI에는 포함하지 않음 |
 

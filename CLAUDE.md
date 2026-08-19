@@ -7,7 +7,7 @@
 ## 1. SOLID 준수
 
 - **SRP**: 하나의 모듈/클래스/함수는 하나의 책임만 갖는다.
-  예) "임베딩 API 호출"과 "MD5 캐시 판별"과 "CSV 적재"는 별도 모듈로 분리.
+  예) "임베딩 API 호출"과 "콜렉션명(버전+용도) 결정"과 "CSV 적재"는 별도 모듈로 분리.
 - **OCP**: 하이퍼파라미터 탐색 범위, 분류 카테고리(5-class) 등 변경 가능성이 있는 값은
   코드 수정 없이 설정으로 확장 가능하게 둔다.
 - **LSP**: 공통 인터페이스(예: 임베딩 클라이언트, 데이터 로더)를 대체 구현체로 바꿔도
@@ -24,7 +24,7 @@
 
 | 등급 | 대상 | 적용 규칙 | 커버리지 목표 |
 |---|---|---|---|
-| **A. 핵심 순수 로직** | `preprocessing/text_cleaner`, `embedding/cache`(MD5 판별), `dataset/split`, `dataset/combine`, `evaluation/metrics`, `domain/models` | Red→Green→Refactor로 **테스트를 먼저 작성**. 테스트 없는 변경은 완료로 간주하지 않음 | **라인 커버리지 ≥ 90%** |
+| **A. 핵심 순수 로직** | `preprocessing/text_cleaner`, `embedding/collection`(버전+용도 → 콜렉션명 생성 규칙), `dataset/split`, `dataset/combine`, `evaluation/metrics`, `domain/models` | Red→Green→Refactor로 **테스트를 먼저 작성**. 테스트 없는 변경은 완료로 간주하지 않음 | **라인 커버리지 ≥ 90%** |
 | **B. 오케스트레이션/통합** | `embedding/pipeline`, `training/trainer`, `evaluation/report`, `inference/predictor`, `inference/api` | 구현 후 통합 테스트 작성 허용(사후 테스트 가능). 외부 의존성(AIPro+ 등)은 Protocol을 fake로 교체하거나 respx로 모킹 — 실제 API를 호출하는 E2E는 별도 스위트로 분리 | **라인 커버리지 ≥ 70%**, 주요 경로(happy path + 대표 에러 케이스) 위주 |
 | **C. 탐색/생성** | `data_generation/*`(LLM 프롬프트 기반 생성), 하이퍼파라미터 탐색 실험(`GridSearchCV` 조합 튜닝) | 자동화 테스트 강제하지 않음. 대신 산출물 검증(예: CSV 스키마·라벨 값 체크, 클래스별 건수 확인) 스크립트로 대체. 클라이언트 HTTP 요청/응답 파싱 부분만 있다면 그 부분은 B등급으로 분리해 테스트 | 커버리지 측정 대상에서 **제외** |
 
@@ -55,7 +55,7 @@
 - 비밀값(API 토큰 등)과 환경별 설정(RAG API 엔드포인트, 모델 저장 경로 등)은 `.env`에
   저장하고 코드에서는 환경변수로 읽는다. `.env`는 절대 커밋하지 않고 `.env.example`로
   필요한 키 목록만 커밋한다.
-- 도메인 상수(클래스 라벨 5종, 해시 알고리즘=MD5 등 설계상 고정된 값)는 `.env`가 아니라
+- 도메인 상수(클래스 라벨 5종, 데이터 용도 구분(train/test/validation) 등 설계상 고정된 값)는 `.env`가 아니라
   코드 내 상수 모듈(예: `constants.py`)에 단일 정의하고 재사용한다. `.env`는 "환경에 따라
   달라지는 값", 상수 모듈은 "설계상 고정된 값"으로 구분한다.
 
@@ -82,6 +82,9 @@
 
 - 모든 실행 가능한 코드(데이터 생성, 임베딩 변환, 학습, 추론)는 Docker 컨테이너 위에서
   실행 가능해야 한다.
+- **테스트 실행도 예외 없이 Docker 컨테이너 내부에서 수행한다.** 호스트에 직접
+  `python`/`pip`/`pytest` 등을 설치·실행하지 않는다 — `docker build` 후
+  `docker run`(또는 `docker compose run`)으로 테스트를 돌린다.
 - 각 Phase 또는 서비스 단위로 `Dockerfile`을 두고, 의존성은 `requirements.txt`(또는
   `pyproject.toml`)로 고정 버전 관리한다.
 - 컨테이너는 `.env`를 통해 설정을 주입받고, 호스트 경로에 하드코딩된 의존을 갖지 않는다

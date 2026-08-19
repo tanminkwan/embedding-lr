@@ -1,0 +1,10 @@
+# Phase 1~4 배치 작업 공용 이미지 — Architecture_Design.md 6절
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY pyproject.toml ./
+COPY src ./src
+RUN pip install --no-cache-dir ".[dev]"
+
+COPY tests ./tests

@@ -9,6 +9,7 @@ def _settings(**overrides) -> Settings:
     defaults = dict(
         aipro_base_url="http://localhost:28000",
         aipro_api_token="test-token",
+        embedding_server_base_url="http://localhost:8000",
         model_dir="models",
         service_name="embedding_lr",
         log_level="INFO",

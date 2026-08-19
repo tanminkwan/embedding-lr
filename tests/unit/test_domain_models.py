@@ -2,7 +2,7 @@ import pytest
 from pydantic import ValidationError
 
 from embedding_lr.constants import CLASS_LABELS, EMBEDDING_DIM
-from embedding_lr.domain.models import EmbeddingVector, PredictionResult, QueryRecord
+from embedding_lr.domain.models import KnowledgeItem, KnowledgeRecord, PredictionResult, QueryRecord
 
 
 class TestQueryRecord:
@@ -19,18 +19,38 @@ class TestQueryRecord:
             QueryRecord(query="q", response="r", category="UNKNOWN")
 
 
-class TestEmbeddingVector:
-    def test_accepts_vector_with_correct_dimension(self):
-        vector = EmbeddingVector(vector=[0.1] * EMBEDDING_DIM, category="IT")
-        assert len(vector.vector) == EMBEDDING_DIM
+class TestKnowledgeRecord:
+    def test_accepts_known_source_label(self):
+        record = KnowledgeRecord(content="Tomcat 재시작?", extended_content="Tomcat 재시작? / shutdown 후 startup", source="IT")
+        assert record.source == "IT"
 
-    def test_rejects_vector_with_wrong_dimension(self):
+    def test_rejects_unknown_source_label(self):
         with pytest.raises(ValidationError):
-            EmbeddingVector(vector=[0.1] * (EMBEDDING_DIM - 1), category="IT")
+            KnowledgeRecord(content="q", extended_content="q / r", source="UNKNOWN")
 
-    def test_rejects_unknown_category(self):
+
+class TestKnowledgeItem:
+    def _item(self, **overrides) -> dict:
+        item = dict(
+            id="1",
+            collection="v0.2_train",
+            content="query text",
+            extended_content="query text / response text",
+            domain_id=1,
+            source="IT",
+            created_at="2026-08-19T00:00:00Z",
+            embedding=[0.1] * EMBEDDING_DIM,
+        )
+        item.update(overrides)
+        return item
+
+    def test_accepts_embedding_with_correct_dimension(self):
+        item = KnowledgeItem(**self._item())
+        assert len(item.embedding) == EMBEDDING_DIM
+
+    def test_rejects_embedding_with_wrong_dimension(self):
         with pytest.raises(ValidationError):
-            EmbeddingVector(vector=[0.1] * EMBEDDING_DIM, category="UNKNOWN")
+            KnowledgeItem(**self._item(embedding=[0.1] * (EMBEDDING_DIM - 1)))
 
 
 class TestPredictionResult:

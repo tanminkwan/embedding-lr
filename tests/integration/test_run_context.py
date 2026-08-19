@@ -14,6 +14,7 @@ def _settings(tmp_path) -> Settings:
         _env_file=None,
         aipro_base_url="http://localhost:28000",
         aipro_api_token="test-token",
+        embedding_server_base_url="http://localhost:8000",
         model_dir=str(tmp_path / "models"),
         status_dir=str(tmp_path / "status"),
     )

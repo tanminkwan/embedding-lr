@@ -9,6 +9,11 @@ class AIProClientError(EmbeddingLRError):
     """AIPro+ API 호출 실패(HTTP 오류, 타임아웃, 응답 스키마 불일치)"""
 
 
+class EmbeddingServerError(EmbeddingLRError):
+    """독립 Embedding Service(AIPro+와 별개, Phase 5 추론 전용) 호출 실패
+    (HTTP 오류, 타임아웃, 응답 스키마 불일치)"""
+
+
 class ModelNotFoundError(EmbeddingLRError):
     """model_<ver>.pkl 로드 실패 — 추론 서비스 기동 시"""
 

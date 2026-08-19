@@ -17,29 +17,55 @@
   | `ANOMALY` | 무의미 입력 — 랜덤 문자열, 의미 없는 텍스트, 반복 문자 | NON_IT |
 - **기술 스택 및 프로세스**:
   - **텍스트 전처리**: 임베딩에 불필요하거나 분류 판단을 왜곡시키는 **형식적 노이즈만** 제거하고, 의미 있는 본문 신호는 보존한다 — ①마크다운 코드펜스 구분자(\`\`\`, \`\`\`bash 등)만 제거하고 본문 명령어는 유지(백틱 유무가 IT를 암시하는 표면적 지름길 학습 방지, [[P1_Data_Preprocessing_Review]] 3.2절 참고) ②스택 트레이스/트레이스백 라인(`Exception`, `Caused by`, `at ...(`, `Traceback`) 제거 ③과도한 공백·연속 개행 정규화(collapse)
-  - **임베딩 생성·저장·조회**: 기존 구축된 **AIPro+** API를 호출하여 처리 (직접 구현하지 않음 — 아래 2.1절 참고)
+  - **임베딩 생성·저장·조회**: 기존 구축된 **AIPro+**와 별개의 **Embedding Service**를 호출하여 처리 (직접 구현하지 않음 — 아래 2.1절 참고)
   - **분류 학습**: Scikit-learn Logistic Regression 모델 학습 및 추론
 
-### 2.1 임베딩 인프라 — 기존 AIPro+ 활용
+### 2.1 임베딩 인프라 — AIPro+(학습 전용) + 독립 Embedding Service(추론 전용)
 
-임베딩 모델 구동이나 벡터 저장소 관리를 직접 구현하지 않고, 이미 운영 중인 **AIPro+**(RAG 서비스, `localhost:28000`)의 API를 호출하여 처리한다. 이 서비스는 내부적으로 **BGE-M3** 임베딩 모델과 **Qdrant** 벡터 DB를 사용한다.
+이 프로젝트는 서로 무관한 **두 개의 외부 서비스**를 쓴다. 혼동하기 쉬우므로 명확히
+구분한다:
 
-| 용도 | API 태그 | 엔드포인트 | 설명 |
-|---|---|---|---|
-| 도메인(분류) 관리 | RAG Management | `POST /api/domains` | 데이터를 그룹화할 도메인 생성. **프로젝트당 1개 고정 도메인**(`DOMAIN_NAME` 상수, 예: `embedding_lr`)만 사용하며, 최초 실행 시 1회 생성(이미 존재하면 무시)하고 이후 모든 콜렉션이 이 도메인 하위에 귀속됨 |
-| 콜렉션 생성·관리 | RAG Management | `POST /api/collections` | 벡터 공간(콜렉션) 생성. 위 고정 도메인 하위에, 입력 데이터 경로(`data/<version>/{train,test,val}.jsonl`)에서 자동 추출한 **데이터 version** + **용도(train/test/validation) 구분**을 조합한 `<version>_<train\|test\|validation>` 값을 `name`으로 사용 — 데이터 버전 × 용도별로 별도 콜렉션으로 분리됨. 실행 시마다 존재 여부를 먼저 확인하고, 이미 존재하면 재생성하지 않고 그대로 사용(idempotent) |
-| 임베딩 벡터 생성 | LLM | `POST /api/embeddings` | 텍스트 목록 → 임베딩 벡터 배열 반환 |
-| 지식 데이터 등록 | RAG Data | `POST /api/rag/knowledge` | 임베딩 + 메타데이터를 벡터 저장소에 적재 (Upsert 지원) |
-| 유사도 검색 | RAG Data | `POST /api/rag/search` | 쿼리 벡터와 유사한 데이터 검색 (코사인 유사도) |
-| 일괄 삭제 | RAG Data | `DELETE /api/rag/bulk-delete` | 조건부 대량 삭제 (재학습 시 데이터 정화용) |
+- **AIPro+**(RAG 서비스, `localhost:28000`) — **Phase 2(학습)만** 사용. 지식 데이터를
+  콜렉션에 텍스트(`content`)로 등록하면 AIPro+가 내부적으로 **BGE-M3** 임베딩을 계산해
+  **Qdrant**에 저장하고, 등록된 데이터를 임베딩 포함해서 일괄 조회할 수 있다. 이
+  프로젝트 코드는 AIPro+가 별도로 제공하는 `POST /api/embeddings`(임베딩만 단독 계산)는
+  **호출하지 않는다** — 아래 API 표의 "사용 여부" 열 참고.
+- **Embedding Service**(독립 서비스, `localhost:8000`, AIPro+와 무관) — **Phase 5(추론)만**
+  사용. 실시간 쿼리 1건이 들어올 때마다 Qdrant 저장 없이 임베딩 벡터만 즉시 얻기 위해
+  직접 호출한다. 인증이 필요 없다.
+
+두 서비스를 나눈 이유: Phase 2는 데이터 전체를 한 번에 등록·조회하는 배치 작업이라
+AIPro+의 지식 저장소 기능(도메인/콜렉션/추적성)이 그대로 유용하지만, Phase 5는 쿼리
+1건마다 저장할 필요가 없는 실시간 요청이라 AIPro+를 거치지 않고 임베딩 계산만 하는
+가벼운 서비스를 직접 호출하는 것이 더 적합하다.
+
+#### AIPro+ API (`localhost:28000`) — Phase 2 전용
+
+| 용도 | API 태그 | 엔드포인트 | 사용 여부 | 설명 |
+|---|---|---|---|---|
+| 도메인(분류) 관리 | RAG Management | `POST /api/domains` | 사용 | 데이터를 그룹화할 도메인 생성. **프로젝트당 1개 고정 도메인**(`DOMAIN_NAME` 상수, 예: `embedding_lr`)만 사용하며, 최초 실행 시 1회 생성(이미 존재하면 무시)하고 이후 모든 콜렉션이 이 도메인 하위에 귀속됨 |
+| 콜렉션 생성·관리 | RAG Management | `POST /api/collections` | 사용 | 벡터 공간(콜렉션) 생성. 위 고정 도메인 하위에, 입력 데이터 경로(`data/<version>/{train,test,val}.jsonl`)에서 자동 추출한 **데이터 version** + **용도(train/test/validation) 구분**을 조합한 `<version>_<train\|test\|validation>` 값을 `collection_name`으로 사용 — 데이터 버전 × 용도별로 별도 콜렉션으로 분리됨. 실행 시마다 존재 여부를 먼저 확인하고, 이미 존재하면 재생성하지 않고 그대로 사용(idempotent). **주의**: `collection_name`은 AIPro+가 `^[a-zA-Z0-9_-]+$` 패턴만 허용(점 `.` 불가 — 실제로 `POST /api/collections`에 점이 든 이름을 보내면 422 검증). 데이터 버전 문자열은 `v0.1`/`v0.2`처럼 점을 포함하므로, `collection.py`가 콜렉션명을 만들 때 버전 문자열의 점(`.`)을 언더스코어(`_`)로 치환한다 — 예: `v0.2` + `train` → `v0_2_train`(사용자 확인, 2026-08-19, 실제 AIPro+ 호출로 422 재현 후 결정) |
+| 임베딩 벡터 생성 | LLM | `POST /api/embeddings` | **미사용** | AIPro+ 자체 임베딩 단독 계산 API. 이 프로젝트는 학습 경로에서도 지식 데이터 등록(`content` 기반, 아래)과 조회만으로 벡터를 얻으므로 이 API를 직접 호출하지 않는다 |
+| 지식 데이터 등록 | RAG Data | `POST /api/rag/knowledge` | 사용 | `content`(텍스트) + 메타데이터를 등록하면 AIPro+가 내부에서 임베딩을 계산해 벡터 저장소에 적재(Upsert 지원) — 등록 요청 자체는 벡터를 받지 않는다 |
+| 지식 데이터 조회(임베딩 포함) | RAG Data | `GET /api/rag/knowledge` | 사용 | `domain_id`(필수) + `collection`/`source`(선택, 부분일치) 조건으로 등록된 데이터를 임베딩 벡터 포함하여 조회(`limit` 기본 50). `POST /api/rag/search`는 임베딩 값을 반환하지 않아, 등록된 벡터를 다시 얻으려면 이 API를 쓴다 |
+| 유사도 검색 | RAG Data | `POST /api/rag/search` | 미사용(참고용) | 쿼리 벡터와 유사한 데이터 검색 (코사인 유사도). 응답에 임베딩 벡터는 포함되지 않음 |
+| 일괄 삭제 | RAG Data | `DELETE /api/rag/bulk-delete` | 미사용(참고용) | 조건부 대량 삭제 (재학습 시 데이터 정화용) |
 
 - **인증**: Bearer Token (HTTPBearer) 방식
-- **핵심 이점**: 임베딩 모델 로딩, GPU/메모리 관리, 벡터 인덱싱을 모두 기존 인프라에 위임하므로 본 프로젝트는 **분류 로직에만 집중** 가능
-- **사전 등록 순서**: 임베딩 요청 전에 반드시 ①도메인(`DOMAIN_NAME`, 최초 1회) → ②콜렉션(`<version>_<split>`, 버전/용도마다) 순으로 존재를 보장한 뒤에만 `POST /api/rag/knowledge` 적재를 수행한다 — 콜렉션·도메인이 없는 상태로 지식 데이터를 등록할 수 없다. 둘 다 **이미 존재하면 재등록(재생성)하지 않고 기존 것을 그대로 사용**한다 — 매 실행마다 존재 확인 후 없을 때만 생성.
-- **지식 데이터 등록 전략(레코드 단위 중복 판별 없음)**:
-  - Train/Test/Validation 각 데이터셋 전체를 한 번의 배치로 콜렉션에 통째로 적재하는 방식이므로, 해시 비교 등 레코드 단위 중복 판별은 두지 않는다 — 대신 콜렉션 자체를 데이터 version × 용도(train/test/validation) 단위로 분리해 관리한다(위 콜렉션 표 참고).
-  - 지식 데이터 등록(`POST /api/rag/knowledge`) 시 `source` 필드에는 **분류 라벨값**(`카테고리`, 5-class 중 하나: `IT`/`DAILY`/`KNOWLEDGE`/`CREATIVE`/`ANOMALY`)을 저장한다 — 이를 통해 콜렉션 내에서도 라벨 기준으로 데이터를 조회·추적할 수 있다.
-  - 재학습(하이퍼파라미터 조정 등) 시에는 동일 콜렉션(`<version>_<split>`)을 대상으로 전체 재임베딩·재적재(Upsert)를 수행한다.
+- **사전 등록 순서**: 지식 데이터 등록 전에 반드시 ①도메인(`DOMAIN_NAME`, 최초 1회) → ②콜렉션(`<version>_<split>`, 버전/용도마다) 순으로 존재를 보장한 뒤에만 `POST /api/rag/knowledge` 적재를 수행한다 — 콜렉션·도메인이 없는 상태로 지식 데이터를 등록할 수 없다. 둘 다 **이미 존재하면 재등록(재생성)하지 않고 기존 것을 그대로 사용**한다 — 매 실행마다 존재 확인 후 없을 때만 생성.
+- **지식 데이터 등록·조회 전략(콜렉션 단위 판별, 레코드 단위 중복 판별 없음)**:
+  - Phase 2 파이프라인은 임베딩을 직접 계산하지 않는다 — `text_cleaner`로 정제한 텍스트를 그대로 `POST /api/rag/knowledge`(`content`, `source`=분류 라벨값)로 등록하면 AIPro+가 내부에서 임베딩을 계산·저장하고, 그 뒤 `GET /api/rag/knowledge`로 해당 콜렉션 전체를 일괄 조회해 `embedding`+`source`를 그대로 `*_vectors.parquet`으로 저장한다.
+  - Train/Test/Validation 각 데이터셋 전체를 한 번의 배치로 콜렉션에 통째로 등록하는 방식이므로, 해시 비교 등 **레코드 단위** 중복 판별은 두지 않는다 — 대신 콜렉션 자체를 데이터 version × 용도(train/test/validation) 단위로 분리해 관리한다(위 콜렉션 표 참고).
+  - `source` 필드에는 **분류 라벨값**(`카테고리`, 5-class 중 하나: `IT`/`DAILY`/`KNOWLEDGE`/`CREATIVE`/`ANOMALY`)을 저장한다 — 이를 통해 콜렉션 내에서도 라벨 기준으로 데이터를 조회·추적할 수 있다.
+  - **재실행 시 콜렉션 단위 재등록 스킵**: Phase 2 재실행 시, 등록을 수행하기 전에 `GET /api/rag/knowledge`(`domain_id`+`collection`, `limit`=해당 split의 입력 레코드 수 이상)로 해당 콜렉션에 이미 등록된 건수를 조회한다. 조회된 건수가 입력 JSONL의 레코드 수와 **일치하면** `POST /api/rag/knowledge` 재등록을 건너뛰고 방금 조회한 결과(`embedding`+`source`)를 그대로 `*_vectors.parquet` 생성에 쓴다. 건수가 다르거나(0건 포함) 콜렉션이 비어 있으면 **콜렉션 전체**를 재등록(Upsert)한 뒤 다시 `GET`으로 조회한다 — 레코드 단위 비교(해시 등)는 하지 않고 콜렉션 단위 건수 비교로만 판단한다.
+  - 하이퍼파라미터 조정 등으로 **동일 데이터에 대해 임베딩만 다시 계산**해야 하는 경우(임베딩 모델이 바뀌는 등)는 위 스킵 조건에 해당하지 않도록 콜렉션명(`<version>_<split>`)에 버전을 새로 부여해 별도 콜렉션으로 재등록해야 한다 — 같은 콜렉션명으로는 강제 재등록 수단을 별도로 제공하지 않는다.
+
+#### Embedding Service API (`localhost:8000`, AIPro+와 별개) — Phase 5 전용
+
+| 용도 | 엔드포인트 | 설명 |
+|---|---|---|
+| 헬스체크 | `GET /health` | 서비스 상태 확인 |
+| 임베딩 생성 | `POST /embed` | `{"texts": [...]}` → `{"embeddings": [[...]], "dim": 1024, "count": N}`. 인증 불필요. Phase 5 추론 경로(`inference/predictor.py`)가 쿼리 1건이 들어올 때마다 직접 호출해 벡터만 얻고, Qdrant 등록은 하지 않는다 |
 
 ## 3. 학습 데이터 확보 전략
 
@@ -116,11 +142,11 @@ JSONL 데이터 (1,000건, 5 클래스 × 200건)
          │
     [사전 등록] 도메인(DOMAIN_NAME, 최초 1회) → 콜렉션(<version>_<train|test|validation>)
          │
-    [AIPro+] POST /api/embeddings
+    [AIPro+] POST /api/rag/knowledge — content=정제 텍스트, source=label(카테고리)
+         │   (AIPro+가 내부에서 임베딩 계산 후 Qdrant 적재, collection=<version>_<train|test|validation>)
+    [AIPro+] GET /api/rag/knowledge — 콜렉션 일괄 조회
          │
-    1024D 벡터 배열
-         │
-    [적재] source=label(카테고리) 로 Qdrant 적재 (collection=<version>_<train|test|validation>)
+    1024D 벡터 배열(embedding) + label(source)
          │
     Multi-class Logistic Regression 학습 (5 클래스)
          │
@@ -171,7 +197,7 @@ JSONL 데이터 (1,000건, 5 클래스 × 200건)
       │
   텍스트 전처리 (노이즈 제거)
       │
-  [AIPro+] POST /api/embeddings → 1024D 벡터
+  [Embedding Service, localhost:8000] POST /embed → 1024D 벡터 (AIPro+ 미사용)
       │
   학습된 LR 모델 로드 (.pkl)
       │
@@ -192,10 +218,10 @@ JSONL 데이터 (1,000건, 5 클래스 × 200건)
 |---|---|
 | 합성 데이터 확보(코드 외부) | LLM 프롬프트 기반, 5 클래스 × 200건 균등 분배 — 이미 완료된 원본(현재 CSV), 이 저장소 코드가 생성하지 않음 |
 | 데이터 준비(Phase 1, 코드) | 원본(현재 CSV) → JSONL 변환 → 재조합·클래스별 3:1:1 분할, 1,000건 |
-| 임베딩 변환 및 적재 | AIPro+ API 호출로 1024D 벡터 생성, source=라벨값 저장, train/test/validation별 콜렉션 분리 적재 |
+| 임베딩 변환 및 적재 | AIPro+ 지식 데이터 등록(content 기반, source=라벨값)으로 train/test/validation별 콜렉션 분리 적재 → AIPro+가 계산·저장한 1024D 벡터를 일괄 조회(GET)해 확보 |
 | 분류 모델 학습 | Scikit-learn Logistic Regression, 하이퍼파라미터 탐색, 테스트셋 기반 튜닝 |
 | 성능 검증 | 검증셋 200건 대상 Accuracy/F1 평가, Confusion Matrix, 목표 미달 시 루프백 |
-| 추론 파이프라인 | 텍스트 입력 → 전처리 → 임베딩 → LR 분류 → 카테고리 + 신뢰도 출력 |
+| 추론 파이프라인 | 텍스트 입력 → 전처리 → 독립 Embedding Service(localhost:8000)로 임베딩 → LR 분류 → 카테고리 + 신뢰도 출력 (AIPro+ 미사용) |
 | **최종 산출물** | **추론 가능한 파이프라인 코드 + 학습된 모델 파일(`.pkl`)** |
 
 ## 7. Phase 진행 로드맵

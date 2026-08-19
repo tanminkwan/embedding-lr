@@ -7,6 +7,7 @@ from embedding_lr.config import Settings
 REQUIRED_ENV = {
     "AIPRO_BASE_URL": "http://localhost:28000",
     "AIPRO_API_TOKEN": "test-token",
+    "EMBEDDING_SERVER_BASE_URL": "http://localhost:8000",
     "MODEL_DIR": "models",
 }
 
@@ -19,6 +20,7 @@ def test_loads_required_fields_from_env(monkeypatch):
 
     assert settings.aipro_base_url == "http://localhost:28000"
     assert settings.aipro_api_token == "test-token"
+    assert settings.embedding_server_base_url == "http://localhost:8000"
     assert settings.model_dir == "models"
 
 
@@ -33,6 +35,7 @@ def test_applies_defaults_when_optional_fields_absent(monkeypatch):
     assert settings.env == "local"
     assert settings.status_dir == "status"
     assert settings.aipro_timeout_seconds == 30.0
+    assert settings.embedding_server_timeout_seconds == 30.0
 
 
 def test_overrides_defaults_from_env(monkeypatch):
@@ -48,6 +51,7 @@ def test_overrides_defaults_from_env(monkeypatch):
 def test_missing_required_field_raises(monkeypatch):
     monkeypatch.delenv("AIPRO_BASE_URL", raising=False)
     monkeypatch.delenv("AIPRO_API_TOKEN", raising=False)
+    monkeypatch.delenv("EMBEDDING_SERVER_BASE_URL", raising=False)
     monkeypatch.delenv("MODEL_DIR", raising=False)
 
     with pytest.raises(ValidationError):

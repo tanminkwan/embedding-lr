@@ -9,6 +9,7 @@ from embedding_lr.data_generation.jsonl_repository import JsonlRepository
 REQUIRED_ENV = {
     "AIPRO_BASE_URL": "http://localhost:28000",
     "AIPRO_API_TOKEN": "test-token",
+    "EMBEDDING_SERVER_BASE_URL": "http://localhost:8000",
     "MODEL_DIR": "models",
 }
 

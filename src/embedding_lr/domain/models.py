@@ -20,24 +20,54 @@ class QueryRecord(BaseModel):
         return value
 
 
-class EmbeddingVector(BaseModel):
-    """AIPro+ POST /api/embeddings 응답 1건 + 적재용 메타데이터"""
+class Domain(BaseModel):
+    """AIPro+ 도메인 — POST/GET /api/domains 응답"""
 
-    vector: list[float]
-    category: str
+    id: int
+    name: str
 
-    @field_validator("vector")
+
+class Collection(BaseModel):
+    """AIPro+ 콜렉션 — POST/GET /api/collections 응답(registration.py가 쓰는 필드만)"""
+
+    name: str
+    collection_name: str
+
+
+class KnowledgeRecord(BaseModel):
+    """AIPro+ POST /api/rag/knowledge 요청 1건(content 기반) — knowledge_writer.py가
+    QueryRecord를 이 형태로 매핑해 VectorStore.upsert()에 넘긴다. AIPro+가 content로부터
+    내부에서 임베딩을 계산해 저장하므로, 이 모델은 벡터를 포함하지 않는다."""
+
+    content: str
+    extended_content: str
+    source: str
+
+    @field_validator("source")
     @classmethod
-    def _vector_must_match_embedding_dim(cls, value: list[float]) -> list[float]:
-        if len(value) != EMBEDDING_DIM:
-            raise ValueError(f"vector must have length {EMBEDDING_DIM}, got {len(value)}")
+    def _source_must_be_known_label(cls, value: str) -> str:
+        if value not in CLASS_LABELS:
+            raise ValueError(f"source must be one of {CLASS_LABELS}, got {value!r}")
         return value
 
-    @field_validator("category")
+
+class KnowledgeItem(BaseModel):
+    """AIPro+ GET /api/rag/knowledge 응답 1건(임베딩 포함)"""
+
+    id: str
+    collection: str
+    content: str
+    extended_content: str
+    domain_id: int
+    source: str
+    created_at: str
+    embedding: list[float]
+
+    @field_validator("embedding")
     @classmethod
-    def _category_must_be_known_label(cls, value: str) -> str:
-        if value not in CLASS_LABELS:
-            raise ValueError(f"category must be one of {CLASS_LABELS}, got {value!r}")
+    def _embedding_must_match_embedding_dim(cls, value: list[float]) -> list[float]:
+        if len(value) != EMBEDDING_DIM:
+            raise ValueError(f"embedding must have length {EMBEDDING_DIM}, got {len(value)}")
         return value
 
 

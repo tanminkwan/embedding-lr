@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     aipro_api_token: str
     aipro_timeout_seconds: float = 30.0
 
+    embedding_server_base_url: str
+    embedding_server_timeout_seconds: float = 30.0
+
     log_level: str = "INFO"
     service_name: str = "embedding_lr"
     env: str = "local"

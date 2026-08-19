@@ -59,6 +59,9 @@ class Settings(BaseSettings):
     aipro_api_token: str         # Bearer Token — 비밀값, .env 전용, 로그에 절대 출력 금지
     aipro_timeout_seconds: float = 30.0
 
+    embedding_server_base_url: str        # 예: http://localhost:8000 — AIPro+와 무관한 독립 서비스, Phase 5 전용
+    embedding_server_timeout_seconds: float = 30.0
+
     log_level: str = "INFO"      # P0_설계서_Logging 5절
     service_name: str = "embedding_lr"   # P0_설계서_Logging 3절 `service` 필드
     env: str = "local"                    # P0_설계서_Logging 3절 `env` 라벨 후보
@@ -85,10 +88,25 @@ class QueryRecord(BaseModel):
     response: str      # JSON_KEY_RESPONSE
     category: str | None = None   # JSON_KEY_CATEGORY — 학습 데이터는 필수, 추론 요청은 없음(예측 대상)
 
-class EmbeddingVector(BaseModel):
-    """AIPro+ POST /api/embeddings 응답 1건 + 적재용 메타데이터"""
-    vector: list[float]           # 길이 EMBEDDING_DIM
-    category: str                 # 분류 라벨 — knowledge_writer가 AIPro+ `source` 필드로 그대로 매핑
+class KnowledgeRecord(BaseModel):
+    """AIPro+ POST /api/rag/knowledge 요청 1건(content 기반) — VectorStore.upsert() 입력
+    타입. knowledge_writer.py가 QueryRecord(query/response/category)를 이 형태로 매핑해
+    넘긴다. AIPro+가 content로부터 내부적으로 임베딩을 계산해 저장하므로 벡터 필드는
+    없다 — 사용자 확인(2026-08-19): "content 받아서 aipro plus 가 vector 생성해서 등록"."""
+    content: str
+    extended_content: str
+    source: str                    # 분류 라벨값 — knowledge_writer가 category를 그대로 매핑
+
+class KnowledgeItem(BaseModel):
+    """AIPro+ GET /api/rag/knowledge 응답 1건(임베딩 포함)"""
+    id: str
+    collection: str
+    content: str
+    extended_content: str
+    domain_id: int
+    source: str                    # 분류 라벨값 — KnowledgeRecord.source와 동일 계약
+    created_at: str
+    embedding: list[float]         # 길이 EMBEDDING_DIM
 
 class PredictionResult(BaseModel):
     """inference/predictor.py 출력, POST /classify 응답 본문"""
@@ -97,8 +115,8 @@ class PredictionResult(BaseModel):
     probabilities: dict[str, float]        # {카테고리: 확률}, 5개 키 = CLASS_LABELS
 ```
 
-- `EmbeddingVector.vector`의 길이 검증(`EMBEDDING_DIM`)은 pydantic validator로
-  강제한다 — 임베딩 API 응답 이상을 조기에 발견하기 위함.
+- `KnowledgeItem.embedding`의 길이 검증(`EMBEDDING_DIM`)은 pydantic validator로 강제한다
+  — 임베딩 API 응답 이상을 조기에 발견하기 위함.
 - `PredictionResult.probabilities`의 키 집합은 반드시 `CLASS_LABELS`와 동일해야
   한다(순서는 무관, 키 누락/추가 불가) — validator로 검증.
 
@@ -109,12 +127,20 @@ class PredictionResult(BaseModel):
 
 ```python
 class EmbeddingClient(Protocol):
+    """독립 Embedding Service(localhost:8000, AIPro+와 무관) 호출 — Phase 5 추론 전용.
+    Phase 2는 이 클라이언트를 쓰지 않는다(아래 VectorStore로 대체)."""
     def embed(self, texts: list[str]) -> list[list[float]]: ...
 
 class VectorStore(Protocol):
-    def upsert(self, records: list[EmbeddingVector], collection: str) -> None:
-        """category를 source 필드로 매핑해 AIPro+ POST /api/rag/knowledge 적재.
-        콜렉션 전체를 재적재하는 방식이므로 레코드 단위 중복 판별은 하지 않는다."""
+    """AIPro+(localhost:28000) 지식 데이터 저장소 호출 — Phase 2(학습) 전용."""
+    def upsert(self, records: list[KnowledgeRecord], collection: str) -> None:
+        """AIPro+ POST /api/rag/knowledge 적재(content 기반 — AIPro+가 내부에서
+        임베딩을 계산해 저장). 콜렉션 전체를 재적재하는 방식이므로 레코드 단위
+        중복 판별은 하지 않는다."""
+        ...
+    def get_knowledge(self, domain_id: int, collection: str, limit: int) -> list[KnowledgeItem]:
+        """AIPro+ GET /api/rag/knowledge — 임베딩 포함 조회. upsert()로 등록된 데이터를
+        일괄 조회해 embedding/pipeline.py가 *_vectors.parquet을 만드는 데 사용한다."""
         ...
 
 class Classifier(Protocol):
@@ -126,9 +152,15 @@ class DataRepository(Protocol):
     def save(self, records: list[QueryRecord], path: str) -> None: ...
 ```
 
-- `EmbeddingClient`/`VectorStore`는 각각 AIPro+ API의 `/api/embeddings`,
-  `/api/rag/knowledge`(upsert) 호출을 감싼다 — Scope_Definition 2.1절의 `source`=라벨값
-  저장 전략이 `VectorStore.upsert`의 계약이다.
+- `EmbeddingClient`와 `VectorStore`는 서로 다른 두 외부 서비스를 감싼다(ISP) —
+  `EmbeddingClient`는 독립 Embedding Service의 `POST /embed`를, `VectorStore`는 AIPro+의
+  `POST`/`GET /api/rag/knowledge`(upsert + 조회)를 감싼다. `POST /api/rag/knowledge`는
+  벡터가 아니라 `content`(텍스트)를 받고 AIPro+가 내부에서 임베딩을 계산해 저장하므로
+  (사용자 확인, 2026-08-19), `VectorStore.upsert`의 입력 타입은 벡터가 아니라
+  `KnowledgeRecord`(content/extended_content/source)다.
+- `EmbeddingClient` 구현체는 `embedding/embedding_server_client.py`(`EmbeddingServerClient`),
+  `VectorStore` 구현체는 `embedding/aipro_client.py`(`AIProClient`) — [[Architecture_Design]]
+  4절, 둘 다 등급 B(HTTP I/O) — 구현 후 통합 테스트(respx 모킹).
 - 이 Protocol들을 테스트에서 fake로 교체해 `embedding/pipeline.py`,
   `training/trainer.py` 등을 실제 AIPro+ 없이 검증한다([[Architecture_Design]] 7절).
 
@@ -140,6 +172,10 @@ class EmbeddingLRError(Exception):
 
 class AIProClientError(EmbeddingLRError):
     """AIPro+ API 호출 실패(HTTP 오류, 타임아웃, 응답 스키마 불일치)"""
+
+class EmbeddingServerError(EmbeddingLRError):
+    """독립 Embedding Service(AIPro+와 별개, Phase 5 추론 전용) 호출 실패
+    (HTTP 오류, 타임아웃, 응답 스키마 불일치)"""
 
 class ModelNotFoundError(EmbeddingLRError):
     """model_<ver>.pkl 로드 실패 — 추론 서비스 기동 시"""

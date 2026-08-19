@@ -8,6 +8,7 @@ from embedding_lr.domain.models import QueryRecord
 REQUIRED_ENV = {
     "AIPRO_BASE_URL": "http://localhost:28000",
     "AIPRO_API_TOKEN": "test-token",
+    "EMBEDDING_SERVER_BASE_URL": "http://localhost:8000",
     "MODEL_DIR": "models",
 }
 

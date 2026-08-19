@@ -7,6 +7,8 @@ NON_IT_LABELS = ["DAILY", "KNOWLEDGE", "CREATIVE", "ANOMALY"]
 EMBEDDING_DIM = 1024
 
 DATA_SPLITS = ["train", "test", "validation"]
+SPLIT_RATIOS = {"train": 3, "test": 1, "validation": 1}
+RANDOM_SEED = 42
 
 DOMAIN_NAME = "embedding_lr"
 

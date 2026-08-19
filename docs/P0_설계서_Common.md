@@ -23,6 +23,10 @@ EMBEDDING_DIM = 1024            # BGE-M3 (AIPro+ 내부 모델) 차원
 
 # 데이터 용도 구분 — Scope_Definition 2.1절 콜렉션명(`<version>_<split>`) 접미사로 사용
 DATA_SPLITS = ["train", "test", "validation"]
+# 클래스별 분할 비율(3:1:1) — Scope_Definition 3.3절, dataset.split이 참조(P1_설계서_DataGeneration)
+SPLIT_RATIOS = {"train": 3, "test": 1, "validation": 1}
+# 분할 재현성용 고정 시드 — 값 자체는 임의, "고정되어 있다"는 사실이 핵심
+RANDOM_SEED = 42
 
 # AIPro+ 프로젝트 고정 도메인명 — Scope_Definition 2.1절 "사전 등록 순서" 1단계
 DOMAIN_NAME = "embedding_lr"

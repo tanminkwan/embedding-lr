@@ -37,10 +37,10 @@ src/embedding_lr/
 │   └── text_cleaner.py    # 코드펜스 구분자 제거 + 스택 트레이스 라인 제거 + 공백 정규화 (P2_설계서_TextCleaning 참고) — Phase2와 추론에서 공유
 ├── data_generation/       # Phase 1
 │   ├── prompt_loader.py
-│   └── jsonl_writer.py
-├── dataset/                # Phase 1.5
-│   ├── combine.py          # role_*.jsonl → data.jsonl 재조합
-│   └── split.py            # data.jsonl → train/test/val.jsonl (클래스별 3:1:1, seed 고정)
+│   └── jsonl_repository.py  # `DataRepository` Protocol 구현체(JSONL 전용) — 지금은 JSONL뿐이지만 형식이 바뀌면 이 구현체만 교체(P1_설계서_DataGeneration 참고)
+├── dataset/                # Phase 1.5 — `list[QueryRecord]` 위에서만 동작, 파일 형식을 모른다(DIP)
+│   ├── combine.py          # role 9개 `list[QueryRecord]` → 재조합, 클래스당 200건 검증
+│   └── split.py            # `list[QueryRecord]` → 클래스별 3:1:1 stratified 분할 (seed 고정)
 ├── embedding/               # Phase 2
 │   ├── aipro_client.py      # EmbeddingClient 구현체 — AIPro+ API(localhost:28000) HTTP 호출
 │   ├── collection.py        # 순수 로직 — version+split(경로에서 자동 추출) → 콜렉션명 `<version>_<train|test|validation>` 생성 규칙 (외부 의존성 없음)
@@ -57,7 +57,7 @@ src/embedding_lr/
 │   ├── predictor.py          # 모델+임베딩 클라이언트 조합, predict_proba
 │   └── api.py                # FastAPI: POST /classify
 └── cli/                      # 워크플로우 트리거 경계 — Phase별 독립 실행 진입점
-    ├── run_phase1.py ... run_phase4.py
+    ├── run_phase1.py, run_phase1_5.py ... run_phase4.py
     └── run_inference_server.py
 ```
 
@@ -65,7 +65,11 @@ src/embedding_lr/
 `domain/interfaces.py`의 Protocol(`EmbeddingClient`, `Classifier`)에만 의존한다. AIPro+를
 다른 임베딩 서비스로 교체하거나, LogisticRegression을 다른 분류기로 바꿔도 파이프라인
 로직은 수정하지 않는다. 테스트에서는 이 Protocol을 가짜(fake) 구현으로 교체해 TDD를
-수행한다.
+수행한다. `dataset/combine.py`·`dataset/split.py`도 같은 원칙을 따른다 — 파일이 아니라
+`DataRepository` Protocol이 반환한 `list[QueryRecord]` 위에서만 동작하므로, 지금은
+JSONL(`data_generation/jsonl_repository.py`)뿐인 저장 형식이 나중에 바뀌어도(예: Parquet,
+DB) 이 두 모듈과 CLI 오케스트레이션 로직은 수정하지 않고 `DataRepository` 구현체만
+교체하면 된다([[P1_설계서_DataGeneration]] 참고).
 
 ## 3. Workflow 친화 규약 (모든 Phase 공통)
 

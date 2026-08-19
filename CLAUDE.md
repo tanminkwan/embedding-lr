@@ -25,8 +25,8 @@
 | 등급 | 대상 | 적용 규칙 | 커버리지 목표 |
 |---|---|---|---|
 | **A. 핵심 순수 로직** | `preprocessing/text_cleaner`, `embedding/collection`(버전+용도 → 콜렉션명 생성 규칙), `dataset/split`, `dataset/combine`, `evaluation/metrics`, `domain/models` | Red→Green→Refactor로 **테스트를 먼저 작성**. 테스트 없는 변경은 완료로 간주하지 않음 | **라인 커버리지 ≥ 90%** |
-| **B. 오케스트레이션/통합** | `embedding/pipeline`, `training/trainer`, `evaluation/report`, `inference/predictor`, `inference/api` | 구현 후 통합 테스트 작성 허용(사후 테스트 가능). 외부 의존성(AIPro+ 등)은 Protocol을 fake로 교체하거나 respx로 모킹 — 실제 API를 호출하는 E2E는 별도 스위트로 분리 | **라인 커버리지 ≥ 70%**, 주요 경로(happy path + 대표 에러 케이스) 위주 |
-| **C. 탐색/생성** | `data_generation/*`(LLM 프롬프트 기반 생성), 하이퍼파라미터 탐색 실험(`GridSearchCV` 조합 튜닝) | 자동화 테스트 강제하지 않음. 대신 산출물 검증(예: JSONL 스키마·라벨 값 체크, 클래스별 건수 확인) 스크립트로 대체. 클라이언트 HTTP 요청/응답 파싱 부분만 있다면 그 부분은 B등급으로 분리해 테스트 | 커버리지 측정 대상에서 **제외** |
+| **B. 오케스트레이션/통합** | `data_generation/csv_repository`, `data_generation/jsonl_repository`, `embedding/pipeline`, `training/trainer`, `evaluation/report`, `inference/predictor`, `inference/api` | 구현 후 통합 테스트 작성 허용(사후 테스트 가능). 외부 의존성(AIPro+ 등)은 Protocol을 fake로 교체하거나 respx로 모킹 — 실제 API를 호출하는 E2E는 별도 스위트로 분리 | **라인 커버리지 ≥ 70%**, 주요 경로(happy path + 대표 에러 케이스) 위주 |
+| **C. 탐색/생성** | 하이퍼파라미터 탐색 실험(`GridSearchCV` 조합 튜닝) | 자동화 테스트 강제하지 않음. 대신 산출물 검증(예: JSONL 스키마·라벨 값 체크, 클래스별 건수 확인) 스크립트로 대체. 클라이언트 HTTP 요청/응답 파싱 부분만 있다면 그 부분은 B등급으로 분리해 테스트 | 커버리지 측정 대상에서 **제외** |
 
 - 등급 A/B만 CI 커버리지 게이트 대상으로 삼는다. 전체(A+B) 가중 평균 커버리지는
   **≥ 80%**를 프로젝트 기본 목표로 하며, [[Scope_Definition]] Phase별 "테스트 결과서"에
@@ -64,7 +64,7 @@
 향후 워크플로우 오케스트레이션 도구(예: Airflow류)로 이식하기 쉽도록, 각 Phase/스텝은
 지금부터 다음 기준으로 독립적으로 구성한다.
 
-- **독립성**: 각 스텝(데이터 생성 → 임베딩 변환 → 모델 학습 → 검증 → 추론)은 별도
+- **독립성**: 각 스텝(데이터 준비 → 임베딩 변환 → 모델 학습 → 검증 → 추론)은 별도
   스크립트/모듈로 분리하고, 스텝 간 직접 함수 호출이 아니라 파일(디스크) 입출력을 통해서만
   연동한다.
 - **명시적 trigger/input/output**: 각 스텝은 실행 진입점(예: `run()` 또는 CLI 스크립트),
@@ -80,7 +80,7 @@
 
 ## 6. Docker 컨테이너 실행
 
-- 모든 실행 가능한 코드(데이터 생성, 임베딩 변환, 학습, 추론)는 Docker 컨테이너 위에서
+- 모든 실행 가능한 코드(데이터 준비, 임베딩 변환, 학습, 추론)는 Docker 컨테이너 위에서
   실행 가능해야 한다.
 - **테스트 실행도 예외 없이 Docker 컨테이너 내부에서 수행한다.** 호스트에 직접
   `python`/`pip`/`pytest` 등을 설치·실행하지 않는다 — `docker build` 후
@@ -116,7 +116,7 @@
   (예: `Embedding`, `Training`, `DataPreprocessing`).
 - 문서를 새 버전으로 다시 쓸 때는 기존 파일을 덮어쓰지 않고 `_v2`, `_v3`처럼 버전을
   붙인 새 파일로 추가한다(5절 "입출력 보존" 원칙과 동일한 취지) — 이전 버전은 보존.
-- 예: `P1_요구사항정의서_DataGeneration.md`, `P2_설계서_Embedding.md`,
+- 예: `P1_요구사항정의서_DataPreparation.md`, `P2_설계서_Embedding.md`,
   `P3_테스트결과서_Training.md`, `설계서_Architecture.md`(현재 존재).
 - `Scope_Definition.md`는 이 규칙 제정 이전에 작성된 프로젝트 최초 요구사항 문서로,
   이름을 바꾸지 않고 예외로 유지한다(다수 문서가 `[[Scope_Definition]]`으로 참조 중).

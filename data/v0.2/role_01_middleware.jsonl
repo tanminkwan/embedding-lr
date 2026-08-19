@@ -1,0 +1,40 @@
+{"질의": "Tomcat 재시작 명령어 뭐야?", "응답": "- shutdown 후 startup\n```bash\n$CATALINA_HOME/bin/shutdown.sh\n$CATALINA_HOME/bin/startup.sh\n```\n- systemd 등록돼있으면 systemctl restart tomcat", "카테고리": "IT"}
+{"질의": "JEUS 8에서 도메인 상태 확인하는 명령어는?", "응답": "```bash\njeusadmin <노드>:<포트> domain-status\n```\n- WebAdmin 콘솔에서도 서버별 상태 확인 가능", "카테고리": "IT"}
+{"질의": "nginx 설정 파일 문법 검사 어떻게 해?", "응답": "```bash\nnginx -t\n```\n- 문법 에러면 몇 번째 줄인지 바로 찍어줌\n- reload 전엔 항상 이거 먼저 돌려야 함", "카테고리": "IT"}
+{"질의": "Apache 워커 프로세스 확인하는 방법?", "응답": "```bash\nps -ef | grep httpd\napachectl status\n```\n- status는 mod_status 모듈 활성화 필요", "카테고리": "IT"}
+{"질의": "WebtoB 프로세스 상태 확인 명령어?", "응답": "```bash\nwsdm -status\n```\n- HTL, HTH 노드별 상태(ACT/DEACT) 다 나옴", "카테고리": "IT"}
+{"질의": "스레드 덤프 뜨는 명령어 알려줘", "응답": "```bash\njstack <pid> > thread_dump.txt\n```\n- kill -3 <pid> 로도 stdout(catalina.out 등)에 덤프 가능", "카테고리": "IT"}
+{"질의": "JVM 힙 덤프 뜨는 방법?", "응답": "```bash\njmap -dump:live,format=b,file=heap.hprof <pid>\n```\n- live 옵션 빼면 unreachable 객체도 같이 덤프됨", "카테고리": "IT"}
+{"질의": "Tomcat 커넥터 설정에서 maxThreads 기본값이 뭐야?", "응답": "- server.xml Connector 기본값 200\n- 트래픽 많으면 보통 400~800 사이로 늘려서 씀", "카테고리": "IT"}
+{"질의": "nginx 무중단 리로드 명령어는?", "응답": "```bash\nnginx -s reload\n```\n- 마스터 프로세스는 유지, 워커만 graceful하게 교체됨", "카테고리": "IT"}
+{"질의": "JEUS 노드매니저가 뭐야?", "응답": "- 각 노드에서 JEUS 서버 프로세스를 기동/중지/모니터링하는 에이전트\n- 매니저 서버가 원격 노드를 제어할 때 이걸 통해서 명령 전달함", "카테고리": "IT"}
+{"질의": "Apache mod_jk이 하는 역할이 뭐야?", "응답": "- Apache와 WAS(Tomcat/JEUS)를 AJP 프로토콜로 연결해주는 커넥터 모듈\n- workers.properties에 워커 목록/로드밸런싱 정의", "카테고리": "IT"}
+{"질의": "GC 로그 켜는 JVM 옵션 알려줘", "응답": "```\n-Xlog:gc*:file=gc.log:time,uptime:filecount=5,filesize=100M\n```\n- JDK8 이하는 -XX:+PrintGCDetails -Xloggc:gc.log 사용", "카테고리": "IT"}
+{"질의": "Tomcat 세션 타임아웃 설정 어디서 해?", "응답": "- web.xml의 `<session-timeout>` 태그, 단위는 분\n- 기본값은 30분", "카테고리": "IT"}
+{"질의": "WebtoB에서 HTH 노드가 뭐야?", "응답": "- 클라이언트 HTTP 요청 받아서 WAS로 라우팅하는 노드\n- 로드밸런싱은 HTL 노드가 담당", "카테고리": "IT"}
+{"질의": "커넥션 풀이 뭐야 간단히 설명해줘", "응답": "- DB 연결을 미리 만들어두고 재사용하는 캐시 같은 개념\n- 매번 연결 생성/해제하는 비용을 줄여서 응답속도 개선함", "카테고리": "IT"}
+{"질의": "JEUS 8 로그 파일 위치 어디야?", "응답": "- $JEUS_HOME/domains/<도메인명>/servers/<서버명>/logs\n- server.log, stdout.log 위주로 확인", "카테고리": "IT"}
+{"질의": "nginx upstream이 뭐야?", "응답": "- 백엔드 서버들을 그룹으로 묶어 정의하는 블록\n- round robin, least_conn 등 로드밸런싱 알고리즘 지정 가능", "카테고리": "IT"}
+{"질의": "Tomcat catalina.out 로그 위치는?", "응답": "- $CATALINA_HOME/logs/catalina.out\n- 표준출력/표준에러 다 여기로 쌓임", "카테고리": "IT"}
+{"질의": "JVM에서 G1GC랑 CMS GC 차이가 뭐야?", "응답": "- CMS는 Concurrent Mark Sweep, 단편화 발생하고 Java 9부터 deprecated\n- G1은 리전 기반이라 단편화 적고 목표 일시정지시간(-XX:MaxGCPauseMillis) 지정 가능", "카테고리": "IT"}
+{"질의": "Apache와 nginx의 가장 큰 차이가 뭐야?", "응답": "- Apache는 프로세스/스레드 기반(prefork, worker MPM)\n- nginx는 이벤트 기반 비동기라 동시접속 많을 때 메모리 효율 좋음", "카테고리": "IT"}
+{"질의": "nginx에서 502 Bad Gateway 뜨는데 원인 뭐부터 봐야돼?", "응답": "확인 순서\n1. WAS 프로세스 살아있는지 확인 (ps -ef)\n2. nginx.conf의 upstream 주소/포트 맞는지 확인\n3. WAS 쪽 에러로그에서 스택트레이스 확인\n4. 커넥션풀/스레드풀 고갈 여부 확인\n- 놓치기 쉬운 점: WAS 프로세스는 떠있는데 애플리케이션 컨텍스트만 죽은 경우 있음", "카테고리": "IT"}
+{"질의": "Tomcat에서 커넥션 풀 고갈됐다는 로그 나오는데 어떻게 확인해?", "응답": "확인 순서\n1. context.xml의 maxActive/maxTotal 설정값 확인\n2. DB 슬로우쿼리 로그로 커넥션 반환 지연 여부 확인\n3. 코드에서 커넥션 close 누락(릭) 있는지 확인\n4. 스레드 덤프로 커넥션 대기중인 스레드 수 확인\n- 놓치기 쉬운 점: 풀 로그 레벨을 debug로 올려야 실사용 커넥션 수가 찍힘", "카테고리": "IT"}
+{"질의": "JEUS 8 스레드풀이 계속 꽉 차는데 원인 뭐가 있을까?", "응답": "확인 순서\n1. 스레드 덤프 떠서 BLOCKED/WAITING 상태 스레드 위치 확인\n2. 외부 연동(DB, API) 응답 지연 여부 확인\n3. 스레드풀 min/max 사이즈 적정한지 확인\n4. 데드락 여부 확인\n- 놓치기 쉬운 점: 동기 로깅 자체가 병목이 되는 경우도 있음", "카테고리": "IT"}
+{"질의": "애플리케이션이 갑자기 느려졌는데 Full GC 의심될 때 확인 순서는?", "응답": "확인 순서\n1. gc.log에서 Full GC 빈도/소요시간 확인\n2. jstat -gcutil <pid> 1000 으로 실시간 확인\n3. -Xms/-Xmx 힙 사이즈 적정한지 확인\n4. 캐시나 세션에 큰 객체 쌓이는지 heap dump로 확인\n- 놓치기 쉬운 점: Old Gen이 GC 후에도 계속 증가 추세면 메모리 릭 의심해야 함", "카테고리": "IT"}
+{"질의": "WebtoB와 JEUS 연동에서 504 Gateway Timeout 뜨는데 뭐부터 봐야돼?", "응답": "확인 순서\n1. WebtoB HTH의 TIMEOUT 설정값 확인\n2. JEUS 쪽 처리 지연(스레드풀 고갈, DB 지연) 확인\n3. wsdm -status로 WebtoB-JEUS 간 SVR 연결 상태 확인\n4. 네트워크 구간(방화벽, 스위치) 확인\n- 놓치기 쉬운 점: WebtoB 타임아웃이 WAS 타임아웃보다 짧게 설정된 경우가 흔함", "카테고리": "IT"}
+{"질의": "무중단 배포 중에 세션 끊기는 문제 어떻게 확인해?", "응답": "확인 순서\n1. 세션 클러스터링/replication 정상 동작 확인\n2. 배포 시 drain(연결 배수) 시간 없이 바로 내렸는지 확인\n3. sticky session 설정 상태에서 서버 내려가면 세션 유실되니 설정 재확인\n4. 로드밸런서 헬스체크 주기 너무 길어서 죽은 서버로 요청 가는지 확인", "카테고리": "IT"}
+{"질의": "스레드 덤프 분석했더니 BLOCKED 상태 스레드가 많은데 어떻게 봐야돼?", "응답": "확인 순서\n1. 덤프에서 동일 lock 객체 잡고 있는 스레드 찾기\n2. lock owner 스레드가 뭘 하는지 확인 (DB 대기, 외부 API 대기 등)\n3. synchronized 블록 걸린 코드 위치 특정\n4. \"Found deadlock\" 문구 있으면 바로 데드락 확정\n- 놓치기 쉬운 점: 덤프 한 번으로는 부족, 5~10초 간격으로 2~3번 떠서 비교해야 함", "카테고리": "IT"}
+{"질의": "Tomcat 기동은 됐는데 특정 URL만 504 나는 경우 원인은?", "응답": "확인 순서\n1. 해당 URL이 호출하는 외부 연동/DB 쿼리 확인\n2. 액세스로그에서 해당 URL 응답시간 추이 확인\n3. 커넥션풀에서 해당 요청 대기 걸리는지 확인\n4. 웹서버/WAS 타임아웃 설정이 URL별로 다르게 적용되는지 확인", "카테고리": "IT"}
+{"질의": "커넥션 풀에서 릭 의심되는데 어떻게 확인해?", "응답": "확인 순서\n1. 커넥션풀 모니터링(active/idle count) 추이 확인\n2. try-with-resources 또는 finally에서 close 누락 코드 확인\n3. 재시작 직후엔 정상인데 시간 지나며 늘어나는 패턴인지 확인\n4. DB 쪽 idle connection 개수와 비교", "카테고리": "IT"}
+{"질의": "JEUS 8 도메인 기동이 안 되는데 원인 후보 뭐가 있어?", "응답": "확인 순서\n1. server.log/stdout.log 에러 메시지 확인\n2. 포트 충돌 여부 확인\n```bash\nnetstat -ano | grep <port>\n```\n3. domain.xml 설정 파일 문법 오류 확인\n4. 노드매니저 연결 상태 확인\n- 놓치기 쉬운 점: 이전 프로세스가 완전히 안 죽고 남아있는 경우, kill -9 필요", "카테고리": "IT"}
+{"질의": "nginx worker_connections 초과로 502 나는 것 같은데 확인 방법?", "응답": "확인 순서\n1. error.log에서 \"worker_connections are not enough\" 문구 확인\n2. worker_connections, worker_rlimit_nofile 값 확인\n3. stub_status 모듈로 현재 연결 수 확인\n설정 예시\n```\nevents {\n    worker_connections 4096;\n}\n```", "카테고리": "IT"}
+{"질의": "Apache에서 too many open files 에러 나는데 원인은?", "응답": "확인 순서\n1. ulimit -n 으로 현재 제한 확인\n2. /etc/security/limits.conf의 soft/hard nofile 값 확인\n3. lsof -p <pid> | wc -l 로 실제 열린 fd 수 확인\n4. 소켓 릭(close 누락) 코드 의심", "카테고리": "IT"}
+{"질의": "GC 튜닝했는데도 Old Gen이 계속 차는데 뭘 봐야돼?", "응답": "확인 순서\n1. heap dump 떠서 dominator tree로 어떤 객체 많은지 확인\n2. static Map 등 캐시에 데이터 계속 쌓이는지 확인\n3. 세션에 큰 객체 저장하는지 확인(세션 타임아웃 길면 누적)\n4. jstat으로 GC 전후 Old Gen 사이즈 변화 추이 확인", "카테고리": "IT"}
+{"질의": "세션 클러스터링 설정했는데 세션 유실되는 경우 원인은?", "응답": "확인 순서\n1. 세션 replication 방식(sticky, all-to-all) 확인\n2. 세션에 담긴 객체가 Serializable 구현했는지 확인\n3. 멀티캐스트/유니캐스트 네트워크 통신 정상 여부 확인\n4. 각 노드 간 시간 동기화(NTP) 상태 확인", "카테고리": "IT"}
+{"질의": "Tomcat 재기동 후 특정 세션 정보 유실되는 문제 원인 후보는?", "응답": "확인 순서\n1. PersistentManager 등 세션 저장 설정 여부 확인\n2. 세션 저장소(파일/DB/Redis) 연결 상태 확인\n3. graceful shutdown 없이 kill -9로 내렸는지 확인\n- 놓치기 쉬운 점: 인메모리 세션은 재기동하면 무조건 날아감, 별도 저장소 필요함", "카테고리": "IT"}
+{"질의": "JVM OOM(OutOfMemoryError)이 발생했는데 heap dump로 어떻게 분석해?", "응답": "확인 순서\n1. -XX:+HeapDumpOnOutOfMemoryError 옵션으로 자동 덤프 생성됐는지 확인\n2. Eclipse MAT 등으로 dump 열어서 Leak Suspects 리포트 확인\n3. Dominator Tree에서 retained size 큰 객체 확인\n4. 해당 객체의 GC Root 참조 체인 추적", "카테고리": "IT"}
+{"질의": "WebtoB에서 특정 노드만 응답 없음 상태인데 확인 순서는?", "응답": "확인 순서\n1. wsdm -status로 해당 SVR 노드 상태 확인\n2. 해당 WAS 프로세스 자체가 살아있는지 확인\n3. HCHECK(헬스체크) 설정과 주기 확인\n4. 노드 재기동 후에도 반복되면 네트워크 구간 점검", "카테고리": "IT"}
+{"질의": "nginx reload 했는데 설정이 반영 안 되는 것 같은데 원인은?", "응답": "확인 순서\n1. nginx -t 로 문법 에러부터 확인\n2. include로 물려있는 여러 conf 중 엉뚱한 파일 수정한 건 아닌지 확인\n3. 실행 중인 마스터 프로세스가 참조하는 -c 옵션 경로 확인\n4. ps로 실제 새 워커 프로세스 떴는지 확인", "카테고리": "IT"}
+{"질의": "무중단 배포 스크립트 실행했는데 헬스체크 통과 안 되는 경우 확인 순서는?", "응답": "확인 순서\n1. 헬스체크 URL 직접 curl로 정상 응답하는지 확인\n2. 애플리케이션 기동 완료 시점보다 헬스체크 타이밍이 빠른 건 아닌지 확인\n3. 로드밸런서/L4가 바라보는 헬스체크 경로와 설정 일치 여부 확인\n4. 배포 스크립트의 헬스체크 타임아웃 값이 너무 짧은 건 아닌지 확인", "카테고리": "IT"}
+{"질의": "JEUS 8에서 커넥션풀 타임아웃 설정값 어디서 바꿔야 돼?", "응답": "- WebAdmin 콘솔 > 커넥션풀 설정, 또는 JEUSMain.xml의 `<connection-pool>` 항목\n```xml\n<connection-pool>\n    <pool-name>myPool</pool-name>\n    <wait-timeout>30</wait-timeout>\n</connection-pool>\n```", "카테고리": "IT"}

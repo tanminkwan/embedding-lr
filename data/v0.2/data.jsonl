@@ -1,0 +1,1000 @@
+{"질의": "Tomcat 재시작 명령어 뭐야?", "응답": "- shutdown 후 startup\n```bash\n$CATALINA_HOME/bin/shutdown.sh\n$CATALINA_HOME/bin/startup.sh\n```\n- systemd 등록돼있으면 systemctl restart tomcat", "카테고리": "IT"}
+{"질의": "JEUS 8에서 도메인 상태 확인하는 명령어는?", "응답": "```bash\njeusadmin <노드>:<포트> domain-status\n```\n- WebAdmin 콘솔에서도 서버별 상태 확인 가능", "카테고리": "IT"}
+{"질의": "nginx 설정 파일 문법 검사 어떻게 해?", "응답": "```bash\nnginx -t\n```\n- 문법 에러면 몇 번째 줄인지 바로 찍어줌\n- reload 전엔 항상 이거 먼저 돌려야 함", "카테고리": "IT"}
+{"질의": "Apache 워커 프로세스 확인하는 방법?", "응답": "```bash\nps -ef | grep httpd\napachectl status\n```\n- status는 mod_status 모듈 활성화 필요", "카테고리": "IT"}
+{"질의": "WebtoB 프로세스 상태 확인 명령어?", "응답": "```bash\nwsdm -status\n```\n- HTL, HTH 노드별 상태(ACT/DEACT) 다 나옴", "카테고리": "IT"}
+{"질의": "스레드 덤프 뜨는 명령어 알려줘", "응답": "```bash\njstack <pid> > thread_dump.txt\n```\n- kill -3 <pid> 로도 stdout(catalina.out 등)에 덤프 가능", "카테고리": "IT"}
+{"질의": "JVM 힙 덤프 뜨는 방법?", "응답": "```bash\njmap -dump:live,format=b,file=heap.hprof <pid>\n```\n- live 옵션 빼면 unreachable 객체도 같이 덤프됨", "카테고리": "IT"}
+{"질의": "Tomcat 커넥터 설정에서 maxThreads 기본값이 뭐야?", "응답": "- server.xml Connector 기본값 200\n- 트래픽 많으면 보통 400~800 사이로 늘려서 씀", "카테고리": "IT"}
+{"질의": "nginx 무중단 리로드 명령어는?", "응답": "```bash\nnginx -s reload\n```\n- 마스터 프로세스는 유지, 워커만 graceful하게 교체됨", "카테고리": "IT"}
+{"질의": "JEUS 노드매니저가 뭐야?", "응답": "- 각 노드에서 JEUS 서버 프로세스를 기동/중지/모니터링하는 에이전트\n- 매니저 서버가 원격 노드를 제어할 때 이걸 통해서 명령 전달함", "카테고리": "IT"}
+{"질의": "Apache mod_jk이 하는 역할이 뭐야?", "응답": "- Apache와 WAS(Tomcat/JEUS)를 AJP 프로토콜로 연결해주는 커넥터 모듈\n- workers.properties에 워커 목록/로드밸런싱 정의", "카테고리": "IT"}
+{"질의": "GC 로그 켜는 JVM 옵션 알려줘", "응답": "```\n-Xlog:gc*:file=gc.log:time,uptime:filecount=5,filesize=100M\n```\n- JDK8 이하는 -XX:+PrintGCDetails -Xloggc:gc.log 사용", "카테고리": "IT"}
+{"질의": "Tomcat 세션 타임아웃 설정 어디서 해?", "응답": "- web.xml의 `<session-timeout>` 태그, 단위는 분\n- 기본값은 30분", "카테고리": "IT"}
+{"질의": "WebtoB에서 HTH 노드가 뭐야?", "응답": "- 클라이언트 HTTP 요청 받아서 WAS로 라우팅하는 노드\n- 로드밸런싱은 HTL 노드가 담당", "카테고리": "IT"}
+{"질의": "커넥션 풀이 뭐야 간단히 설명해줘", "응답": "- DB 연결을 미리 만들어두고 재사용하는 캐시 같은 개념\n- 매번 연결 생성/해제하는 비용을 줄여서 응답속도 개선함", "카테고리": "IT"}
+{"질의": "JEUS 8 로그 파일 위치 어디야?", "응답": "- $JEUS_HOME/domains/<도메인명>/servers/<서버명>/logs\n- server.log, stdout.log 위주로 확인", "카테고리": "IT"}
+{"질의": "nginx upstream이 뭐야?", "응답": "- 백엔드 서버들을 그룹으로 묶어 정의하는 블록\n- round robin, least_conn 등 로드밸런싱 알고리즘 지정 가능", "카테고리": "IT"}
+{"질의": "Tomcat catalina.out 로그 위치는?", "응답": "- $CATALINA_HOME/logs/catalina.out\n- 표준출력/표준에러 다 여기로 쌓임", "카테고리": "IT"}
+{"질의": "JVM에서 G1GC랑 CMS GC 차이가 뭐야?", "응답": "- CMS는 Concurrent Mark Sweep, 단편화 발생하고 Java 9부터 deprecated\n- G1은 리전 기반이라 단편화 적고 목표 일시정지시간(-XX:MaxGCPauseMillis) 지정 가능", "카테고리": "IT"}
+{"질의": "Apache와 nginx의 가장 큰 차이가 뭐야?", "응답": "- Apache는 프로세스/스레드 기반(prefork, worker MPM)\n- nginx는 이벤트 기반 비동기라 동시접속 많을 때 메모리 효율 좋음", "카테고리": "IT"}
+{"질의": "nginx에서 502 Bad Gateway 뜨는데 원인 뭐부터 봐야돼?", "응답": "확인 순서\n1. WAS 프로세스 살아있는지 확인 (ps -ef)\n2. nginx.conf의 upstream 주소/포트 맞는지 확인\n3. WAS 쪽 에러로그에서 스택트레이스 확인\n4. 커넥션풀/스레드풀 고갈 여부 확인\n- 놓치기 쉬운 점: WAS 프로세스는 떠있는데 애플리케이션 컨텍스트만 죽은 경우 있음", "카테고리": "IT"}
+{"질의": "Tomcat에서 커넥션 풀 고갈됐다는 로그 나오는데 어떻게 확인해?", "응답": "확인 순서\n1. context.xml의 maxActive/maxTotal 설정값 확인\n2. DB 슬로우쿼리 로그로 커넥션 반환 지연 여부 확인\n3. 코드에서 커넥션 close 누락(릭) 있는지 확인\n4. 스레드 덤프로 커넥션 대기중인 스레드 수 확인\n- 놓치기 쉬운 점: 풀 로그 레벨을 debug로 올려야 실사용 커넥션 수가 찍힘", "카테고리": "IT"}
+{"질의": "JEUS 8 스레드풀이 계속 꽉 차는데 원인 뭐가 있을까?", "응답": "확인 순서\n1. 스레드 덤프 떠서 BLOCKED/WAITING 상태 스레드 위치 확인\n2. 외부 연동(DB, API) 응답 지연 여부 확인\n3. 스레드풀 min/max 사이즈 적정한지 확인\n4. 데드락 여부 확인\n- 놓치기 쉬운 점: 동기 로깅 자체가 병목이 되는 경우도 있음", "카테고리": "IT"}
+{"질의": "애플리케이션이 갑자기 느려졌는데 Full GC 의심될 때 확인 순서는?", "응답": "확인 순서\n1. gc.log에서 Full GC 빈도/소요시간 확인\n2. jstat -gcutil <pid> 1000 으로 실시간 확인\n3. -Xms/-Xmx 힙 사이즈 적정한지 확인\n4. 캐시나 세션에 큰 객체 쌓이는지 heap dump로 확인\n- 놓치기 쉬운 점: Old Gen이 GC 후에도 계속 증가 추세면 메모리 릭 의심해야 함", "카테고리": "IT"}
+{"질의": "WebtoB와 JEUS 연동에서 504 Gateway Timeout 뜨는데 뭐부터 봐야돼?", "응답": "확인 순서\n1. WebtoB HTH의 TIMEOUT 설정값 확인\n2. JEUS 쪽 처리 지연(스레드풀 고갈, DB 지연) 확인\n3. wsdm -status로 WebtoB-JEUS 간 SVR 연결 상태 확인\n4. 네트워크 구간(방화벽, 스위치) 확인\n- 놓치기 쉬운 점: WebtoB 타임아웃이 WAS 타임아웃보다 짧게 설정된 경우가 흔함", "카테고리": "IT"}
+{"질의": "무중단 배포 중에 세션 끊기는 문제 어떻게 확인해?", "응답": "확인 순서\n1. 세션 클러스터링/replication 정상 동작 확인\n2. 배포 시 drain(연결 배수) 시간 없이 바로 내렸는지 확인\n3. sticky session 설정 상태에서 서버 내려가면 세션 유실되니 설정 재확인\n4. 로드밸런서 헬스체크 주기 너무 길어서 죽은 서버로 요청 가는지 확인", "카테고리": "IT"}
+{"질의": "스레드 덤프 분석했더니 BLOCKED 상태 스레드가 많은데 어떻게 봐야돼?", "응답": "확인 순서\n1. 덤프에서 동일 lock 객체 잡고 있는 스레드 찾기\n2. lock owner 스레드가 뭘 하는지 확인 (DB 대기, 외부 API 대기 등)\n3. synchronized 블록 걸린 코드 위치 특정\n4. \"Found deadlock\" 문구 있으면 바로 데드락 확정\n- 놓치기 쉬운 점: 덤프 한 번으로는 부족, 5~10초 간격으로 2~3번 떠서 비교해야 함", "카테고리": "IT"}
+{"질의": "Tomcat 기동은 됐는데 특정 URL만 504 나는 경우 원인은?", "응답": "확인 순서\n1. 해당 URL이 호출하는 외부 연동/DB 쿼리 확인\n2. 액세스로그에서 해당 URL 응답시간 추이 확인\n3. 커넥션풀에서 해당 요청 대기 걸리는지 확인\n4. 웹서버/WAS 타임아웃 설정이 URL별로 다르게 적용되는지 확인", "카테고리": "IT"}
+{"질의": "커넥션 풀에서 릭 의심되는데 어떻게 확인해?", "응답": "확인 순서\n1. 커넥션풀 모니터링(active/idle count) 추이 확인\n2. try-with-resources 또는 finally에서 close 누락 코드 확인\n3. 재시작 직후엔 정상인데 시간 지나며 늘어나는 패턴인지 확인\n4. DB 쪽 idle connection 개수와 비교", "카테고리": "IT"}
+{"질의": "JEUS 8 도메인 기동이 안 되는데 원인 후보 뭐가 있어?", "응답": "확인 순서\n1. server.log/stdout.log 에러 메시지 확인\n2. 포트 충돌 여부 확인\n```bash\nnetstat -ano | grep <port>\n```\n3. domain.xml 설정 파일 문법 오류 확인\n4. 노드매니저 연결 상태 확인\n- 놓치기 쉬운 점: 이전 프로세스가 완전히 안 죽고 남아있는 경우, kill -9 필요", "카테고리": "IT"}
+{"질의": "nginx worker_connections 초과로 502 나는 것 같은데 확인 방법?", "응답": "확인 순서\n1. error.log에서 \"worker_connections are not enough\" 문구 확인\n2. worker_connections, worker_rlimit_nofile 값 확인\n3. stub_status 모듈로 현재 연결 수 확인\n설정 예시\n```\nevents {\n    worker_connections 4096;\n}\n```", "카테고리": "IT"}
+{"질의": "Apache에서 too many open files 에러 나는데 원인은?", "응답": "확인 순서\n1. ulimit -n 으로 현재 제한 확인\n2. /etc/security/limits.conf의 soft/hard nofile 값 확인\n3. lsof -p <pid> | wc -l 로 실제 열린 fd 수 확인\n4. 소켓 릭(close 누락) 코드 의심", "카테고리": "IT"}
+{"질의": "GC 튜닝했는데도 Old Gen이 계속 차는데 뭘 봐야돼?", "응답": "확인 순서\n1. heap dump 떠서 dominator tree로 어떤 객체 많은지 확인\n2. static Map 등 캐시에 데이터 계속 쌓이는지 확인\n3. 세션에 큰 객체 저장하는지 확인(세션 타임아웃 길면 누적)\n4. jstat으로 GC 전후 Old Gen 사이즈 변화 추이 확인", "카테고리": "IT"}
+{"질의": "세션 클러스터링 설정했는데 세션 유실되는 경우 원인은?", "응답": "확인 순서\n1. 세션 replication 방식(sticky, all-to-all) 확인\n2. 세션에 담긴 객체가 Serializable 구현했는지 확인\n3. 멀티캐스트/유니캐스트 네트워크 통신 정상 여부 확인\n4. 각 노드 간 시간 동기화(NTP) 상태 확인", "카테고리": "IT"}
+{"질의": "Tomcat 재기동 후 특정 세션 정보 유실되는 문제 원인 후보는?", "응답": "확인 순서\n1. PersistentManager 등 세션 저장 설정 여부 확인\n2. 세션 저장소(파일/DB/Redis) 연결 상태 확인\n3. graceful shutdown 없이 kill -9로 내렸는지 확인\n- 놓치기 쉬운 점: 인메모리 세션은 재기동하면 무조건 날아감, 별도 저장소 필요함", "카테고리": "IT"}
+{"질의": "JVM OOM(OutOfMemoryError)이 발생했는데 heap dump로 어떻게 분석해?", "응답": "확인 순서\n1. -XX:+HeapDumpOnOutOfMemoryError 옵션으로 자동 덤프 생성됐는지 확인\n2. Eclipse MAT 등으로 dump 열어서 Leak Suspects 리포트 확인\n3. Dominator Tree에서 retained size 큰 객체 확인\n4. 해당 객체의 GC Root 참조 체인 추적", "카테고리": "IT"}
+{"질의": "WebtoB에서 특정 노드만 응답 없음 상태인데 확인 순서는?", "응답": "확인 순서\n1. wsdm -status로 해당 SVR 노드 상태 확인\n2. 해당 WAS 프로세스 자체가 살아있는지 확인\n3. HCHECK(헬스체크) 설정과 주기 확인\n4. 노드 재기동 후에도 반복되면 네트워크 구간 점검", "카테고리": "IT"}
+{"질의": "nginx reload 했는데 설정이 반영 안 되는 것 같은데 원인은?", "응답": "확인 순서\n1. nginx -t 로 문법 에러부터 확인\n2. include로 물려있는 여러 conf 중 엉뚱한 파일 수정한 건 아닌지 확인\n3. 실행 중인 마스터 프로세스가 참조하는 -c 옵션 경로 확인\n4. ps로 실제 새 워커 프로세스 떴는지 확인", "카테고리": "IT"}
+{"질의": "무중단 배포 스크립트 실행했는데 헬스체크 통과 안 되는 경우 확인 순서는?", "응답": "확인 순서\n1. 헬스체크 URL 직접 curl로 정상 응답하는지 확인\n2. 애플리케이션 기동 완료 시점보다 헬스체크 타이밍이 빠른 건 아닌지 확인\n3. 로드밸런서/L4가 바라보는 헬스체크 경로와 설정 일치 여부 확인\n4. 배포 스크립트의 헬스체크 타임아웃 값이 너무 짧은 건 아닌지 확인", "카테고리": "IT"}
+{"질의": "JEUS 8에서 커넥션풀 타임아웃 설정값 어디서 바꿔야 돼?", "응답": "- WebAdmin 콘솔 > 커넥션풀 설정, 또는 JEUSMain.xml의 `<connection-pool>` 항목\n```xml\n<connection-pool>\n    <pool-name>myPool</pool-name>\n    <wait-timeout>30</wait-timeout>\n</connection-pool>\n```", "카테고리": "IT"}
+{"질의": "LVM에서 논리볼륨 용량 늘리는 명령어 뭐야?", "응답": "```\nlvextend -L +10G /dev/mapper/vgname-lvname\nresize2fs /dev/mapper/vgname-lvname   # ext4\nxfs_growfs /mountpoint                # xfs\n```\n- xfs는 축소 안 됨, 확장만 가능\n- ext계열은 resize2fs, xfs는 xfs_growfs 사용", "카테고리": "IT"}
+{"질의": "AIX에서 설치된 패키지 목록 확인하려면?", "응답": "```\nlslpp -L\nlslpp -h <fileset명>   # 설치 이력 확인\n```\n- -L은 요약, -l은 상세 정보 출력", "카테고리": "IT"}
+{"질의": "vmstat 봤는데 si/so 값이 계속 올라가는데 원인이 뭐야?", "응답": "si/so는 스왑 in/out, 지속 발생하면 메모리 부족 신호\n확인 순서:\n1. free -h 로 여유 메모리/스왑 사용량 확인\n2. ps aux --sort=-%mem 로 메모리 많이 쓰는 프로세스 특정\n3. /proc/meminfo에서 Cached/Buffers 비중 확인 (캐시는 회수 가능하니 정상)\n4. dmesg | grep -i \"out of memory\" 로 OOM killer 발동 여부 확인\n- vm.swappiness 기본값 60이면 스왑 과다 사용 가능성 있음, DB서버는 10 이하로 낮추는 게 일반적", "카테고리": "IT"}
+{"질의": "df -h는 여유 있는데 \"No space left on device\" 뜨는데 원인이 뭐야?", "응답": "확인 순서:\n1. df -i 로 inode 사용률 확인, 100%면 확정\n2. find /path -xdev -printf '%h\\n' | sort | uniq -c | sort -rn | head 로 inode 많이 쓰는 디렉토리 특정\n3. 세션파일, 캐시, 메일큐(/var/spool) 등 소용량 대량파일 의심\n4. 정리 후에도 재발하면 애플리케이션이 파일 삭제 안 하는지 확인\n- 삭제 직후 inode가 바로 안 줄면 마운트 상태나 캐시 갱신 지연일 수 있음", "카테고리": "IT"}
+{"질의": "cron이 등록은 됐는데 실행이 안 될 때 확인할 것", "응답": "확인 순서:\n1. crontab -l 로 등록 확인 (계정 맞는지)\n2. journalctl -u crond 또는 /var/log/cron 으로 실행 로그 확인\n3. 스크립트 내 절대경로 사용 여부 확인\n4. 스크립트 실행권한(chmod +x) 확인\n5. systemctl status crond 로 서비스 구동 여부 확인\n- cron 환경에서는 로그인 셸의 PATH/환경변수가 로드 안 된다는 점 자주 놓침", "카테고리": "IT"}
+{"질의": "ulimit -n 값 영구적으로 늘리려면?", "응답": "```\n# /etc/security/limits.conf\n* soft nofile 65536\n* hard nofile 65536\n```\n- 현재 세션만 바꾸려면 ulimit -n 65536\n- systemd 서비스는 유닛파일에 LimitNOFILE= 별도 설정 필요", "카테고리": "IT"}
+{"질의": "svmon으로 봤을 때 AIX 서버 메모리가 부족해 보이는데 어떻게 판단해?", "응답": "확인 순서:\n1. svmon -G 로 전체 메모리/페이징스페이스 사용률 확인\n2. pg space %used가 높으면 페이징 발생 중\n3. svmon -P 로 프로세스별 메모리 사용량 top 확인\n4. vmstat 1 5 로 pi/po(페이지인/아웃) 지속 발생 여부 확인\n- AIX는 여유 메모리를 기본적으로 파일캐시로 다 쓰기 때문에 free 낮다고 무조건 부족한 게 아님, computational memory 기준으로 판단해야 함", "카테고리": "IT"}
+{"질의": "xfs 파일시스템 축소 가능해?", "응답": "안 됨. xfs는 확장(xfs_growfs)만 지원\n- 축소하려면 백업 후 파일시스템 재생성 필요", "카테고리": "IT"}
+{"질의": "Windows Server 서비스가 갑자기 계속 다운되는데 확인 방법?", "응답": "확인 순서:\n1. 이벤트뷰어 Application/System 로그에서 종료 시점 에러코드 확인\n2. sc qfailure <서비스명> 로 복구 옵션 설정 여부 확인\n3. 의존 서비스(Dependencies) 중 하나가 먼저 죽은 건 아닌지 확인\n4. 메모리/핸들 누수면 작업관리자에서 핸들 수 지속 증가 확인\n- 자동복구(sc failure)만 걸어두고 근본원인 안 잡으면 무한 재시작 루프에 빠질 수 있음", "카테고리": "IT"}
+{"질의": "LVM 볼륨그룹에 디스크 추가했는데 용량이 안 늘어나", "응답": "확인 순서:\n1. pvcreate /dev/sdX 로 새 디스크 PV 초기화했는지 확인\n2. vgextend vgname /dev/sdX 후 vgs/vgdisplay 로 VG 편입 확인\n3. lvextend로 LV 실제 확장했는지 확인 (VG 확장만으로는 LV 크기 안 변함)\n4. resize2fs/xfs_growfs 로 파일시스템 리사이즈 누락 여부 확인\n- 순서 정리: pvcreate → vgextend → lvextend → resize", "카테고리": "IT"}
+{"질의": "커널 파라미터 즉시 적용하는 방법?", "응답": "```\nsysctl -w vm.swappiness=10\nsysctl -p   # /etc/sysctl.conf 반영\n```\n- 재부팅 후에도 유지하려면 /etc/sysctl.conf 또는 /etc/sysctl.d/*.conf 에 기재 필요", "카테고리": "IT"}
+{"질의": "AIX에서 커널 파라미터(no) 값 확인/변경?", "응답": "```\nno -a | grep tcp_recvspace\nno -o tcp_recvspace=262144\nno -p -o tcp_recvspace=262144   # 영구 적용\n```", "카테고리": "IT"}
+{"질의": "디스크 풀(100%)인데 du로 찾아도 큰 파일이 안 보임", "응답": "확인 순서:\n1. lsof | grep deleted 로 삭제됐지만 프로세스가 물고 있는 파일 확인\n2. df -h와 du -sh / 결과 차이 나면 십중팔구 이 케이스\n3. 해당 프로세스 재시작하거나 kill 하면 공간 회수됨\n- 로그파일을 rm으로 지워도 프로세스가 열어놓은 상태면 공간 안 돌아옴, truncate로 지워야 함: `: > /path/to/logfile`", "카테고리": "IT"}
+{"질의": "JFS2 파일시스템 확장 명령어(AIX)?", "응답": "```\nchfs -a size=+5G /filesystem\n```\n- LV 자동 확장 포함, 온라인 상태로 확장 가능", "카테고리": "IT"}
+{"질의": "좀비 프로세스가 서버에 많이 쌓였는데 문제 있어?", "응답": "- 좀비는 리소스(메모리/CPU) 거의 안 먹음, 다만 PID 고갈 가능성은 있음\n- 부모 프로세스가 wait() 안 해서 발생, 부모 재시작하면 정리됨\n- 수천 개 이상 쌓이면 fork 실패로 이어질 수 있음", "카테고리": "IT"}
+{"질의": "load average는 높은데 CPU 사용률(vmstat us+sy)은 낮을 때", "응답": "확인 순서:\n1. iostat -x 1 로 %util, await 확인 → I/O 대기 의심\n2. ps aux 에서 D 상태(uninterruptible sleep) 프로세스 확인\n3. NFS 마운트 문제인 경우가 많음, mount 옵션(hard/soft) 확인\n4. 디스크 자체 병목이면 iostat await 값이 튐\n- load average는 CPU뿐 아니라 D상태(디스크 대기) 프로세스도 포함한다는 점 놓치기 쉬움", "카테고리": "IT"}
+{"질의": "리눅스에서 fork: retry: Resource temporarily unavailable 에러 뜨는데 뭐야?", "응답": "확인 순서:\n1. ulimit -u 로 현재 프로세스 제한 확인\n2. /etc/security/limits.conf 의 nproc 제한값 확인\n3. ps -eLf | wc -l 로 현재 스레드/프로세스 총량 확인\n4. ps -u username | wc -l 로 특정 사용자 제한치 근접 여부 확인\n- systemd 기반이면 limits.conf 말고 /etc/systemd/system.conf 의 DefaultLimitNPROC도 확인해야 함, 두 설정이 따로 적용됨", "카테고리": "IT"}
+{"질의": "Windows Server 이벤트 로그 명령줄로 확인하는 방법?", "응답": "```\nGet-EventLog -LogName System -Newest 20\nGet-WinEvent -FilterHashtable @{LogName='Application'; Level=2}\n```", "카테고리": "IT"}
+{"질의": "RHEL 서버 부팅 후 특정 파일시스템이 마운트 안 됨", "응답": "확인 순서:\n1. journalctl -b 로 부팅 로그에서 mount 실패 메시지 확인\n2. /etc/fstab UUID/디바이스명 오타나 디스크 순서 변경 여부 확인\n3. blkid로 실제 UUID와 fstab 비교\n4. fsck로 파일시스템 손상 여부 확인\n- fstab에 nofail 옵션 없으면 해당 파일시스템 마운트 실패 시 부팅 자체가 멈출 수 있음", "카테고리": "IT"}
+{"질의": "AIX 부트이미지 재생성 언제 해야해?", "응답": "```\nbosboot -a -d /dev/hdisk0\n```\n- 커널 파라미터, 디바이스 드라이버 변경 후 재부팅 전에 실행 필요", "카테고리": "IT"}
+{"질의": "LVM PV/VG/LV 관계 한 줄로 정리하면?", "응답": "PV(물리디스크)를 모아 VG(볼륨그룹) 만들고, VG를 쪼개서 LV(논리볼륨) 생성한 뒤 그 위에 파일시스템을 얹는 구조", "카테고리": "IT"}
+{"질의": "NFS 마운트한 디렉토리 접근시 hang 걸림", "응답": "확인 순서:\n1. mount 옵션 확인 (hard vs soft) - hard면 서버 응답 없을 때 무한 대기\n2. showmount -e <nfs서버> 로 서버 응답 확인\n3. rpcinfo -p <nfs서버> 로 포트매퍼/nfsd 서비스 확인\n4. 네트워크 단절이면 서버 재기동 전까지 df 자체가 멈출 수 있음\n- soft, intr, timeo 옵션 조합으로 완화 가능하지만 데이터 무결성 트레이드오프 있음, 운영 DB용 마운트엔 비추천", "카테고리": "IT"}
+{"질의": "커널 파라미터 중 세마포어 관련 파라미터 뭐가 있어?", "응답": "```\nkernel.sem = 250 32000 32 128\n```\n- 순서대로 SEMMSL, SEMMNS, SEMMNU, SEMMNI, 오라클 등 DB 설치 시 필수 튜닝 항목", "카테고리": "IT"}
+{"질의": "chage로 계정 만료일 확인하는 법?", "응답": "```\nchage -l username\n```", "카테고리": "IT"}
+{"질의": "AIX 서버에서 errpt 봤더니 DISK 관련 에러 계속 찍힘", "응답": "확인 순서:\n1. errpt -a 로 상세 에러코드/타임스탬프 확인\n2. 하드웨어 에러(배드섹터)면 lsattr/diag 명령으로 진단\n3. 멀티패스 구성이면 lspath로 경로 하나가 죽은 건지 확인\n4. 반복되면 벤더 지원 통해 디스크 교체 검토\n- errclear로 지우기 전에 반드시 근본 원인 확인, 그냥 지우면 재발 시 추적 불가", "카테고리": "IT"}
+{"질의": "리눅스 스왑 파일 추가하는 방법?", "응답": "```\ndd if=/dev/zero of=/swapfile bs=1M count=2048\nmkswap /swapfile\nswapon /swapfile\n```\n- /etc/fstab에 등록해야 재부팅 후에도 유지", "카테고리": "IT"}
+{"질의": "systemctl enable 했는데 재부팅하면 서비스 안 뜸", "응답": "확인 순서:\n1. systemctl is-enabled <서비스> 로 실제 활성화 여부 재확인\n2. systemctl status <서비스> 로 부팅 시점 실패 로그 확인\n3. 의존성 유닛(After=, Requires=) 설정 누락 여부 확인\n4. journalctl -u <서비스> -b 로 부팅 로그만 필터링해서 확인\n- network.target만 지정하면 IP 할당 전에 뜨는 경우 있음, network-online.target으로 변경 필요할 수 있음", "카테고리": "IT"}
+{"질의": "특정 서비스가 OOM killer에 의해 계속 죽는데", "응답": "확인 순서:\n1. dmesg | grep -i \"killed process\" 로 대상 프로세스/메모리량 확인\n2. 해당 프로세스 메모리 사용 패턴(누수 여부) 확인\n3. /proc/<pid>/oom_score 로 killer 우선순위 확인, 필요시 oom_score_adj 조정\n4. 근본적으로 메모리 증설이나 cgroup 메모리 제한 설정 검토\n- oom_score_adj=-1000 로 설정하면 절대 안 죽지만 대신 다른 중요 프로세스가 죽을 수 있음 주의", "카테고리": "IT"}
+{"질의": "AIX에서 페이징스페이스 추가하는 명령어?", "응답": "```\nmkps -a -n -s 4 rootvg hdisk1\n```\n- -a는 재부팅시 자동 활성화", "카테고리": "IT"}
+{"질의": "rpm 패키지 설치 여부 확인?", "응답": "```\nrpm -qa | grep <패키지명>\nrpm -qi <패키지명>\n```", "카테고리": "IT"}
+{"질의": "디스크 I/O가 갑자기 느려졌다는 보고 들어왔을 때", "응답": "확인 순서:\n1. iostat -x 1 로 await, %util 확인\n2. 특정 프로세스가 원인이면 iotop으로 특정\n3. RAID 컨트롤러 배터리/캐시 상태 확인 (write-back → write-through 전환되면 급격히 느려짐)\n4. SSD면 TRIM 미실행이나 파일시스템 fragmentation 여부 확인\n- RAID 카드 배터리 방전으로 캐시 모드 바뀌는 경우를 실무에서 자주 놓침", "카테고리": "IT"}
+{"질의": "계정이 자꾸 잠기는데(로그인 실패 누적) 원인 파악 방법", "응답": "확인 순서:\n1. faillock --user username 으로 실패 이력/시간 확인\n2. /etc/security/faillock.conf 의 deny, unlock_time 설정값 확인\n3. 배치/애플리케이션 계정이면 옛 비밀번호로 자동 로그인 시도하는 스케줄러 있는지 확인\n4. 무차별 대입 의심되면 /var/log/secure 에서 접속 소스 IP 확인\n- 사람이 아니라 크론/서비스 계정이 저장된 옛 비밀번호로 계속 시도하는 경우가 실무에서 제일 흔함", "카테고리": "IT"}
+{"질의": "방화벽에서 특정 포트 열려면(firewalld)?", "응답": "```\nfirewall-cmd --permanent --add-port=8080/tcp\nfirewall-cmd --reload\n```", "카테고리": "IT"}
+{"질의": "SELinux 때문에 서비스가 파일 접근 못 하는 것 같은데 확인 방법", "응답": "확인 순서:\n1. getenforce 로 Enforcing 여부 확인\n2. ausearch -m avc -ts recent 로 거부 로그 확인\n3. audit2why < /var/log/audit/audit.log 로 원인 해석\n4. 임시로 setenforce 0 해서 재현되면 SELinux 문제 확정\n- 컨텍스트 문제면 chcon보다 restorecon -Rv 로 원복하는 게 정석 (chcon은 relabel 시 초기화됨)", "카테고리": "IT"}
+{"질의": "time sync 서비스 상태 확인(chrony)?", "응답": "```\nchronyc tracking\nchronyc sources -v\n```", "카테고리": "IT"}
+{"질의": "서버 시간이 계속 어긋나는데", "응답": "확인 순서:\n1. chronyc tracking 에서 offset 값 확인\n2. systemctl status chronyd 로 서비스 구동 여부 확인\n3. 방화벽에서 NTP(123/udp) 아웃바운드 막혀있는지 확인\n4. VM이면 하이퍼바이저 타임싱크와 충돌하는 경우 있음 (VMware Tools 시간동기 끄고 chrony만 사용 권장)\n- 클럭 드리프트가 큰 상태에서 chronyd 처음 켜면 makestep 설정 없이는 서서히 맞추다 오래 걸릴 수 있음", "카테고리": "IT"}
+{"질의": "사용자한테 quota exceeded 에러 뜨는데 확인 방법", "응답": "확인 순서:\n1. quota -u username 으로 사용중/제한값 확인\n2. repquota -a 로 전체 사용자 중 초과자 스캔\n3. edquota -t 로 소프트 리밋 유예기간(grace period) 확인\n4. 임시 증설 필요하면 edquota -u username 으로 조정\n- 유예기간 이미 지난 상태면 soft limit 밑으로 내려가기 전까진 계속 막힘, limit만 올려도 당장 못 풀 수 있음", "카테고리": "IT"}
+{"질의": "AIX에서 CPU/메모리 리소스 실시간 확인 명령어?", "응답": "```\ntopas\n```\n- Linux의 top과 유사한 AIX 전용 모니터링 도구", "카테고리": "IT"}
+{"질의": "yum/dnf 업데이트 후 커널 패닉으로 부팅 안 됨", "응답": "확인 순서:\n1. grub 메뉴 Advanced options에서 이전 커널 버전으로 부팅\n2. 부팅 성공하면 문제 커널 버전 확인 후 dnf remove kernel-<버전>\n3. grub2-mkconfig -o /boot/grub2/grub.cfg 로 부트 메뉴 재생성\n4. 재발 방지 위해 커널 업데이트 전 스냅샷/백업 필수화\n- 클라우드 VM이면 콘솔(시리얼) 접근으로 grub 메뉴 진입해야 함, SSH만으론 복구 불가", "카테고리": "IT"}
+{"질의": "쉘스크립트 cron 자동화할 때 로그 남기는 기본 패턴?", "응답": "```\n0 2 * * * /opt/scripts/backup.sh >> /var/log/backup.log 2>&1\n```\n- 2>&1 빼먹으면 에러 로그가 유실되는 경우 많음", "카테고리": "IT"}
+{"질의": "스위치에서 특정 포트가 어떤 VLAN에 물려있는지 어떻게 확인해?", "응답": "```\nshow interfaces switchport\n```\n- Access Mode VLAN 항목에서 현재 VLAN 확인\n- 트렁크 포트면 Trunking VLANs 항목에서 허용 목록 확인", "카테고리": "IT"}
+{"질의": "STP에서 포트가 blocking 상태인지 어떻게 확인해?", "응답": "```\nshow spanning-tree interface gi1/0/1\n```\n- Role이 Altn/Back이면 blocking 상태\n- Root Bridge 우선순위도 같이 확인해서 의도한 토폴로지인지 체크", "카테고리": "IT"}
+{"질의": "방화벽에 새 allow 룰 넣었는데 여전히 차단되는데 정책 순서 때문일까?", "응답": "확인 순서:\n1. 위쪽에 있는 deny 룰이 먼저 매치되고 있는지 hit count 확인\n2. 새 룰이 올바른 방향(inbound/outbound)에 들어갔는지 확인\n3. 룰 저장 후 commit/apply 여부 확인\n4. 소스/목적지 조건에 NAT 이전/이후 주소 헷갈렸는지 확인\n- top-down 매치 방식이라 순서만 바꿔도 해결되는 경우가 많음", "카테고리": "IT"}
+{"질의": "iptables에서 특정 룰만 골라서 삭제하려면?", "응답": "```\niptables -L INPUT --line-numbers\niptables -D INPUT 3\n```\n- 라인 번호로 지정 삭제가 제일 안전\n- 저장 안 하면 재부팅 시 초기화되니 저장 명령 별도 실행 필요", "카테고리": "IT"}
+{"질의": "클라이언트에서 SSL handshake failure 뜨는데 원인이 뭘까?", "응답": "확인 순서:\n1. openssl s_client로 서버 인증서 체인 확인\n```\nopenssl s_client -connect host:443 -servername host\n```\n2. 클라이언트-서버 간 지원 TLS 버전/cipher suite 겹치는지 확인\n3. 중간 인증서 누락 여부 (Root만 있고 Intermediate 빠진 경우 흔함)\n4. 서버 시간 오차로 인증서 유효기간 벗어난 경우\n- 방화벽/프록시가 SNI 기반으로 차단하는 경우도 놓치기 쉬움", "카테고리": "IT"}
+{"질의": "인증서 체인 파일 만들 때 순서는 어떻게 돼?", "응답": "- Leaf(서버 인증서) → Intermediate → Root 순서로 이어 붙임\n- Root는 클라이언트가 이미 신뢰하고 있어서 생략 가능한 경우 많음\n- 순서 틀리면 일부 클라이언트에서 체인 검증 실패", "카테고리": "IT"}
+{"질의": "L4 LB에서 특정 백엔드만 계속 헬스체크 fail 뜨는데 뭐부터 봐야해?", "응답": "확인 순서:\n1. LB에서 해당 백엔드로 직접 확인\n```\ncurl -v http://backend_ip:port/health\n```\n2. 헬스체크 URI, 포트, 기대 응답 코드 설정값 확인\n3. 백엔드 서버 프로세스/포트 리스닝 상태 확인\n4. 서버 방화벽에서 LB IP 허용 여부 확인\n5. 타임아웃 값이 너무 짧게 잡혀있는지 확인\n- 헬스체크 interval/threshold와 실제 앱 응답 시간 안 맞으면 flapping 발생", "카테고리": "IT"}
+{"질의": "Site-to-Site VPN 터널이 자꾸 끊기는데 원인 후보가 뭐가 있을까?", "응답": "확인 순서:\n1. Phase1/Phase2 SA 상태 확인\n```\nshow crypto isakmp sa\nshow crypto ipsec sa\n```\n2. 양쪽 PSK, IKE 버전, 암호화 알고리즘 일치 여부\n3. NAT-T 필요한 구간인데 비활성화된 경우\n4. DPD(Dead Peer Detection) 타임아웃 설정 확인\n5. 상대측 ISP 회선 불안정 여부\n- MTU 문제로 fragmentation 발생해서 간헐적 끊김 나는 경우도 흔함", "카테고리": "IT"}
+{"질의": "특정 포트로 오가는 패킷만 tcpdump로 캡처하려면?", "응답": "```\ntcpdump -i eth0 port 443 -w capture.pcap\n```\n- 특정 호스트로 좁히려면 and host 조건 추가\n- 캡처 크기 크면 -c로 패킷 수 제한 걸어두는 게 안전", "카테고리": "IT"}
+{"질의": "특정 도메인의 A 레코드만 조회하려면?", "응답": "```\ndig +short example.com A\n```\n- 특정 네임서버로 직접 질의하려면 @ns_ip 옵션 추가\n- 캐시 영향 배제하려면 +trace로 루트부터 확인", "카테고리": "IT"}
+{"질의": "방화벽 TCP 세션 타임아웃 기본값이 왜 중요해?", "응답": "- 오래 걸리는 배치/파일전송이 타임아웃보다 길면 중간에 세션 끊김\n- 기본값이 보통 3600초 전후라 장시간 유지되는 커넥션은 별도 정책 필요\n- 타임아웃 늘리면 방화벽 세션 테이블 메모리 사용량도 같이 늘어남", "카테고리": "IT"}
+{"질의": "L4 로드밸런서에서 round robin이랑 least connection 차이가 뭐야?", "응답": "- round robin은 순서대로 균등 분배, 서버 부하 상태는 고려 안함\n- least connection은 현재 연결 수 가장 적은 서버로 우선 배분\n- 세션 길이가 서버마다 크게 다르면 least connection이 더 안정적", "카테고리": "IT"}
+{"질의": "L7 LB에서 특정 path로 들어온 요청이 원하는 백엔드로 안 가는데 뭐 봐야해?", "응답": "확인 순서:\n1. path 매칭 rule 순서 확인 (먼저 매치되는 룰이 우선 적용되는 구조인 경우 많음)\n2. 정규식/prefix 매칭 오타 여부\n3. Host 헤더 기반 라우팅과 병행 시 두 조건 충돌 여부\n4. 백엔드 pool에 실제로 해당 서버 등록됐는지 확인\n- 캐시된 라우팅 테이블 때문에 설정 반영 안 된 것처럼 보이는 경우 있음, LB reload 필요", "카테고리": "IT"}
+{"질의": "TLS 1.2랑 1.3 핸드셰이크 차이가 뭐야?", "응답": "- 1.3은 핸드셰이크 라운드트립이 1번으로 줄어서 더 빠름\n- 1.3은 약한 cipher suite들(RC4, CBC 등) 제거됨\n- 0-RTT 재접속 지원하지만 리플레이 공격 가능성 있어 사용 시 주의", "카테고리": "IT"}
+{"질의": "인증서 만료일 커맨드로 바로 확인하는 법?", "응답": "```\nopenssl x509 -enddate -noout -in cert.pem\n```\n- 원격 서버 것도 s_client로 받아서 파이프 연결하면 바로 확인 가능\n- 만료 임박 알림은 모니터링에 등록해두는 게 안전", "카테고리": "IT"}
+{"질의": "OSPF neighbor가 계속 DOWN/INIT 상태에서 안 올라오는데 뭐부터 봐야해?", "응답": "확인 순서:\n1. 인터페이스 상태와 IP 서브넷 일치 여부\n```\nshow ip ospf neighbor\nshow ip ospf interface\n```\n2. Area ID, 인증 방식/키 일치 여부\n3. Hello/Dead 타임 설정 불일치\n4. MTU 불일치 (DB 교환 단계에서 멈추는 전형적 증상)\n5. 중간 방화벽/ACL에서 OSPF 멀티캐스트(224.0.0.5) 차단 여부\n- MTU 미스매치는 neighbor가 EXSTART에서 멈추는 게 특징", "카테고리": "IT"}
+{"질의": "같은 IP인데 접속 때마다 다른 장비로 붙는 것 같은데 ARP 문제인지 어떻게 확인해?", "응답": "확인 순서:\n1. 해당 IP의 ARP 응답이 매번 다른 MAC으로 오는지 확인\n```\narp -a | grep 192.168.1.10\n```\n2. 중복 IP 할당(DHCP static + 수동 할당 충돌) 여부 확인\n3. VRRP/HSRP 가상 IP인 경우 정상 동작(활성 노드 변경)인지 구분\n4. 스위치 mac address-table에서 해당 MAC이 여러 포트에 학습되는지 확인\n- gratuitous ARP 스푸핑 의심되면 포트 보안이나 DAI(Dynamic ARP Inspection) 적용 검토", "카테고리": "IT"}
+{"질의": "특정 구간에서만 큰 패킷이 안 나가는 것 같은데 MTU 문제인지 어떻게 확인해?", "응답": "확인 순서:\n1. DF 비트 설정하고 크기 늘려가며 ping 테스트\n```\nping -M do -s 1472 target_ip\n```\n2. 응답 없으면 크기 줄여가며 임계값 찾기\n3. 터널 구간(VPN, GRE) 있으면 오버헤드 고려해서 MTU 재계산\n4. 중간 장비에서 ICMP fragmentation needed 차단 여부 확인\n- PMTUD 차단된 환경이면 큰 패킷만 조용히 드랍돼서 원인 찾기 어려움", "카테고리": "IT"}
+{"질의": "특정 내부 IP가 NAT 되어 나가는데도 외부에서 접속 응답이 안 오는데 뭘 확인해야해?", "응답": "확인 순서:\n1. NAT 매핑 테이블에서 실제 세션 생성됐는지 확인\n```\nshow nat rule detail | include 10.0.0.5\nshow session all | include 10.0.0.5\n```\n2. static NAT vs dynamic pool 설정 꼬였는지 확인\n3. 반대 방향(inbound) 허용 정책 별도로 있는지 확인\n4. ISP 구간에서 해당 외부 IP 라우팅 안 되고 있는지 확인\n- NAT은 됐는데 리턴 트래픽 라우팅 안 되는 케이스가 의외로 많음", "카테고리": "IT"}
+{"질의": "스위치에서 특정 포트 트래픽을 분석용으로 미러링하려면?", "응답": "```\nmonitor session 1 source interface gi1/0/5\nmonitor session 1 destination interface gi1/0/10\n```\n- destination 포트는 일반 트래픽 용도로 같이 못 씀\n- 미러링 대역폭이 destination 포트 용량 넘으면 드랍 발생", "카테고리": "IT"}
+{"질의": "BGP 피어가 계속 flapping 하는데 원인 후보가 뭐가 있을까?", "응답": "확인 순서:\n1. 로그에서 flap 원인 메시지 확인 (hold timer expired인지, reset인지)\n```\nshow ip bgp neighbor x.x.x.x\n```\n2. 물리 회선 불안정 여부 (interface error/drop 카운터 확인)\n3. Hold timer/Keepalive 값 양쪽 불일치\n4. 최대 prefix 제한 초과로 세션 강제 종료되는 경우\n5. MTU나 TCP MSS 문제로 대량 업데이트 시 세션 끊기는 경우\n- 회선은 멀쩡한데 keepalive 처리 지연으로 flap 나는 경우도 있어서 CPU 부하도 같이 체크", "카테고리": "IT"}
+{"질의": "만료 임박한 SSL 인증서 갱신할 때 순서가 어떻게 돼?", "응답": "- 기존 개인키 재사용 여부 결정 후 CSR 생성\n```\nopenssl req -new -key server.key -out server.csr\n```\n- CA에 CSR 제출 후 발급받은 인증서로 교체\n- 교체 후 서비스 재시작하고 체인 검증까지 확인", "카테고리": "IT"}
+{"질의": "DNS 레코드 바꿨는데 일부 지역에서만 반영이 안 되는데 왜 그래?", "응답": "확인 순서:\n1. TTL 값 확인, 이전 TTL이 길면 캐시 만료까지 대기 필요\n```\ndig example.com A +noall +answer\n```\n2. 로컬 리졸버/ISP DNS 캐시 여부 (외부 공용 DNS로 재조회해서 비교)\n3. Secondary 네임서버로 zone transfer 제대로 됐는지 확인\n4. Anycast/GSLB 구성이면 특정 리전만 반영 지연될 수 있음\n- 각 네임서버에 직접 @옵션으로 질의해서 비교하는 게 제일 빠른 확인 방법", "카테고리": "IT"}
+{"질의": "스위치 포트 채널(LACP) 묶인 상태 확인하려면?", "응답": "```\nshow etherchannel summary\n```\n- 각 포트 상태가 P(bundled)인지 확인\n- I나 D 상태면 협상 실패한 것이므로 상대 장비 설정도 같이 확인", "카테고리": "IT"}
+{"질의": "원격 사용자 VPN 클라이언트 인증이 계속 실패하는데 확인 순서가 어떻게 돼?", "응답": "확인 순서:\n1. 인증서 기반이면 클라이언트 인증서 유효기간/체인 확인\n2. AD/RADIUS 연동이면 서버 로그에서 reject 사유 확인\n3. 그룹 정책(허용된 사용자 그룹) 매핑 확인\n4. 클라이언트 시간 동기화 어긋나서 토큰/인증서 검증 실패하는 경우\n- 계정 잠금 정책 때문에 반복 실패 시 자동 lock 걸리는 경우도 흔함", "카테고리": "IT"}
+{"질의": "tcpdump로 SYN flood 의심 상황인지 어떻게 확인해?", "응답": "확인 순서:\n1. SYN만 캡처해서 특정 목적지로 몰리는지 확인\n```\ntcpdump -i eth0 'tcp[tcpflags] & tcp-syn != 0 and tcp[tcpflags] & tcp-ack == 0'\n```\n2. 출발지 IP 분산도 확인 (분산되면 스푸핑 의심)\n3. 서버 SYN backlog 큐 상태 확인\n4. 방화벽/IPS에서 SYN cookie 설정 여부 확인\n- 정상 트래픽 급증과 구분하려면 SYN 대비 완료된 handshake(ACK) 비율을 같이 봐야함", "카테고리": "IT"}
+{"질의": "서버가 어떤 cipher suite 지원하는지 확인하는 법?", "응답": "```\nnmap --script ssl-enc-ciphers -p 443 host\n```\n- openssl s_client로도 개별 cipher 지정해서 연결 테스트 가능\n- 취약한 cipher(RC4, 3DES 등) 남아있으면 점검 대상으로 표시", "카테고리": "IT"}
+{"질의": "Nginx 리버스 프록시에서 502 Bad Gateway 뜨는데 원인이 뭘까?", "응답": "확인 순서:\n1. 백엔드 서버 프로세스 살아있는지, 포트 리스닝 확인\n2. nginx error.log에서 upstream 관련 에러 메시지 확인\n```\ntail -f /var/log/nginx/error.log\n```\n3. 백엔드 응답 타임아웃 설정이 너무 짧은지 확인\n4. upstream 헤더 크기가 proxy_buffer 설정보다 큰 경우\n- keepalive 연결이 백엔드에서 갑자기 끊긴 경우도 502로 나타남, upstream keepalive 설정 확인 필요", "카테고리": "IT"}
+{"질의": "DNS round robin이랑 GSLB 차이가 뭐야?", "응답": "- round robin은 여러 IP를 순서대로 응답만 해줄 뿐 서버 상태는 모름\n- GSLB는 헬스체크 기반으로 살아있는 서버/가까운 리전으로 응답 조정\n- 장애 서버 자동 제외가 필요하면 GSLB 써야함", "카테고리": "IT"}
+{"질의": "스위치 포트가 err-disabled 상태로 막혔는데 어떻게 풀어?", "응답": "```\nshutdown\nno shutdown\n```\n- 반복적으로 발생하면 원인(포트 보안 위반, BPDU guard 등) 먼저 확인\n- errdisable recovery 기능 켜두면 자동 복구 시간 설정 가능", "카테고리": "IT"}
+{"질의": "IPSec VPN이랑 SSL VPN 차이가 뭐야?", "응답": "- IPSec은 네트워크 계층에서 전체 트래픽 암호화, 클라이언트 설정 필요\n- SSL VPN은 브라우저/클라이언트로 특정 애플리케이션 접근 위주, 접근성 좋음\n- 사이트간 상시 연결은 IPSec, 재택 개별 접속은 SSL VPN이 일반적", "카테고리": "IT"}
+{"질의": "특정 트래픽이 방화벽에서 왜 차단됐는지 로그에서 원인을 못 찾겠는데 어떻게 접근해야해?", "응답": "확인 순서:\n1. 소스/목적지 IP, 포트로 로그 필터링\n```\nshow log traffic | match \"10.0.0.5\"\n```\n2. 매치된 정책 이름 확인 후 해당 정책 조건 재검토\n3. 세션 로그가 아예 없으면 라우팅 단계에서 이미 드랍된 것일 수 있음\n4. 인터페이스 zone 설정 오류로 트래픽이 엉뚱한 정책 zone 타는지 확인\n- 로그에 아예 안 잡히면 방화벽 이전 단계(스위치/라우팅) 문제일 가능성부터 배제", "카테고리": "IT"}
+{"질의": "L7 LB에서 세션 유지(sticky session) 어떻게 설정해?", "응답": "- 쿠키 기반 또는 소스 IP 기반 persistence 옵션 설정\n- 쿠키 기반이 서버 재시작/스케일링에도 더 안정적\n- 세션 정보를 서버 로컬에만 두면 sticky 끊겼을 때 로그아웃 발생하니 세션 스토어 분리 고려", "카테고리": "IT"}
+{"질의": "앱에서 인증서 갱신 후 연결이 안 되는데 certificate pinning 때문일 수도 있대, 어떻게 확인해?", "응답": "확인 순서:\n1. 앱이 특정 인증서/공개키를 pinning 하고 있는지 개발팀 확인\n2. 서버 인증서를 pinning된 값과 비교 (지문/공개키 해시)\n```\nopenssl x509 -noout -pubkey -in newcert.pem | openssl pkey -pubin -outform der | openssl dgst -sha256\n```\n3. Intermediate 인증서까지 바뀐 경우 pinning 대상 범위 확인\n- pinning 걸린 앱은 서버 인증서만 바꾸면 무조건 실패하니 앱 업데이트가 선행돼야 함", "카테고리": "IT"}
+{"질의": "트렁크 링크에서 특정 VLAN 트래픽이 이상하게 새는데 원인이 뭘까?", "응답": "확인 순서:\n1. 양쪽 스위치 native vlan 설정 일치 여부 확인\n```\nshow interfaces trunk\n```\n2. native vlan mismatch 관련 CDP/로그 경고 확인\n3. 802.1Q 태깅 안 된 트래픽이 다른 native vlan으로 넘어가는지 확인\n- native vlan 불일치는 보안 문제로도 이어질 수 있어서(VLAN hopping) 우선순위 높게 봐야함", "카테고리": "IT"}
+{"질의": "traceroute 결과에서 특정 홉에 * * * 뜨는 건 뭘 의미해?", "응답": "- 해당 홉에서 응답 없음, ICMP time-exceeded 차단하는 장비인 경우 많음\n- 이후 홉이 정상 응답하면 실제 장애는 아닐 가능성 높음\n- 마지막 홉까지 계속 실패하면 그 구간에서 실제 단절 의심", "카테고리": "IT"}
+{"질의": "DNSSEC 적용한 도메인이 일부 리졸버에서 조회 실패하는데 원인이 뭘까?", "응답": "확인 순서:\n1. DNSSEC 체인 검증 도구로 서명 유효성 확인\n```\ndig +dnssec example.com\n```\n2. DS 레코드가 상위 도메인에 정확히 등록됐는지 확인\n3. 키 롤오버 중이면 구 서명/신 서명 겹치는 기간(TTL) 고려했는지 확인\n4. 서버 시간 오차로 서명 유효기간 벗어난 경우\n- 리졸버마다 DNSSEC 검증 강도가 달라서 특정 리졸버에서만 실패하는 게 정상적인 케이스도 있음", "카테고리": "IT"}
+{"질의": "Nginx에서 SSL termination 설정할 때 최소한 뭘 넣어야해?", "응답": "```\nlisten 443 ssl;\nssl_certificate /etc/nginx/cert.pem;\nssl_certificate_key /etc/nginx/key.pem;\n```\n- 인증서 파일에 체인까지 포함(cert+intermediate)했는지 확인\n- ssl_protocols에서 TLS 1.0/1.1 제외 권장", "카테고리": "IT"}
+{"질의": "내부망에서 외부 도메인으로 접속하면 안 되는데 외부에서는 잘 되는 상황, 원인이 뭘까?", "응답": "확인 순서:\n1. 내부에서 외부 IP로 나갔다가 자기 자신에게 돌아오는 hairpin NAT 지원 여부 확인\n2. 방화벽에 hairpin NAT 정책 별도로 추가돼 있는지 확인\n3. 내부 DNS가 외부 IP 그대로 응답하는지, split-DNS로 내부 IP 응답하게 바꿔야 하는지 확인\n- 근본적으로는 split-DNS 구성이 hairpin NAT보다 안정적인 해결책", "카테고리": "IT"}
+{"질의": "브라우저에서 인증서 이름 불일치(SAN mismatch) 에러 뜨는데 원인이 뭐야?", "응답": "- 접속한 도메인이 인증서의 CN/SAN 목록에 포함 안 된 경우\n- 로드밸런서 뒤에서 여러 도메인 서비스할 때 SNI 라우팅이 잘못돼서 다른 인증서 나가는 경우도 흔함\n- 인증서 재발급 시 SAN 목록에 필요한 도메인 전부 포함했는지 확인", "카테고리": "IT"}
+{"질의": "Oracle에서 테이블스페이스 사용률 확인하는 쿼리 알려줘", "응답": "```sql\nSELECT tablespace_name,\n       round(used_space*8/1024,2) used_mb,\n       round(tablespace_size*8/1024,2) total_mb,\n       round(used_percent,2) pct\nFROM dba_tablespace_usage_metrics;\n```\n- used_percent 90% 넘으면 알람 걸어두는 게 좋음\n- autoextend 켜져 있어도 디스크 자체가 꽉차면 소용없음, df -h도 같이 확인", "카테고리": "IT"}
+{"질의": "ORA-01555 스냅샷 too old 에러 뜨는데 원인이 뭐야", "응답": "확인 순서\n1. undo_retention 파라미터 값 확인, 너무 짧으면 발생\n2. undo tablespace 크기 부족한지 dba_data_files로 확인\n3. 장시간 실행되는 배치/리포트 쿼리가 있는지 확인 (긴 트랜잭션이 undo 재사용을 막음)\n4. fetch across commit 패턴(커밋 자주 하면서 같은 커서 유지) 코드 있는지 확인\n- 놓치기 쉬운 포인트: undo tablespace guarantee retention 옵션 꺼져있으면 공간 부족 시 undo가 덮어써짐", "카테고리": "IT"}
+{"질의": "Oracle에서 특정 세션이 잡고 있는 락 확인하려면", "응답": "```sql\nSELECT s.sid, s.serial#, s.username, o.object_name, l.locked_mode\nFROM v$locked_object l, dba_objects o, v$session s\nWHERE l.object_id = o.object_id\nAND l.session_id = s.sid;\n```\n- blocking session은 v$session.blocking_session 컬럼으로 바로 확인 가능", "카테고리": "IT"}
+{"질의": "어제까지 잘 돌던 쿼리 실행계획이 갑자기 바뀌었어, 왜 이런 거야", "응답": "확인 순서\n1. 옵티마이저 통계 최근 수집 시점 확인 (dba_tab_statistics.last_analyzed)\n2. bind peeking 이슈인지 확인 - 바인드 값에 따라 카디널리티 추정이 달라짐\n3. 히스토그램 유무 확인, 컬럼 데이터 분포 치우쳐 있으면 통계 재수집 필요\n4. SPM(SQL Plan Baseline) 적용 여부 확인\n- 놓치기 쉬운 포인트: 파티션 테이블이면 파티션별 통계 따로 확인해야 함", "카테고리": "IT"}
+{"질의": "Oracle 아카이브 로그 오래된 것 지우고 싶은데 방법", "응답": "```sql\nRMAN> DELETE ARCHIVELOG ALL COMPLETED BEFORE 'SYSDATE-3';\n```\n- rm으로 직접 지우면 컨트롤파일 정보랑 안 맞아서 나중에 crosscheck 필요해짐\n- 삭제 전엔 백업 완료된 것만 지워지는지 REPORT OBSOLETE로 먼저 확인", "카테고리": "IT"}
+{"질의": "RAC 환경에서 노드 간 인터커넥트 지연 때문에 성능 저하 의심되는데 어떻게 확인해", "응답": "확인 순서\n1. gv$cluster_interconnects로 인터커넥트 사용 NIC 확인\n2. gc cr/current block busy 대기 이벤트 비중 AWR/ASH로 확인\n3. os 레벨 netstat/ifconfig로 패킷 드랍, 재전송률 확인\n4. private network 대역폭 병목인지 (public network랑 분리 안 된 경우 흔함)\n- 놓치기 쉬운 포인트: 인터커넥트 스위치가 이중화 안 돼있으면 SPOF, 케이블 상태도 물리적으로 점검", "카테고리": "IT"}
+{"질의": "Oracle AWR 리포트 뽑는 방법 알려줘", "응답": "```sql\n@$ORACLE_HOME/rdbms/admin/awrrpt.sql\n```\n- 시작/종료 snap id 입력하면 됨\n- awrrpti.sql 쓰면 특정 인스턴스만 뽑을 수 있음 (RAC일 때 유용)", "카테고리": "IT"}
+{"질의": "ORA-00257 archiver error 뜨면서 DB가 멈췄어", "응답": "확인 순서\n1. archive log destination 디스크 용량 확인 (df -h)\n2. 공간 부족이면 백업 완료된 아카이브 로그부터 삭제 또는 다른 위치로 이동\n3. FRA(flash recovery area) 사용 중이면 db_recovery_file_dest_size 늘리기\n4. 삭제 후 alter system archive log current로 즉시 반영 확인\n- 놓치기 쉬운 포인트: 공간 확보해도 DB는 자동으로 안 풀릴 때 있음, alter system 명령으로 강제 트리거 필요할 수 있음", "카테고리": "IT"}
+{"질의": "인덱스 리빌드는 언제 해줘야 해", "응답": "- dba_indexes.blevel이 4 이상으로 계속 올라가면 검토\n- 대량 delete 이후 leaf node 낭비 심할 때\n- 무조건 정기적으로 하는 건 비추, 실제 단편화 확인하고 판단", "카테고리": "IT"}
+{"질의": "RMAN 백업이 계속 실패하는데 뭐부터 봐야 해", "응답": "확인 순서\n1. rman log에서 정확한 ORA 에러 코드 확인\n2. 대상 디스크/테이프 용량 확인\n3. controlfile autobackup 경로 접근 권한 확인\n4. 이전 백업 세트가 expired 상태로 남아있는지 crosscheck backup으로 확인\n- 놓치기 쉬운 포인트: 병렬 채널 수(parallelism) 과다 설정 시 I/O 경합으로 타임아웃 나기도 함", "카테고리": "IT"}
+{"질의": "Tibero에서 현재 접속 세션 확인하는 커맨드", "응답": "```sql\nSELECT sid, uid, status, program FROM v$session;\n```\n- status가 ACTIVE인데 오래 걸리는 세션은 v$sql_text로 실행 쿼리 같이 확인", "카테고리": "IT"}
+{"질의": "Tibero 인스턴스가 비정상 종료됐는데 복구 절차가 어떻게 돼", "응답": "확인 순서\n1. tbdown 로그(tbsvr trace)에서 종료 원인 확인 - abort인지 crash인지\n2. tbboot로 재기동 시도, mount 단계에서 멈추면 컨트롤파일 상태 확인\n3. crash recovery는 redo 로그로 자동 롤포워드 되는지 alert 로그 확인\n4. 미디어 손상 의심되면 RMAN 대응 백업으로 복구\n- 놓치기 쉬운 포인트: 강제 종료(kill -9) 이력 있으면 데이터파일 fuzzy 여부부터 확인해야 함", "카테고리": "IT"}
+{"질의": "Tibero 아카이브 모드 켜져 있는지 확인하려면", "응답": "```sql\nSELECT log_mode FROM v$database;\n```\n- ARCHIVELOG면 활성화 상태, NOARCHIVELOG면 비활성 상태", "카테고리": "IT"}
+{"질의": "Tibero에서 락 경합 발생 중인지 확인하는 방법", "응답": "확인 순서\n1. v$lock으로 lock_type, lmode, request 확인해서 대기 세션 파악\n2. blocking 세션의 sid로 v$session 조인해서 실행 중인 SQL 확인\n3. 장시간 잡고 있는 트랜잭션이면 커밋/롤백 안 된 애플리케이션 로직 의심\n4. 필요시 alter system kill session으로 강제 종료\n- 놓치기 쉬운 포인트: 배치 스케줄 겹칠 때 자주 발생, 크론 시간대 확인 필수", "카테고리": "IT"}
+{"질의": "Tibero 테이블스페이스 자동 확장 설정하는 법", "응답": "```sql\nALTER TABLESPACE ts_data\nADD DATAFILE '/data/ts_data02.dbf' SIZE 1G\nAUTOEXTEND ON NEXT 100M MAXSIZE 10G;\n```\n- MAXSIZE UNLIMITED로 두면 디스크 풀로 장애날 수 있으니 상한 꼭 지정", "카테고리": "IT"}
+{"질의": "PostgreSQL 슬로우쿼리 로그 남기려면 어떻게 설정해", "응답": "```conf\nlog_min_duration_statement = 1000\n```\n- postgresql.conf에서 설정, 단위는 ms\n- 1000이면 1초 넘는 쿼리만 로그에 남음", "카테고리": "IT"}
+{"질의": "PostgreSQL에서 쿼리가 락 대기로 멈춰있는데 어떻게 확인해", "응답": "확인 순서\n1. pg_locks와 pg_stat_activity 조인해서 대기 프로세스와 blocking pid 확인\n```sql\nSELECT blocked_locks.pid AS blocked_pid,\n       blocking_locks.pid AS blocking_pid\nFROM pg_catalog.pg_locks blocked_locks\nJOIN pg_catalog.pg_locks blocking_locks\n  ON blocking_locks.locktype = blocked_locks.locktype\n AND blocking_locks.database IS NOT DISTINCT FROM blocked_locks.database\n AND blocking_locks.relation IS NOT DISTINCT FROM blocked_locks.relation\n AND blocking_locks.pid != blocked_locks.pid\nWHERE NOT blocked_locks.granted;\n```\n2. blocking_pid의 쿼리 내용 pg_stat_activity.query로 확인\n3. 필요시 pg_terminate_backend(pid)로 강제 종료\n- 놓치기 쉬운 포인트: idle in transaction 상태로 오래 물고 있는 세션이 원인인 경우가 제일 흔함", "카테고리": "IT"}
+{"질의": "PostgreSQL 테이블이 vacuum이 안 돌아서 bloat 심한 것 같은데 뭐부터 확인해", "응답": "확인 순서\n1. pg_stat_user_tables.n_dead_tup으로 데드튜플 수 확인\n2. autovacuum 설정값 autovacuum_vacuum_scale_factor 확인, 너무 크면 안 돌음\n3. 장시간 open 트랜잭션 있는지 확인 (vacuum이 오래된 트랜잭션 때문에 못 지움)\n4. 급하면 수동으로 VACUUM (ANALYZE) 테이블명 실행\n- 놓치기 쉬운 포인트: replication slot이 살아있는데 안 쓰이면 WAL도 안 지워지고 vacuum도 막힘", "카테고리": "IT"}
+{"질의": "PostgreSQL replication lag 확인하는 쿼리", "응답": "```sql\nSELECT client_addr, state,\n       pg_wal_lsn_diff(sent_lsn, replay_lsn) AS lag_bytes\nFROM pg_stat_replication;\n```\n- lag_bytes 계속 늘어나면 스탠바이 서버 I/O나 네트워크 병목 의심", "카테고리": "IT"}
+{"질의": "PostgreSQL WAL 디렉토리 용량이 계속 차오르는데 원인이 뭘까", "응답": "확인 순서\n1. pg_stat_replication에서 replication slot이 있는지, lag 심한 slot 있는지 확인\n2. 사용 안 하는 slot은 pg_drop_replication_slot으로 정리\n3. archive_command 설정된 경우 아카이브 스크립트가 실패해서 WAL이 안 지워지는지 확인 (archiver 로그 확인)\n4. checkpoint 주기가 너무 길게 잡혀있는지 확인 (max_wal_size, checkpoint_timeout)\n- 놓치기 쉬운 포인트: archive_command 스크립트 리턴코드가 0이 아니면 계속 쌓임, 조용히 실패하는 경우 많음", "카테고리": "IT"}
+{"질의": "PostgreSQL 실행계획 확인하는 방법", "응답": "```sql\nEXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE status = 'PAID';\n```\n- ANALYZE 붙이면 실제 실행해서 소요시간까지 나옴, 운영 DB에서는 조심해서 써야 함", "카테고리": "IT"}
+{"질의": "PostgreSQL에서 too many clients already 에러가 떠", "응답": "확인 순서\n1. max_connections 설정값과 현재 pg_stat_activity 카운트 비교\n2. 커넥션풀(pgbouncer 등) 설정이 max_connections보다 큰지 확인\n3. idle 커넥션이 많으면 애플리케이션 커넥션풀 반환 로직 점검\n4. 급하면 max_connections 늘리기 전에 shared_buffers 등 메모리 파라미터도 같이 재계산해야 함\n- 놓치기 쉬운 포인트: max_connections 늘리면 그만큼 메모리 더 잡아먹으니 서버 메모리 한도 먼저 확인", "카테고리": "IT"}
+{"질의": "PostgreSQL 인덱스가 실제로 쓰이고 있는지 확인하는 법", "응답": "```sql\nSELECT indexrelname, idx_scan FROM pg_stat_user_indexes\nWHERE relname = 'orders';\n```\n- idx_scan이 0에 가까우면 안 쓰이는 인덱스, 삭제 검토 대상", "카테고리": "IT"}
+{"질의": "PostgreSQL streaming replication 구성할 때 기본적으로 설정해야 하는 파라미터 뭐가 있어", "응답": "- primary: wal_level = replica, max_wal_senders 여유있게 설정\n- primary: archive_mode on (필요시)\n- standby: primary_conninfo에 접속 정보, standby.signal 파일 생성\n- pg_hba.conf에 replication 계정 접속 허용 추가", "카테고리": "IT"}
+{"질의": "PostgreSQL autovacuum이 너무 자주 돌아서 부하 되는데 튜닝 어떻게 해", "응답": "확인 순서\n1. autovacuum_vacuum_cost_delay 값 확인, 너무 작으면 I/O 부하 큼\n2. 테이블별로 개별 설정 가능 (ALTER TABLE ... SET autovacuum_vacuum_scale_factor)\n3. 큰 테이블은 scale_factor 낮추고 threshold는 절대값으로 별도 설정\n4. autovacuum_max_workers 늘려서 병렬로 짧게 끝내는 것도 방법\n- 놓치기 쉬운 포인트: 무조건 늦추면 dead tuple 쌓여서 오히려 나중에 더 큰 부하로 돌아옴", "카테고리": "IT"}
+{"질의": "MySQL 슬로우쿼리 로그 켜는 방법", "응답": "```sql\nSET GLOBAL slow_query_log = 'ON';\nSET GLOBAL long_query_time = 1;\n```\n- long_query_time 단위는 초, 1이면 1초 넘는 쿼리 기록\n- 로그 파일 경로는 slow_query_log_file 변수로 확인", "카테고리": "IT"}
+{"질의": "MySQL에서 락 때문에 쿼리가 멈춰있는데 확인 방법", "응답": "확인 순서\n1. performance_schema.data_lock_waits로 대기 관계 확인 (5.7 이상)\n2. SHOW ENGINE INNODB STATUS로 TRANSACTIONS 섹션에서 락 상태 확인\n3. blocking 트랜잭션의 트랜잭션 시작 시각 확인해서 오래 걸린 배치인지 확인\n4. 필요시 KILL <thread_id>로 종료\n- 놓치기 쉬운 포인트: auto-commit 꺼놓고 커밋 안 하는 애플리케이션 코드가 원인인 경우 많음", "카테고리": "IT"}
+{"질의": "MySQL replication 지연 확인하려면", "응답": "```sql\nSHOW REPLICA STATUS\\G\n```\n- Seconds_Behind_Source 값 확인 (구버전은 Seconds_Behind_Master)\n- 계속 늘어나면 슬레이브 I/O 스레드나 SQL 스레드 상태 같이 확인", "카테고리": "IT"}
+{"질의": "MySQL InnoDB 버퍼풀 사이즈 확인하고 바꾸는 법", "응답": "```sql\nSHOW VARIABLES LIKE 'innodb_buffer_pool_size';\nSET GLOBAL innodb_buffer_pool_size = 8589934592;\n```\n- 물리 메모리의 60~70% 정도가 일반적인 권장 비율\n- 온라인 변경 가능하지만 재조정 중 순간적으로 성능 영향 있을 수 있음", "카테고리": "IT"}
+{"질의": "MySQL에서 데드락이 자주 발생하는데 원인 파악 방법", "응답": "확인 순서\n1. SHOW ENGINE INNODB STATUS의 LATEST DETECTED DEADLOCK 섹션 확인\n2. 어떤 쿼리끼리 서로 다른 순서로 락을 잡았는지 확인\n3. 인덱스 없어서 풀스캔하며 불필요하게 많은 로우 락 잡는지 확인\n4. 트랜잭션 내 테이블 접근 순서를 애플리케이션 코드 레벨에서 통일시켜야 함\n- 놓치기 쉬운 포인트: gap lock 때문에 발생하는 경우 많음, isolation level을 READ COMMITTED로 낮추면 완화되기도 함", "카테고리": "IT"}
+{"질의": "MySQL binlog 용량이 너무 커지는데 관리 방법", "응답": "확인 순서\n1. expire_logs_days(구버전) 또는 binlog_expire_logs_seconds 설정값 확인\n2. 설정이 너무 길게 잡혀있으면 짧게 조정\n3. 복제 슬레이브가 아직 안 읽은 binlog는 지우면 복제 깨지니 주의\n4. 수동 정리는 PURGE BINARY LOGS BEFORE 사용\n- 놓치기 쉬운 포인트: 슬레이브 지연 심할 때 binlog 강제로 지우면 복제 자체가 끊어짐", "카테고리": "IT"}
+{"질의": "MySQL 실행계획 보는 방법", "응답": "```sql\nEXPLAIN SELECT * FROM orders WHERE user_id = 100;\n```\n- type이 ALL이면 풀스캔, index/range/ref 순으로 효율적\n- key 컬럼이 NULL이면 인덱스 안 탄 것", "카테고리": "IT"}
+{"질의": "MySQL 복제가 갑자기 끊겼는데 복구 어떻게 해", "응답": "확인 순서\n1. SHOW REPLICA STATUS로 Last_Error, Last_SQL_Error 확인\n2. 중복키/데이터 불일치 에러면 해당 트랜잭션 skip 여부 판단 (SET GLOBAL sql_slave_skip_counter)\n3. 근본 원인 안 고치고 skip만 반복하면 데이터 정합성 깨지니 pt-table-checksum 같은 걸로 검증 필요\n4. 심하면 마스터에서 다시 풀백업 받아서 재구성\n- 놓치기 쉬운 포인트: GTID 기반 복제면 skip 방식이 다름, gtid_next 세팅해서 빈 트랜잭션 주입해야 함", "카테고리": "IT"}
+{"질의": "MySQL 테이블 단편화 확인하는 법", "응답": "```sql\nSELECT table_name, data_free FROM information_schema.tables\nWHERE table_schema = 'mydb';\n```\n- data_free 값 크면 OPTIMIZE TABLE로 정리 (InnoDB는 내부적으로 재생성 방식)", "카테고리": "IT"}
+{"질의": "MySQL too many connections 에러 뜨는데", "응답": "확인 순서\n1. SHOW VARIABLES LIKE 'max_connections'와 현재 접속 수(SHOW STATUS LIKE 'Threads_connected') 비교\n2. 커넥션풀 설정이 max_connections 넘게 잡혀있는지 애플리케이션 쪽 확인\n3. wait_timeout 너무 길어서 유휴 커넥션이 안 끊기는지 확인\n4. 임시로 max_connections 늘릴 땐 open_files_limit도 같이 확인해야 함\n- 놓치기 쉬운 포인트: 커넥션 늘리기 전에 실제로 필요한 건지, 커넥션 누수(leak) 코드부터 의심해봐야 함", "카테고리": "IT"}
+{"질의": "백업 전략에서 풀백업이랑 증분백업 차이가 뭐야", "응답": "- 풀백업: 전체 데이터 통째로, 복구 빠르지만 용량/시간 많이 듦\n- 증분백업: 이전 백업 이후 변경분만, 용량 작지만 복구 시 여러 백업 순서대로 적용해야 함\n- 보통 주 1회 풀 + 매일 증분 조합으로 운영", "카테고리": "IT"}
+{"질의": "DB 서버 CPU가 갑자기 급증했는데 확인 순서 알려줘", "응답": "확인 순서\n1. top/ps로 어떤 프로세스가 CPU 먹는지 확인 (DB 프로세스인지 다른 프로세스인지부터)\n2. DB 프로세스면 현재 실행 중인 세션 목록에서 CPU/실행시간 긴 세션 확인\n3. 특정 쿼리가 원인이면 실행계획 급변 여부 확인 (통계정보 최신인지)\n4. 배치/크론 작업 겹침, 락 대기로 인한 스핀락 등도 확인\n- 놓치기 쉬운 포인트: 통계 자동 수집 작업 자체가 CPU 잡아먹는 경우도 있음, 수집 스케줄 확인 필요", "카테고리": "IT"}
+{"질의": "Oracle undo tablespace 부족하다고 나오는데 어떻게 해결해", "응답": "확인 순서\n1. dba_free_space로 undo tablespace 여유 공간 확인\n2. 장시간 실행되는 대량 DML 트랜잭션 있는지 v$transaction으로 확인\n3. undo_retention 값이 지나치게 크게 잡혀있는지 확인\n4. 임시 조치로 undo 데이터파일 추가, 근본적으로는 배치 커밋 주기 조정\n- 놓치기 쉬운 포인트: guarantee retention 옵션 켜져 있으면 공간 부족 시 신규 트랜잭션 자체가 막힘", "카테고리": "IT"}
+{"질의": "PostgreSQL pg_dump랑 pg_basebackup 차이가 뭐야", "응답": "- pg_dump: 논리 백업, SQL/커스텀 포맷으로 특정 DB/테이블 단위 백업 가능\n- pg_basebackup: 물리 백업, 클러스터 전체를 바이너리 그대로 복사, PITR 구성 기반\n- 대용량이면 pg_basebackup이 빠르고, 부분 복구/버전 다른 DB로 이전할 땐 pg_dump가 유리", "카테고리": "IT"}
+{"질의": "Oracle RAC에서 split brain 상황 발생하면 어떻게 대응해야 해", "응답": "확인 순서\n1. CRS 로그(crsd, cssd)에서 노드 간 heartbeat 끊긴 시점 확인\n2. voting disk 접근 가능 여부 각 노드에서 확인\n3. quorum 노드 수 미달로 강제 재부팅(fencing) 된 노드가 있는지 확인\n4. 네트워크 스위치/인터커넥트 이중화 상태 점검 후 재기동\n- 놓치기 쉬운 포인트: split brain 방지가 voting disk의 핵심 역할이라 voting disk 자체 이중화(정족수) 상태를 평소에 모니터링해둬야 함", "카테고리": "IT"}
+{"질의": "도커 컨테이너 로그 확인하는 명령어 뭐야?", "응답": "```\ndocker logs <container_id>\n```\n- 실시간으로 보려면 -f 옵션\n- 최근 N줄만 보려면 --tail 100", "카테고리": "IT"}
+{"질의": "도커 이미지 레이어 캐시가 뭐야?", "응답": "- 각 Dockerfile 명령어(RUN, COPY 등)마다 레이어 생성되고 캐시됨\n- 이전 레이어랑 내용 같으면 재사용, 다르면 그 이후 전부 재빌드\n- 자주 바뀌는 COPY는 아래쪽에 둬야 캐시 효율 좋아짐", "카테고리": "IT"}
+{"질의": "kubectl로 파드 상태 확인하는 명령어?", "응답": "```\nkubectl get pods -n <namespace>\nkubectl describe pod <pod_name> -n <namespace>\n```\n- describe로 Events 항목 보면 원인 나옴", "카테고리": "IT"}
+{"질의": "Deployment랑 ReplicaSet 차이가 뭐야?", "응답": "- ReplicaSet: 지정한 개수만큼 Pod 유지시켜주는 컨트롤러\n- Deployment: ReplicaSet을 관리하면서 롤링 업데이트, 롤백 기능까지 제공\n- 실무에선 ReplicaSet 직접 안 만들고 Deployment로 관리함", "카테고리": "IT"}
+{"질의": "Helm chart랑 release 차이가 뭐야?", "응답": "- chart: 배포할 리소스 템플릿 묶음(패키지)\n- release: chart를 특정 클러스터에 실제로 설치한 인스턴스\n- 같은 chart로 release 여러 개 만들 수 있음(namespace/이름 다르게)", "카테고리": "IT"}
+{"질의": "Jenkins pipeline job이랑 freestyle job 차이가 뭐야?", "응답": "- freestyle: GUI로 빌드 스텝 설정, 단순 작업에 적합\n- pipeline: Jenkinsfile(코드)로 빌드 과정 정의, 버전 관리 가능하고 복잡한 흐름 구성 쉬움\n- 요즘은 대부분 pipeline(Jenkinsfile) 방식 씀", "카테고리": "IT"}
+{"질의": "GitLab CI에서 stage랑 job 차이가 뭐야?", "응답": "- stage: build, test, deploy 같은 실행 단계 그룹\n- job: 실제 실행되는 작업 단위, 특정 stage에 속함\n- 같은 stage에 있는 job들은 병렬 실행됨", "카테고리": "IT"}
+{"질의": "도커 멀티스테이지 빌드는 왜 쓰는거야?", "응답": "- 빌드용 이미지랑 실행용 이미지 분리해서 최종 이미지 용량 줄임\n- 빌드 도구, 소스코드가 최종 이미지에 안 남음\n- 보안(불필요 툴 제거)이랑 배포 속도에도 유리", "카테고리": "IT"}
+{"질의": "ConfigMap이랑 Secret 차이가 뭐야?", "응답": "- ConfigMap: 평문 설정값 저장(환경변수, 설정파일)\n- Secret: base64 인코딩 저장, 비밀번호/토큰 등 민감정보용\n- base64는 암호화 아니니까 RBAC으로 접근 제어 따로 해야 함", "카테고리": "IT"}
+{"질의": "Prometheus랑 Grafana 역할 차이가 뭐야?", "응답": "- Prometheus: 메트릭 수집/저장, 알림 규칙(Alertmanager 연동)\n- Grafana: 수집된 메트릭을 시각화하는 대시보드 툴\n- Prometheus 단독으로도 웹 UI 있지만 시각화는 Grafana가 훨씬 나음", "카테고리": "IT"}
+{"질의": "kubectl exec으로 컨테이너 접속하는 명령어?", "응답": "```\nkubectl exec -it <pod_name> -n <namespace> -- /bin/bash\n```\n- 컨테이너 여러 개면 -c <container_name>으로 지정", "카테고리": "IT"}
+{"질의": "도커 컨테이너 재시작 정책 옵션 뭐 있어?", "응답": "- no: 재시작 안 함(기본값)\n- on-failure: 비정상 종료시에만 재시작\n- always: 항상 재시작\n- unless-stopped: 수동으로 멈춘 경우 제외하고 항상 재시작", "카테고리": "IT"}
+{"질의": "쿠버네티스 네임스페이스는 왜 나눠 쓰는거야?", "응답": "- 리소스 논리적 격리(팀별, 환경별)\n- 리소스 쿼터, 네트워크 정책을 네임스페이스 단위로 적용 가능\n- 이름 충돌 없이 같은 리소스명 여러 네임스페이스에서 사용 가능", "카테고리": "IT"}
+{"질의": "Helm values.yaml은 뭐하는 파일이야?", "응답": "- chart 템플릿에 주입할 변수값 정의하는 파일\n- --set이나 -f로 오버라이드 가능\n- 환경별(dev/prod) values 파일 따로 관리하는 게 일반적", "카테고리": "IT"}
+{"질의": "GitLab CI runner 종류가 뭐가 있어?", "응답": "- shared runner: 여러 프로젝트가 공용으로 쓰는 runner\n- specific runner: 특정 프로젝트/그룹 전용 runner\n- group runner: 그룹 내 프로젝트들이 공유\n- 보안/자원 격리 필요하면 specific runner 씀", "카테고리": "IT"}
+{"질의": "ELK 스택 구성 요소가 뭐야?", "응답": "- Elasticsearch: 로그 저장/검색 엔진\n- Logstash: 로그 수집/가공(파이프라인)\n- Kibana: 시각화 UI\n- 최근엔 Logstash 대신 Filebeat 많이 씀(가벼움)", "카테고리": "IT"}
+{"질의": "쿠버네티스 Service 타입 종류 뭐 있어?", "응답": "- ClusterIP: 클러스터 내부 통신용(기본값)\n- NodePort: 노드 포트로 외부 노출\n- LoadBalancer: 클라우드 LB 연동\n- ExternalName: 외부 DNS 이름 매핑", "카테고리": "IT"}
+{"질의": "Jenkins agent(node)가 뭐야?", "응답": "- 실제 빌드가 실행되는 서버/컨테이너\n- master는 스케줄링만, 빌드는 agent에서 실행\n- 라벨(label)로 특정 agent에 job 지정 가능", "카테고리": "IT"}
+{"질의": "도커 네트워크 종류 뭐 있어?", "응답": "- bridge: 기본 네트워크, 컨테이너 간 통신\n- host: 호스트 네트워크 그대로 사용\n- none: 네트워크 없음\n- overlay: 여러 호스트 걸친 스웜/클러스터 통신용", "카테고리": "IT"}
+{"질의": "liveness probe랑 readiness probe 차이가 뭐야?", "응답": "- liveness: 컨테이너가 살아있는지 체크, 실패하면 재시작\n- readiness: 트래픽 받을 준비 됐는지 체크, 실패하면 서비스에서 제외(재시작은 안 함)\n- 둘 다 실패시 동작 다르니 헷갈리면 안 됨", "카테고리": "IT"}
+{"질의": "Pod가 CrashLoopBackOff 상태인데 뭐부터 봐야돼?", "응답": "확인 순서:\n1. kubectl describe pod <pod> 로 Events, Exit Code 확인\n2. kubectl logs <pod> --previous 로 이전 컨테이너 로그 확인\n3. Exit Code 1: 애플리케이션 에러 로그 확인\n4. Exit Code 137: OOMKilled 여부, resources.limits 확인\n5. liveness probe 설정이 너무 빡빡한지(initialDelaySeconds) 확인\n- 놓치기 쉬운 포인트: configmap/secret 마운트 경로 오타로 앱이 못 뜨는 경우 많음", "카테고리": "IT"}
+{"질의": "도커 이미지 빌드가 너무 느린데 어떻게 최적화해?", "응답": "확인 순서:\n1. Dockerfile 레이어 순서 확인 - 자주 바뀌는 COPY는 아래로\n2. .dockerignore로 불필요 파일(node_modules, .git) 제외\n3. 멀티스테이지 빌드로 빌드 의존성 분리\n4. BuildKit 캐시 마운트 사용 (--mount=type=cache)\n5. base 이미지 alpine/slim으로 경량화\n- 놓치기 쉬운 포인트: CI에서 캐시 레이어 안 남기고 매번 fresh clone하면 캐시 효과 없음", "카테고리": "IT"}
+{"질의": "HPA 설정했는데 스케일 아웃이 안 되는데 왜 그래?", "응답": "확인 순서:\n1. kubectl top pod 로 metrics-server 정상 동작하는지 확인\n2. kubectl describe hpa <name> 로 current/target 메트릭 값 확인\n3. Deployment에 resources.requests 설정 안 돼있으면 HPA가 CPU% 계산 못함\n4. minReplicas/maxReplicas 값 확인\n5. behavior(stabilizationWindowSeconds) 설정으로 스케일 지연되는 건 아닌지 확인\n- 놓치기 쉬운 포인트: requests 안 걸어두면 utilization 계산 자체가 안 됨", "카테고리": "IT"}
+{"질의": "PVC가 Pending 상태에서 안 넘어가는데 뭐 확인해야돼?", "응답": "확인 순서:\n1. kubectl describe pvc <name> 로 Events 확인\n2. StorageClass 존재 여부, 이름 오타 확인\n3. 요청한 accessMode를 지원하는 PV/StorageClass인지 확인\n4. 동적 프로비저닝이면 provisioner(CSI 드라이버) 파드 상태 확인\n5. 용량이 노드/스토리지 백엔드 가용량 초과하는지 확인\n- 놓치기 쉬운 포인트: ReadWriteMany 요청했는데 스토리지가 RWO만 지원하는 경우 많음", "카테고리": "IT"}
+{"질의": "Jenkins 파이프라인 빌드가 실패했는데 어디부터 봐?", "응답": "확인 순서:\n1. Console Output에서 실패 stage/step 확인\n2. Jenkinsfile 문법(특히 credentials, withEnv 블록) 확인\n3. agent 라벨 매칭되는 노드 있는지 확인\n4. 워크스페이스 디스크 용량, 이전 빌드 잔여 프로세스 확인\n5. Plugin 버전 호환성(특히 Jenkinsfile 업데이트 후) 확인\n- 놓치기 쉬운 포인트: credentials ID는 맞는데 스코프(global/folder)가 안 맞으면 조용히 실패함", "카테고리": "IT"}
+{"질의": "GitLab CI job이 pending에서 안 넘어가는데 원인이 뭐야?", "응답": "확인 순서:\n1. 사용 가능한 runner가 있는지, tag 매칭되는지 확인\n2. runner가 실제로 online인지 (gitlab-runner list)\n3. concurrent 설정값 대비 실행중인 job 수 확인\n4. only/except, rules 조건으로 job 자체가 스킵되는 건 아닌지 확인\n- 놓치기 쉬운 포인트: .gitlab-ci.yml에 tags 지정했는데 해당 tag 가진 runner가 없으면 영원히 pending", "카테고리": "IT"}
+{"질의": "Pod가 계속 Pending 상태로 안 뜨는데 원인이 뭐야?", "응답": "확인 순서:\n1. kubectl describe pod 로 Events의 스케줄링 실패 사유 확인\n2. 노드 리소스(CPU/Memory) 부족 여부 확인\n3. nodeSelector/affinity/taint-toleration 조건 맞는지 확인\n4. PVC가 먼저 Pending이면 Pod도 같이 못 뜸\n- 놓치기 쉬운 포인트: taint 걸린 노드에 toleration 안 넣어서 스케줄 안 되는 경우 흔함", "카테고리": "IT"}
+{"질의": "Helm upgrade 실패했을 때 롤백 어떻게 해?", "응답": "```\nhelm rollback <release> <revision>\nhelm history <release>\n```\n- 실패 원인은 대부분 values 문법 오류, 템플릿 렌더링 에러, 리소스 충돌\n- helm upgrade --dry-run --debug 로 먼저 렌더링 결과 확인하고 배포하는 습관 들여야 함", "카테고리": "IT"}
+{"질의": "Grafana 대시보드에 메트릭이 하나도 안 보이는데 뭐부터 확인해?", "응답": "확인 순서:\n1. Grafana Data Source 연결 상태(Test 버튼) 확인\n2. Prometheus에서 직접 쿼리해서 데이터 있는지 확인(/graph 페이지)\n3. 대시보드 쿼리의 label/job명이 실제 타겟이랑 일치하는지 확인\n4. 시간 범위(time range) 설정이 데이터 있는 구간인지 확인\n- 놓치기 쉬운 포인트: Prometheus는 정상인데 대시보드 변수(variable) 값이 안 맞아서 안 보이는 경우 많음", "카테고리": "IT"}
+{"질의": "로그가 Kibana에 안 들어오는데 어떻게 확인해?", "응답": "확인 순서:\n1. Filebeat/Logstash 프로세스 살아있는지, 로그 경로 맞는지 확인\n2. Elasticsearch 인덱스 생성됐는지 확인(GET _cat/indices)\n3. Kibana index pattern이 실제 인덱스명과 일치하는지 확인\n4. Elasticsearch 디스크 워터마크(low/high) 초과로 write block 걸렸는지 확인\n- 놓치기 쉬운 포인트: 디스크 85% 넘으면 ES가 자동으로 read-only 걸어버림", "카테고리": "IT"}
+{"질의": "Ingress에서 502 에러 뜨는데 원인 뭐야?", "응답": "확인 순서:\n1. 백엔드 Pod가 실제로 Running & Ready인지 확인\n2. Service의 selector와 Pod label 일치하는지 확인\n3. targetPort와 컨테이너 실제 리스닝 포트 일치하는지 확인\n4. Ingress controller 로그에서 upstream 연결 에러 확인\n- 놓치기 쉬운 포인트: readinessProbe 실패로 엔드포인트에서 빠진 Pod한테 트래픽 몰리는 경우", "카테고리": "IT"}
+{"질의": "ImagePullBackOff 뜨는데 어떻게 해결해?", "응답": "확인 순서:\n1. kubectl describe pod 로 정확한 에러 메시지 확인\n2. 이미지 이름/태그 오타 확인\n3. 프라이빗 레지스트리면 imagePullSecrets 설정 확인\n4. 레지스트리 인증 토큰 만료 여부 확인\n- 놓치기 쉬운 포인트: 이미지는 있는데 latest 태그 캐시 문제로 잘못된 버전 당겨오는 경우 있음", "카테고리": "IT"}
+{"질의": "Pod가 OOMKilled로 자꾸 죽는데 어떻게 대응해?", "응답": "확인 순서:\n1. kubectl describe pod 에서 Reason: OOMKilled 확인\n2. resources.limits.memory 값 확인, 실제 사용량보다 낮게 잡혔는지 체크\n3. 애플리케이션 메모리 릭 여부(JVM이면 heap dump) 확인\n4. limits를 늘리거나 requests/limits 갭 줄여서 재배포\n- 놓치기 쉬운 포인트: JVM 쓰면 -Xmx를 컨테이너 limit보다 낮게 설정해야 함, 안 그러면 컨테이너 레벨에서 먼저 죽음", "카테고리": "IT"}
+{"질의": "Jenkins 빌드 에이전트가 offline으로 뜨는데 원인이 뭐야?", "응답": "확인 순서:\n1. 에이전트 서버/컨테이너가 실제로 살아있는지 확인\n2. JNLP/SSH 연결 방식이면 네트워크, 방화벽, 포트(50000) 확인\n3. 에이전트 디스크 용량 부족 여부 확인\n4. Jenkins master와 agent 간 Java 버전/인증서 불일치 확인\n- 놓치기 쉬운 포인트: 디스크 풀(disk full)이면 에이전트가 자동으로 offline 처리됨", "카테고리": "IT"}
+{"질의": "도커 컨테이너 디스크 용량 부족한데 어떻게 정리해?", "응답": "```\ndocker system df\ndocker system prune -a --volumes\n```\n- 사용 안 하는 이미지, 중지된 컨테이너, dangling 볼륨까지 다 정리됨(운영 환경에서는 신중히)\n- 로그 파일(json-file 드라이버)이 계속 쌓여서 용량 차지하는 경우도 많으니 log-opts max-size 설정 확인", "카테고리": "IT"}
+{"질의": "쿠버네티스 파드 안에서 DNS 조회가 안 되는데 뭐 확인해?", "응답": "확인 순서:\n1. kubectl exec 로 파드 안에서 nslookup kubernetes.default 테스트\n2. CoreDNS Pod 상태(Running) 확인\n3. Pod의 dnsPolicy 설정 확인(ClusterFirst 기본값 맞는지)\n4. NetworkPolicy가 DNS(53포트) 트래픽 막고 있는지 확인\n- 놓치기 쉬운 포인트: NetworkPolicy egress 규칙 걸어두고 kube-dns로 나가는 53포트 빼먹는 경우 흔함", "카테고리": "IT"}
+{"질의": "Prometheus 타겟이 down으로 뜨는데 원인 뭐야?", "응답": "확인 순서:\n1. Prometheus 웹 UI Targets 페이지에서 에러 메시지 확인\n2. 타겟 Pod/서비스의 /metrics 엔드포인트 직접 curl 테스트\n3. ServiceMonitor/scrape config의 포트, path 설정 확인\n4. NetworkPolicy나 방화벽으로 Prometheus에서 타겟으로 접근 막혀있는지 확인\n- 놓치기 쉬운 포인트: 타겟 Pod 재배포되면서 label 바뀌면 ServiceMonitor selector랑 안 맞아서 스크랩 대상에서 빠짐", "카테고리": "IT"}
+{"질의": "GitLab CI cache가 매번 미스나는데 왜 그래?", "응답": "확인 순서:\n1. cache key 설정 확인(브랜치명 기반이면 브랜치마다 캐시 분리됨)\n2. cache paths가 실제 의존성 설치 경로랑 일치하는지 확인\n3. runner가 distributed cache(S3 등) 설정 안 돼있고 매번 다른 runner 잡히는지 확인\n4. cache와 artifacts를 혼동해서 쓰고 있는 건 아닌지 확인\n- 놓치기 쉬운 포인트: shared runner 여러 대 쓰면 로컬 캐시라서 runner 바뀔 때마다 캐시 미스남, distributed cache 설정 필요", "카테고리": "IT"}
+{"질의": "Deployment 롤아웃이 멈춰있는데 어떻게 확인해?", "응답": "확인 순서:\n1. kubectl rollout status deployment/<name> 로 진행 상황 확인\n2. 새 ReplicaSet의 Pod가 Pending/CrashLoop인지 kubectl get rs, pods 확인\n3. maxSurge/maxUnavailable 값 때문에 대기 중인 건 아닌지 확인\n4. readinessProbe 실패로 새 Pod가 Ready 안 되는지 확인\n- 놓치기 쉬운 포인트: 새 이미지가 ImagePullBackOff면 롤아웃이 그 지점에서 영원히 멈춤, kubectl rollout undo로 일단 되돌리는 게 우선", "카테고리": "IT"}
+{"질의": "NetworkPolicy 적용했더니 파드 간 통신이 안 되는데 뭐가 문제야?", "응답": "확인 순서:\n1. 적용된 NetworkPolicy의 podSelector가 의도한 Pod에 걸려있는지 확인\n2. ingress/egress 규칙에 필요한 포트/프로토콜 빠진 거 없는지 확인\n3. 같은 네임스페이스만 허용했는데 다른 네임스페이스에서 접근하는 건 아닌지 확인\n4. CNI 플러그인이 NetworkPolicy를 실제로 지원하는지 확인(flannel은 기본 미지원)\n- 놓치기 쉬운 포인트: default deny 정책 걸어두고 DNS(kube-dns) 허용 규칙 빼먹으면 전체 통신 마비됨", "카테고리": "IT"}
+{"질의": "오늘 하루 어땠어", "응답": "그냥 그랬어 별일 없었어", "카테고리": "DAILY"}
+{"질의": "요즘 잘 지내", "응답": "응 그럭저럭 지내고 있어", "카테고리": "DAILY"}
+{"질의": "뭐하고 있었어", "응답": "그냥 누워서 폰 보고 있었어", "카테고리": "DAILY"}
+{"질의": "심심한데 뭐하지", "응답": "산책이라도 나가봐", "카테고리": "DAILY"}
+{"질의": "오랜만이야 잘 지냈어", "응답": "어 오랜만이네 나야 늘 똑같지 뭐", "카테고리": "DAILY"}
+{"질의": "주말에 뭐할 거야", "응답": "딱히 계획 없고 그냥 쉬려고", "카테고리": "DAILY"}
+{"질의": "요즘 바빠", "응답": "어 좀 정신없이 바쁘네", "카테고리": "DAILY"}
+{"질의": "오늘 기분 어때", "응답": "나쁘지 않아 그냥 평범해", "카테고리": "DAILY"}
+{"질의": "오늘 뭐 재밌는 일 없었어", "응답": "딱히 없었어 그냥 조용한 하루였어", "카테고리": "DAILY"}
+{"질의": "좋은 아침이야", "응답": "어 오늘도 화이팅하자", "카테고리": "DAILY"}
+{"질의": "잘 자 내일 봐", "응답": "어 너도 잘 자", "카테고리": "DAILY"}
+{"질의": "밥은 먹었어", "응답": "어 방금 먹었어 너는", "카테고리": "DAILY"}
+{"질의": "요즘 어떻게 지내냐", "응답": "그냥저냥 지내고 있어", "카테고리": "DAILY"}
+{"질의": "오늘따라 왜 이렇게 피곤하지", "응답": "잠을 못 자서 그런가보다", "카테고리": "DAILY"}
+{"질의": "심심해 죽겠다", "응답": "나도 딱히 할 거 없어서 그냥 누워있어", "카테고리": "DAILY"}
+{"질의": "나 오늘 완전 럭키했어", "응답": "오 뭔데 부럽다", "카테고리": "DAILY"}
+{"질의": "오늘따라 기분이 좋네", "응답": "좋은 일 있었나보네 부럽다", "카테고리": "DAILY"}
+{"질의": "그냥 네 생각나서 연락했어", "응답": "어 고맙다 나도 잘 지내고 있어", "카테고리": "DAILY"}
+{"질의": "이번 주말 뭐 하고 지냈어", "응답": "그냥 집에서 뒹굴거리다 끝났어", "카테고리": "DAILY"}
+{"질의": "오늘 컨디션 어때", "응답": "나쁘지 않은데 살짝 나른하네", "카테고리": "DAILY"}
+{"질의": "오늘 날씨 어때", "응답": "밖에 좀 흐리고 쌀쌀한 편이야", "카테고리": "DAILY"}
+{"질의": "비오는데 우산 챙겨야할까", "응답": "어 챙기는 게 좋을 듯해", "카테고리": "DAILY"}
+{"질의": "요즘 너무 덥지 않아", "응답": "어 완전 찜통이야", "카테고리": "DAILY"}
+{"질의": "오늘 미세먼지 심한가", "응답": "하늘 보니 좀 뿌옇긴 하네", "카테고리": "DAILY"}
+{"질의": "눈 온다는데 진짜야", "응답": "어 일기예보에서 그러더라", "카테고리": "DAILY"}
+{"질의": "요즘 일교차가 너무 심해", "응답": "맞아 아침저녁으로 따뜻하게 입어야 해", "카테고리": "DAILY"}
+{"질의": "태풍 온다는데 괜찮을까", "응답": "외출은 좀 자제하는 게 좋을 것 같아", "카테고리": "DAILY"}
+{"질의": "오늘 바람 진짜 세다", "응답": "그러게 걸어다니기 힘들 정도네", "카테고리": "DAILY"}
+{"질의": "오늘 습도 왜 이래", "응답": "완전 눅눅하고 찝찝하네", "카테고리": "DAILY"}
+{"질의": "장마 언제 끝나나 몰라", "응답": "이번 주까지는 이어진다더라", "카테고리": "DAILY"}
+{"질의": "오늘 밤 기온 많이 떨어진대", "응답": "어 따뜻하게 입고 자야겠다", "카테고리": "DAILY"}
+{"질의": "벌써 가을바람이 부네", "응답": "그러게 계절이 진짜 빠르다", "카테고리": "DAILY"}
+{"질의": "오늘 자외선 지수 높아", "응답": "꽤 높은 것 같아 선크림 챙겨", "카테고리": "DAILY"}
+{"질의": "이번 겨울 진짜 추울까", "응답": "벌써부터 걱정되긴 하네", "카테고리": "DAILY"}
+{"질의": "오늘 하늘 진짜 맑다", "응답": "완전 파랗다 사진 찍기 딱이네", "카테고리": "DAILY"}
+{"질의": "점심 뭐 먹지", "응답": "김치찌개 어때 든든하잖아", "카테고리": "DAILY"}
+{"질의": "저녁 메뉴 추천 좀", "응답": "오늘은 삼겹살 어때", "카테고리": "DAILY"}
+{"질의": "근처에 맛있는 국밥집 있어", "응답": "어 역 앞에 순대국밥집 괜찮더라", "카테고리": "DAILY"}
+{"질의": "매운 거 먹고 싶은데 뭐가 좋을까", "응답": "마라탕 어때 딱 그 느낌이야", "카테고리": "DAILY"}
+{"질의": "다이어트 중인데 뭐 먹지", "응답": "샐러드에 닭가슴살 곁들여봐", "카테고리": "DAILY"}
+{"질의": "오늘 회식 메뉴 추천해줘", "응답": "삼겹살에 소주 조합이 무난하지", "카테고리": "DAILY"}
+{"질의": "배달 시켜 먹을까", "응답": "좋지 오늘같은 날은 배달이 진리야", "카테고리": "DAILY"}
+{"질의": "라면 끓여 먹을까", "응답": "어 계란 하나 풀어서 먹어봐", "카테고리": "DAILY"}
+{"질의": "디저트 뭐가 맛있을까", "응답": "마카롱이나 티라미수 어때", "카테고리": "DAILY"}
+{"질의": "커피 마시고 싶은데 뭐 마실까", "응답": "아메리카노 무난하게 좋지", "카테고리": "DAILY"}
+{"질의": "치킨 시킬까 피자 시킬까", "응답": "오늘은 치킨 땡기는 날이야", "카테고리": "DAILY"}
+{"질의": "이 동네 맛집 좀 알려줘", "응답": "시장 안에 있는 분식집이 유명해", "카테고리": "DAILY"}
+{"질의": "브런치 먹기 좋은 곳 있어", "응답": "카페 거리 쪽에 브런치 맛집 많아", "카테고리": "DAILY"}
+{"질의": "야식 뭐 먹을까 고민돼", "응답": "떡볶이랑 순대 어때", "카테고리": "DAILY"}
+{"질의": "회 좋아해", "응답": "어 광어회 진짜 좋아해", "카테고리": "DAILY"}
+{"질의": "오늘 소고기 먹고 싶다", "응답": "오 좋다 나도 껴줘", "카테고리": "DAILY"}
+{"질의": "편의점 도시락 뭐가 맛있어", "응답": "제육볶음 도시락 괜찮더라", "카테고리": "DAILY"}
+{"질의": "김밥 좋아해", "응답": "어 참치김밥 완전 좋아해", "카테고리": "DAILY"}
+{"질의": "매콤한 국물 요리 추천해줘", "응답": "부대찌개 어때 얼큰하니 좋아", "카테고리": "DAILY"}
+{"질의": "아침 뭐 먹었어", "응답": "그냥 토스트에 우유 마셨어", "카테고리": "DAILY"}
+{"질의": "오늘 뭘 먹어야 살이 안 찔까", "응답": "저녁은 가볍게 먹는 게 좋아", "카테고리": "DAILY"}
+{"질의": "빵집 추천 좀", "응답": "골목 안쪽에 있는 빵집이 유명해", "카테고리": "DAILY"}
+{"질의": "오늘따라 단 게 당기네", "응답": "초콜릿 하나 먹어봐", "카테고리": "DAILY"}
+{"질의": "술안주로 뭐가 좋을까", "응답": "오징어무침이나 골뱅이무침 어때", "카테고리": "DAILY"}
+{"질의": "국물 요리 뭐가 땡길까", "응답": "갈비탕 어때 든든하잖아", "카테고리": "DAILY"}
+{"질의": "제주도 2박3일 여행코스 추천해줘", "응답": "첫날은 동쪽 해안 돌고 둘째날은 오름 가봐", "카테고리": "DAILY"}
+{"질의": "부산 여행 가는데 어디가 좋아", "응답": "해운대랑 광안리 야경은 꼭 봐야지", "카테고리": "DAILY"}
+{"질의": "국내여행 추천 좀", "응답": "강원도 가서 바다 보고 오는 거 어때", "카테고리": "DAILY"}
+{"질의": "혼자 여행가기 좋은 곳 있어", "응답": "경주 어때 조용히 걷기 좋아", "카테고리": "DAILY"}
+{"질의": "이번 휴가 어디로 갈까 고민돼", "응답": "가까운 바다로 훌쩍 떠나봐", "카테고리": "DAILY"}
+{"질의": "여행 짐 쌀 때 뭐가 필수야", "응답": "보조배터리랑 상비약은 꼭 챙겨", "카테고리": "DAILY"}
+{"질의": "캠핑 가기 좋은 계절이 언제야", "응답": "가을이 제일 선선하고 좋아", "카테고리": "DAILY"}
+{"질의": "해외여행 가고 싶은데 어디 좋아", "응답": "요즘은 일본이 가성비 좋더라", "카테고리": "DAILY"}
+{"질의": "당일치기 여행 어디 갈까", "응답": "근교 수목원이나 계곡 어때", "카테고리": "DAILY"}
+{"질의": "여행 가서 뭐 하는 게 제일 좋아", "응답": "그냥 걷다가 맛있는 거 먹는 거지", "카테고리": "DAILY"}
+{"질의": "등산 가기 좋은 산 추천해줘", "응답": "북한산 코스 완만해서 괜찮아", "카테고리": "DAILY"}
+{"질의": "여행 준비할 때 뭐부터 해야 해", "응답": "숙소랑 교통편부터 잡아", "카테고리": "DAILY"}
+{"질의": "바다 여행 가고 싶은데 어디가 좋을까", "응답": "강릉이나 속초 추천해", "카테고리": "DAILY"}
+{"질의": "여행 갈 때 사진 잘 찍는 팁 있어", "응답": "노을 질 때 찍으면 감성 사진 나와", "카테고리": "DAILY"}
+{"질의": "온천 여행 가고 싶은데 어디 좋아", "응답": "충남 쪽 온천 마을 괜찮더라", "카테고리": "DAILY"}
+{"질의": "요즘 너무 피곤해", "응답": "무리하지 말고 좀 쉬어", "카테고리": "DAILY"}
+{"질의": "스트레스 너무 쌓였어", "응답": "잠깐 산책이라도 하고 와봐", "카테고리": "DAILY"}
+{"질의": "오늘 진짜 힘든 하루였어", "응답": "고생했어 오늘은 푹 쉬어", "카테고리": "DAILY"}
+{"질의": "짜증나는 일이 있었어", "응답": "무슨 일인데 얘기해봐", "카테고리": "DAILY"}
+{"질의": "너무 우울해", "응답": "무슨 일 있었어 얘기해도 돼", "카테고리": "DAILY"}
+{"질의": "화가 나서 미치겠어", "응답": "일단 심호흡 좀 해봐", "카테고리": "DAILY"}
+{"질의": "요즘 의욕이 하나도 없어", "응답": "그런 날도 있는 거야 너무 자책하지 마", "카테고리": "DAILY"}
+{"질의": "눈물이 자꾸 나", "응답": "힘든 일 있었구나 괜찮아질 거야", "카테고리": "DAILY"}
+{"질의": "왜 이렇게 외롭지", "응답": "나라도 옆에 있어줄게", "카테고리": "DAILY"}
+{"질의": "걱정이 너무 많아", "응답": "하나씩 천천히 해결하면 돼", "카테고리": "DAILY"}
+{"질의": "오늘 너무 지쳤어", "응답": "오늘은 일찍 자 그게 최고야", "카테고리": "DAILY"}
+{"질의": "불안해서 잠이 안 와", "응답": "따뜻한 차 한 잔 마셔봐", "카테고리": "DAILY"}
+{"질의": "기분이 널뛰기해", "응답": "그럴 때도 있지 너무 신경쓰지 마", "카테고리": "DAILY"}
+{"질의": "뭔가 허무해", "응답": "잠깐 쉬어가는 것도 나쁘지 않아", "카테고리": "DAILY"}
+{"질의": "오늘따라 예민해", "응답": "컨디션 안 좋은가 보다 좀 쉬어", "카테고리": "DAILY"}
+{"질의": "요즘 취미 뭐 있어", "응답": "요즘은 그림 그리는 거에 빠졌어", "카테고리": "DAILY"}
+{"질의": "새로운 취미 찾고 싶은데 뭐가 좋을까", "응답": "요가나 클라이밍 한번 해봐", "카테고리": "DAILY"}
+{"질의": "주말에 할 만한 취미 추천해줘", "응답": "베이킹 한번 해보는 거 어때", "카테고리": "DAILY"}
+{"질의": "요즘 뜨개질 배우고 있어", "응답": "오 신기하다 뭐 만들고 있어", "카테고리": "DAILY"}
+{"질의": "그림 그리는 거 어렵지 않아", "응답": "처음엔 어려운데 하다 보면 재밌어", "카테고리": "DAILY"}
+{"질의": "사진 찍는 거 좋아해", "응답": "어 풍경 사진 찍는 거 좋아해", "카테고리": "DAILY"}
+{"질의": "악기 하나 배우고 싶은데 뭐가 쉬울까", "응답": "우쿨렐레가 배우기 쉬운 편이야", "카테고리": "DAILY"}
+{"질의": "독서모임 해본 적 있어", "응답": "어 한번 해봤는데 생각보다 재밌더라", "카테고리": "DAILY"}
+{"질의": "요즘 뭐 수집해", "응답": "피규어 조금씩 모으고 있어", "카테고리": "DAILY"}
+{"질의": "원데이 클래스 추천해줄래", "응답": "도자기 공방 클래스 재밌더라", "카테고리": "DAILY"}
+{"질의": "요즘 잠을 잘 못 자", "응답": "자기 전에 폰 좀 멀리 해봐", "카테고리": "DAILY"}
+{"질의": "낮잠 잤더니 밤에 잠이 안와", "응답": "낮잠은 짧게 자는 게 좋아", "카테고리": "DAILY"}
+{"질의": "요즘 너무 졸려", "응답": "잠이 부족한가 보다 일찍 자", "카테고리": "DAILY"}
+{"질의": "밤새서 그런지 머리가 띵해", "응답": "오늘은 일찍 좀 자", "카테고리": "DAILY"}
+{"질의": "꿈을 너무 생생하게 꿔", "응답": "그런 날 있지 신기하긴 하다", "카테고리": "DAILY"}
+{"질의": "자꾸 늦게 자게 돼", "응답": "알람 하나 맞춰놓고 일찍 누워봐", "카테고리": "DAILY"}
+{"질의": "몸이 으슬으슬한데 감기인가", "응답": "푹 쉬고 따뜻하게 있어봐", "카테고리": "DAILY"}
+{"질의": "오늘따라 몸이 무거워", "응답": "컨디션 관리 좀 해야겠다", "카테고리": "DAILY"}
+{"질의": "아침에 못 일어나겠어", "응답": "알람 여러 개 맞춰봐", "카테고리": "DAILY"}
+{"질의": "요즘 코를 곤다고 하더라", "응답": "피곤이 많이 쌓였나보다", "카테고리": "DAILY"}
+{"질의": "강아지 키우고 싶은데 어떤 종이 좋을까", "응답": "초보라면 말티즈 키우기 편해", "카테고리": "DAILY"}
+{"질의": "고양이가 밥을 안 먹어", "응답": "갑자기 그러면 한번 병원 가보는 게 좋아", "카테고리": "DAILY"}
+{"질의": "반려동물 처음 키우는데 뭐부터 준비해야해", "응답": "사료랑 배변판부터 챙겨", "카테고리": "DAILY"}
+{"질의": "강아지 산책 얼마나 시켜야해", "응답": "하루 두 번 정도는 시켜주는 게 좋아", "카테고리": "DAILY"}
+{"질의": "우리집 냥이가 너무 귀여워", "응답": "사진 좀 보여줘 궁금하다", "카테고리": "DAILY"}
+{"질의": "강아지 짖는 버릇 어떻게 고쳐", "응답": "훈련사한테 상담받아보는 것도 좋아", "카테고리": "DAILY"}
+{"질의": "반려동물이랑 여행 가능한 곳 있어", "응답": "요즘 펫동반 숙소 많이 생겼어", "카테고리": "DAILY"}
+{"질의": "고양이 발톱 언제 깎아줘야해", "응답": "한 2주에 한번 정도면 돼", "카테고리": "DAILY"}
+{"질의": "강아지가 요즘 밥투정이 심해", "응답": "사료 바꿔보는 것도 방법이야", "카테고리": "DAILY"}
+{"질의": "반려동물 키우면 뭐가 제일 힘들어", "응답": "여행 갈 때 맡길 곳 찾는 게 힘들어", "카테고리": "DAILY"}
+{"질의": "요즘 운동 뭐 하고 있어", "응답": "요즘 러닝 시작했어", "카테고리": "DAILY"}
+{"질의": "헬스장 다니는데 뭐부터 해야해", "응답": "처음엔 기본 유산소부터 해봐", "카테고리": "DAILY"}
+{"질의": "요가 처음 하는데 어렵지 않아", "응답": "처음엔 뻣뻣한데 하다보면 늘어", "카테고리": "DAILY"}
+{"질의": "홈트 추천해줄래", "응답": "스쿼트랑 플랭크부터 시작해봐", "카테고리": "DAILY"}
+{"질의": "운동할 시간이 없어", "응답": "짧게라도 스트레칭이라도 해봐", "카테고리": "DAILY"}
+{"질의": "러닝 시작했는데 무릎이 아파", "응답": "신발이랑 자세 한번 체크해봐", "카테고리": "DAILY"}
+{"질의": "필라테스 배우고 싶은데 어때", "응답": "자세 교정에 진짜 좋아", "카테고리": "DAILY"}
+{"질의": "오늘 운동 가기 너무 귀찮아", "응답": "그래도 10분만이라도 움직여봐", "카테고리": "DAILY"}
+{"질의": "근력운동 얼마나 자주 해야해", "응답": "주 3회 정도면 충분해", "카테고리": "DAILY"}
+{"질의": "걷기운동도 효과 있어", "응답": "어 매일 꾸준히 걸으면 진짜 좋아", "카테고리": "DAILY"}
+{"질의": "요즘 옷 사고 싶은데 뭐가 유행이야", "응답": "요즘은 루즈핏 스타일이 유행이야", "카테고리": "DAILY"}
+{"질의": "신발 하나 사려는데 추천해줄래", "응답": "편한 스니커즈 하나 사둬", "카테고리": "DAILY"}
+{"질의": "가을 옷 쇼핑하기 좋은 시즌인가", "응답": "어 지금이 딱 좋은 시기야", "카테고리": "DAILY"}
+{"질의": "온라인 쇼핑몰 추천해줘", "응답": "요즘 다들 무신사 많이 쓰더라", "카테고리": "DAILY"}
+{"질의": "세일 기간 언제야", "응답": "이번 주말부터 시작한다더라", "카테고리": "DAILY"}
+{"질의": "가방 하나 새로 살까 고민돼", "응답": "실용적인 크로스백 하나 괜찮아", "카테고리": "DAILY"}
+{"질의": "화장품 뭐 새로 써볼까", "응답": "요즘 리뷰 좋은 선크림 하나 써봐", "카테고리": "DAILY"}
+{"질의": "겨울 코트 뭐가 따뜻해", "응답": "롱패딩이 제일 따뜻하지", "카테고리": "DAILY"}
+{"질의": "인테리어 소품 사고 싶은데 추천해줘", "응답": "무드등 하나 놓으면 분위기 좋아져", "카테고리": "DAILY"}
+{"질의": "운동화 세탁 어떻게 해", "응답": "미온수에 손빨래 하는 게 제일 좋아", "카테고리": "DAILY"}
+{"질의": "요즘 볼만한 드라마 있어", "응답": "요즘 나오는 로맨스 드라마 재밌더라", "카테고리": "DAILY"}
+{"질의": "영화 추천 좀 해줘", "응답": "잔잔한 힐링 영화 어때", "카테고리": "DAILY"}
+{"질의": "넷플릭스 뭐 볼까 고민돼", "응답": "요즘 다들 그 스릴러 시리즈 보더라", "카테고리": "DAILY"}
+{"질의": "요즘 재밌는 책 있어", "응답": "에세이 하나 요즘 재밌게 읽고 있어", "카테고리": "DAILY"}
+{"질의": "최근에 본 영화 어땠어", "응답": "생각보다 재밌어서 놀랐어", "카테고리": "DAILY"}
+{"질의": "웹툰 추천해줄래", "응답": "요즘 인기 많은 판타지 웹툰 있어", "카테고리": "DAILY"}
+{"질의": "예능 뭐 보면 재밌어", "응답": "요즘 여행 예능 재밌더라", "카테고리": "DAILY"}
+{"질의": "다큐멘터리 볼 만한 거 있어", "응답": "자연 다큐 하나 진짜 힐링돼", "카테고리": "DAILY"}
+{"질의": "애니메이션 추천해줘", "응답": "요즘 나온 극장판 애니 괜찮더라", "카테고리": "DAILY"}
+{"질의": "요즘 노래 뭐 듣고 있어", "응답": "잔잔한 발라드 위주로 듣고 있어", "카테고리": "DAILY"}
+{"질의": "벌써 연말이네 시간 진짜 빠르다", "응답": "그러게 올해도 순삭이었어", "카테고리": "DAILY"}
+{"질의": "추석에 뭐할 계획이야", "응답": "그냥 가족들이랑 시간 보내려고", "카테고리": "DAILY"}
+{"질의": "크리스마스 계획 있어", "응답": "아직 딱히 없어 그냥 집에서 쉴 듯", "카테고리": "DAILY"}
+{"질의": "새해 목표 세웠어", "응답": "어 올해는 운동 꾸준히 하는 거로 정했어", "카테고리": "DAILY"}
+{"질의": "이번 연휴 뭐 할 거야", "응답": "그냥 집에서 밀린 잠 자려고", "카테고리": "DAILY"}
+{"질의": "벚꽃 언제쯤 필까", "응답": "다음 달쯤이면 슬슬 피기 시작할 거야", "카테고리": "DAILY"}
+{"질의": "단풍 보러 가기 좋은 곳 있어", "응답": "설악산 단풍이 진짜 예쁘다더라", "카테고리": "DAILY"}
+{"질의": "여름휴가 계획 있어", "응답": "아직 못 정했는데 이번 주에 정하려고", "카테고리": "DAILY"}
+{"질의": "명절 음식 뭐가 제일 좋아", "응답": "나는 전이랑 갈비찜이 제일 좋아", "카테고리": "DAILY"}
+{"질의": "겨울방학 계획 세웠어", "응답": "그냥 푹 쉬면서 재충전하려고", "카테고리": "DAILY"}
+{"질의": "오늘따라 하늘이 예쁘다", "응답": "그러게 노을이 진짜 예쁘네", "카테고리": "DAILY"}
+{"질의": "요즘 너무 나른해", "응답": "봄이라 그런가보다 다들 그렇대", "카테고리": "DAILY"}
+{"질의": "이 노래 진짜 좋다", "응답": "어 나도 요즘 계속 듣고 있어", "카테고리": "DAILY"}
+{"질의": "오늘 좀 웃긴 일 있었어", "응답": "뭔데 궁금하다 얘기해줘", "카테고리": "DAILY"}
+{"질의": "요즘 사는 게 재미없어", "응답": "그럴 때는 새로운 걸 시도해보는 것도 좋아", "카테고리": "DAILY"}
+{"질의": "오늘 우연히 옛날 친구 만났어", "응답": "오 반가웠겠다 얘기 많이 했어", "카테고리": "DAILY"}
+{"질의": "오늘 지갑을 잃어버릴 뻔했어", "응답": "다행이다 그래도 안 잃어버려서", "카테고리": "DAILY"}
+{"질의": "오늘 버스를 놓쳤어", "응답": "아 아깝다 다음 버스는 언제 왔어", "카테고리": "DAILY"}
+{"질의": "오늘 늦잠 자서 지각할 뻔했어", "응답": "아슬아슬했겠다 그래도 다행이네", "카테고리": "DAILY"}
+{"질의": "오늘 갑자기 소나기 맞았어", "응답": "아이고 우산도 없었는데 고생했다", "카테고리": "DAILY"}
+{"질의": "오늘 회사에서 칭찬받았어", "응답": "오 잘했네 축하해", "카테고리": "DAILY"}
+{"질의": "오늘 시험 망친 것 같아", "응답": "너무 걱정하지마 결과는 나와봐야 알아", "카테고리": "DAILY"}
+{"질의": "오늘 친구랑 싸웠어", "응답": "무슨 일인데 화해는 했어", "카테고리": "DAILY"}
+{"질의": "오늘 길에서 돈 주웠어", "응답": "오 럭키하다 경찰서에 맡겼어", "카테고리": "DAILY"}
+{"질의": "오늘 새로 산 옷 마음에 들어", "응답": "오 어떤 스타일인지 궁금하다", "카테고리": "DAILY"}
+{"질의": "오늘 오랜만에 늦잠 잤어", "응답": "개운했겠다 푹 잤나보네", "카테고리": "DAILY"}
+{"질의": "이 카페 분위기 진짜 좋다", "응답": "그러게 조용하고 아늑하네", "카테고리": "DAILY"}
+{"질의": "요즘 물가가 너무 올랐어", "응답": "맞아 장 보러 가면 깜짝깜짝 놀라", "카테고리": "DAILY"}
+{"질의": "요즘 사람들 다 바빠 보여", "응답": "다들 각자 사정이 있나보다", "카테고리": "DAILY"}
+{"질의": "오늘 지하철에 사람 진짜 많더라", "응답": "출퇴근 시간엔 항상 그렇지", "카테고리": "DAILY"}
+{"질의": "오늘 아침에 새소리 듣고 기분 좋아졌어", "응답": "오 좋다 그런 소소한 게 힐링이지", "카테고리": "DAILY"}
+{"질의": "오늘 우연히 좋은 음악 발견했어", "응답": "오 뭔데 나도 들어보고 싶다", "카테고리": "DAILY"}
+{"질의": "오늘따라 시간이 안 가네", "응답": "그런 날 있지 조금만 버텨봐", "카테고리": "DAILY"}
+{"질의": "오늘 손님이 많이 와서 정신없었어", "응답": "고생했다 오늘은 푹 쉬어", "카테고리": "DAILY"}
+{"질의": "오늘따라 커피가 유독 맛있네", "응답": "원두 바꿨나보다 좋은 신호야", "카테고리": "DAILY"}
+{"질의": "요즘 가족들이랑 자주 통화해", "응답": "어 요즘 부쩍 자주 연락하고 있어", "카테고리": "DAILY"}
+{"질의": "부모님 뵈러 언제 갈 거야", "응답": "다음 주말에 내려가려고", "카테고리": "DAILY"}
+{"질의": "형제자매랑 사이 어때", "응답": "나쁘지 않아 가끔 투닥거리긴 해", "카테고리": "DAILY"}
+{"질의": "요즘 친구들이랑 자주 만나", "응답": "요즘은 다들 바빠서 뜸해졌어", "카테고리": "DAILY"}
+{"질의": "오랜만에 동창회 갔다왔어", "응답": "오 재밌었겠다 다들 잘 지내던", "카테고리": "DAILY"}
+{"질의": "이웃이랑 인사 나눈 적 있어", "응답": "어 가끔 엘리베이터에서 인사해", "카테고리": "DAILY"}
+{"질의": "요즘 이사 준비하고 있어", "응답": "오 힘들겠다 짐 정리는 잘 되가", "카테고리": "DAILY"}
+{"질의": "집들이 뭐 준비해야해", "응답": "간단한 선물이랑 화장지 세트 챙겨가", "카테고리": "DAILY"}
+{"질의": "자취 시작했는데 뭐가 제일 힘들어", "응답": "밥 챙겨먹는 게 제일 힘들지", "카테고리": "DAILY"}
+{"질의": "룸메이트랑 잘 지내", "응답": "어 서로 배려 잘 하고 있어", "카테고리": "DAILY"}
+{"질의": "오늘 청소 좀 했어", "응답": "오 개운하겠다 집이 깨끗해졌겠네", "카테고리": "DAILY"}
+{"질의": "빨래 너는 거 귀찮지 않아", "응답": "맞아 진짜 귀찮은 집안일이야", "카테고리": "DAILY"}
+{"질의": "설거지 하기 진짜 싫다", "응답": "나도 그거 제일 미루게 되더라", "카테고리": "DAILY"}
+{"질의": "오늘 장 보러 갔다왔어", "응답": "뭐 좀 샀어 필요한 거 다 샀어", "카테고리": "DAILY"}
+{"질의": "오늘 하루도 수고했어", "응답": "어 너도 오늘 하루 정말 수고했어", "카테고리": "DAILY"}
+{"질의": "광합성 원리 알려줘", "응답": "식물이 빛 에너지로 이산화탄소랑 물을 이용해서 포도당이랑 산소를 만드는 과정이야. 엽록소가 빛을 흡수하는 게 핵심이지.", "카테고리": "KNOWLEDGE"}
+{"질의": "조선시대 왕 순서 어떻게 돼?", "응답": "태조부터 시작해서 정종, 태종, 세종 순으로 이어지고 마지막은 순종이야. 총 27명의 왕이 있었어.", "카테고리": "KNOWLEDGE"}
+{"질의": "금리 인상이 물가에 미치는 영향은?", "응답": "금리가 오르면 대출이 부담스러워져서 소비랑 투자가 줄어들어. 그러면 수요가 줄면서 물가 상승이 억제되는 효과가 있어.", "카테고리": "KNOWLEDGE"}
+{"질의": "피타고라스 정리 설명해줘", "응답": "직각삼각형에서 빗변의 제곱이 나머지 두 변의 제곱의 합과 같다는 정리야. a²+b²=c² 로 표현해.", "카테고리": "KNOWLEDGE"}
+{"질의": "태양계 행성 순서가 어떻게 되지?", "응답": "수성, 금성, 지구, 화성, 목성, 토성, 천왕성, 해왕성 순이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "임진왜란은 언제 일어났어?", "응답": "1592년에 일본이 조선을 침략하면서 시작됐고 1598년까지 이어졌어.", "카테고리": "KNOWLEDGE"}
+{"질의": "인플레이션이랑 디플레이션 차이가 뭐야?", "응답": "인플레이션은 물가가 계속 오르는 거고 디플레이션은 반대로 물가가 계속 내려가는 현상이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "소수는 뭐야?", "응답": "1과 자기 자신으로만 나눠지는 1보다 큰 자연수를 말해. 2, 3, 5, 7 같은 숫자들이지.", "카테고리": "KNOWLEDGE"}
+{"질의": "블랙홀이 뭔지 설명해줘", "응답": "중력이 너무 강해서 빛조차 빠져나올 수 없는 천체야. 별이 붕괴하면서 생기는 경우가 많아.", "카테고리": "KNOWLEDGE"}
+{"질의": "세종대왕이 만든 게 뭐야?", "응답": "한글을 창제한 걸로 제일 유명하고 측우기나 해시계 같은 과학 기구도 많이 만들었어.", "카테고리": "KNOWLEDGE"}
+{"질의": "GDP가 뭐야?", "응답": "한 나라 안에서 일정 기간 생산된 재화와 서비스의 총가치를 말해. 경제 규모를 나타내는 대표 지표야.", "카테고리": "KNOWLEDGE"}
+{"질의": "원주율 파이는 어떤 수야?", "응답": "원의 둘레를 지름으로 나눈 값인데 3.14159로 끝없이 이어지는 무리수야.", "카테고리": "KNOWLEDGE"}
+{"질의": "6.25 전쟁은 언제 끝났어?", "응답": "1950년에 시작해서 1953년 정전협정으로 휴전 상태에 들어갔어. 아직 종전은 아니야.", "카테고리": "KNOWLEDGE"}
+{"질의": "기준금리는 누가 정해?", "응답": "한국은 한국은행 금융통화위원회가 결정해. 미국은 연준(Fed)이 정하지.", "카테고리": "KNOWLEDGE"}
+{"질의": "뉴턴의 운동법칙 세 가지가 뭐야?", "응답": "관성의 법칙, 가속도의 법칙, 작용반작용의 법칙이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "삼국시대 나라 세 개가 뭐야?", "응답": "고구려, 백제, 신라야. 이후에 신라가 통일했지.", "카테고리": "KNOWLEDGE"}
+{"질의": "환율이 오르면 어떻게 돼?", "응답": "원화 가치가 떨어진다는 뜻이라 수입 물가는 오르고 수출 기업은 유리해져.", "카테고리": "KNOWLEDGE"}
+{"질의": "미적분은 왜 배워?", "응답": "변화율이나 넓이 같은 걸 계산하는 도구라서 물리, 경제 등 여러 분야에서 필수적이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "DNA랑 RNA 차이가 뭐야?", "응답": "DNA는 이중나선이고 유전정보를 저장하는 역할, RNA는 단일가닥으로 정보를 전달하고 단백질 합성을 도와.", "카테고리": "KNOWLEDGE"}
+{"질의": "고려는 언제 세워졌어?", "응답": "918년에 왕건이 세웠고 936년에 후삼국을 통일했어.", "카테고리": "KNOWLEDGE"}
+{"질의": "주식이랑 채권 차이가 뭐야?", "응답": "주식은 회사 지분을 소유하는 거고 채권은 돈을 빌려주고 이자를 받는 거야.", "카테고리": "KNOWLEDGE"}
+{"질의": "상대성이론 간단히 설명해줘", "응답": "아인슈타인이 만든 이론인데 시간과 공간이 절대적이지 않고 관측자에 따라 달라진다는 내용이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "무한소수랑 유한소수 차이가 뭐야?", "응답": "유한소수는 소수점 아래 자리가 끝나는 수고 무한소수는 끝없이 이어지는 수야.", "카테고리": "KNOWLEDGE"}
+{"질의": "프랑스 혁명은 언제 일어났어?", "응답": "1789년에 시작됐어. 왕정을 무너뜨리고 자유, 평등, 박애 이념이 퍼진 계기가 됐지.", "카테고리": "KNOWLEDGE"}
+{"질의": "복리랑 단리 차이가 뭐야?", "응답": "단리는 원금에만 이자가 붙고 복리는 이자에도 이자가 붙어서 시간이 지날수록 차이가 커져.", "카테고리": "KNOWLEDGE"}
+{"질의": "오존층이 왜 중요해?", "응답": "자외선을 막아주는 역할을 해서 지구 생물을 보호해줘. 파괴되면 피부암 같은 문제가 늘어날 수 있어.", "카테고리": "KNOWLEDGE"}
+{"질의": "동학농민운동이 뭐야?", "응답": "1894년에 전봉준이 이끈 농민 봉기인데 부패한 정치와 외세 침탈에 저항한 사건이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "주식시장에서 코스피랑 코스닥 차이가 뭐야?", "응답": "코스피는 대형 우량기업 중심이고 코스닥은 중소, 벤처기업 중심 시장이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "방정식이랑 항등식 차이가 뭐야?", "응답": "방정식은 특정 값에서만 성립하고 항등식은 모든 값에서 항상 성립해.", "카테고리": "KNOWLEDGE"}
+{"질의": "세계 2차 대전은 언제 끝났어?", "응답": "1945년에 끝났어. 독일 항복은 5월, 일본 항복은 8월이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "실업률은 어떻게 계산해?", "응답": "경제활동인구 중에서 일자리를 구하지 못한 사람의 비율로 계산해.", "카테고리": "KNOWLEDGE"}
+{"질의": "만유인력의 법칙이 뭐야?", "응답": "모든 물체는 질량에 비례하고 거리 제곱에 반비례하는 힘으로 서로 끌어당긴다는 법칙이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "백제의 수도는 어디였어?", "응답": "처음엔 한성이었다가 웅진(공주), 나중엔 사비(부여)로 옮겼어.", "카테고리": "KNOWLEDGE"}
+{"질의": "주가지수 산출 방식이 뭐야?", "응답": "시가총액 방식이 대표적인데 상장된 기업들의 시가총액 합을 기준 시점과 비교해서 계산해.", "카테고리": "KNOWLEDGE"}
+{"질의": "확률이랑 통계 차이가 뭐야?", "응답": "확률은 사건이 일어날 가능성을 다루고 통계는 이미 모은 데이터를 분석하는 학문이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "청동기 시대 특징이 뭐야?", "응답": "청동으로 도구를 만들고 계급이 생기고 농경이 발달한 시대야.", "카테고리": "KNOWLEDGE"}
+{"질의": "환경보호세는 뭐야?", "응답": "환경오염을 유발하는 활동에 부과하는 세금인데 오염을 줄이려는 목적이 있어.", "카테고리": "KNOWLEDGE"}
+{"질의": "질량이랑 무게 차이가 뭐야?", "응답": "질량은 물질의 고유한 양이고 무게는 중력에 의해 받는 힘이야. 달에서는 무게가 줄어들지만 질량은 그대로야.", "카테고리": "KNOWLEDGE"}
+{"질의": "임산부가 조심해야 할 음식이 뭐야?", "응답": "생선회 같은 날음식이나 카페인 과다 섭취는 피하는 게 좋아.", "카테고리": "KNOWLEDGE"}
+{"질의": "근의 공식이 뭐야?", "응답": "이차방정식 ax²+bx+c=0의 해를 구하는 공식인데 x=(-b±√(b²-4ac))/2a야.", "카테고리": "KNOWLEDGE"}
+{"질의": "신라의 삼국통일은 언제야?", "응답": "676년에 나당전쟁에서 승리하면서 삼국통일을 완성했어.", "카테고리": "KNOWLEDGE"}
+{"질의": "경상수지가 뭐야?", "응답": "한 나라가 외국과 거래한 상품, 서비스, 소득 등의 수지를 나타내는 지표야.", "카테고리": "KNOWLEDGE"}
+{"질의": "세포는 어떻게 구성돼?", "응답": "핵, 세포질, 세포막으로 구성되고 세포 안에 미토콘드리아 같은 소기관들이 있어.", "카테고리": "KNOWLEDGE"}
+{"질의": "고구려 광개토대왕은 어떤 왕이야?", "응답": "영토를 크게 확장한 왕으로 유명하고 만주와 한반도 북부까지 지배했어.", "카테고리": "KNOWLEDGE"}
+{"질의": "주식 배당금이 뭐야?", "응답": "회사가 이익을 주주들에게 나눠주는 돈이야. 보통 분기나 연간으로 지급해.", "카테고리": "KNOWLEDGE"}
+{"질의": "등차수열이랑 등비수열 차이가 뭐야?", "응답": "등차수열은 일정한 수를 더해가는 수열이고 등비수열은 일정한 비율을 곱해가는 수열이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "빅뱅 이론이 뭐야?", "응답": "우주가 아주 작은 한 점에서 폭발적으로 팽창하면서 생겨났다는 우주 기원 이론이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "병자호란은 언제야?", "응답": "1636년에 청나라가 조선을 침략한 전쟁이야. 인조가 삼전도에서 항복했어.", "카테고리": "KNOWLEDGE"}
+{"질의": "관세가 뭐야?", "응답": "외국에서 수입하는 물건에 부과하는 세금이야. 국내 산업 보호 목적으로도 쓰여.", "카테고리": "KNOWLEDGE"}
+{"질의": "이차함수 그래프는 어떤 모양이야?", "응답": "포물선 모양이야. 계수가 양수면 아래로 볼록, 음수면 위로 볼록해.", "카테고리": "KNOWLEDGE"}
+{"질의": "광복절은 무슨 날이야?", "응답": "1945년 8월 15일 일제강점기에서 해방된 날을 기념하는 날이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "환율 방어가 뭐야?", "응답": "정부나 중앙은행이 자국 통화 가치를 지키기 위해 외환시장에 개입하는 걸 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "삼투압이 뭐야?", "응답": "농도가 다른 두 용액 사이에서 물이 이동하려는 압력을 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "갑오개혁이 뭐야?", "응답": "1894년 조선이 근대적 제도를 도입하려고 시행한 개혁이야. 신분제 폐지 같은 내용이 담겼어.", "카테고리": "KNOWLEDGE"}
+{"질의": "부가가치세가 뭐야?", "응답": "상품이나 서비스가 거래될 때마다 부가된 가치에 매기는 세금이야. 한국은 보통 10%야.", "카테고리": "KNOWLEDGE"}
+{"질의": "삼각함수 사인 코사인이 뭐야?", "응답": "직각삼각형에서 각도와 변의 비율을 나타내는 함수야. 사인은 대변/빗변, 코사인은 밑변/빗변이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "산업혁명은 언제 시작됐어?", "응답": "18세기 후반 영국에서 시작됐어. 증기기관 발명이 큰 계기가 됐지.", "카테고리": "KNOWLEDGE"}
+{"질의": "기회비용이 뭐야?", "응답": "어떤 선택을 할 때 포기해야 하는 가장 큰 가치를 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "태풍이랑 허리케인 차이가 뭐야?", "응답": "발생 지역만 다르고 원리는 같아. 태풍은 아시아, 허리케인은 대서양 쪽이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "고려청자가 유명한 이유가 뭐야?", "응답": "비취색 유약과 상감기법이 세계적으로 인정받는 예술적 가치를 가지고 있어서야.", "카테고리": "KNOWLEDGE"}
+{"질의": "주가수익비율 PER이 뭐야?", "응답": "주가를 주당순이익으로 나눈 값인데 주가가 이익 대비 얼마나 고평가됐는지 보는 지표야.", "카테고리": "KNOWLEDGE"}
+{"질의": "소인수분해가 뭐야?", "응답": "자연수를 소수들의 곱으로 나타내는 걸 말해. 12는 2×2×3으로 분해돼.", "카테고리": "KNOWLEDGE"}
+{"질의": "지구온난화 원인이 뭐야?", "응답": "온실가스가 대기 중에 쌓여서 열을 가두는 게 주된 원인이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "고려 무신정변이 뭐야?", "응답": "1170년에 무신들이 문신 중심 정치에 반발해서 정권을 잡은 사건이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "통화정책이 뭐야?", "응답": "중앙은행이 금리나 통화량을 조절해서 경제를 안정시키려는 정책이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "미분이 뭐야?", "응답": "어떤 함수의 순간 변화율을 구하는 수학 개념이야. 그래프의 기울기를 구한다고 생각하면 돼.", "카테고리": "KNOWLEDGE"}
+{"질의": "원자랑 분자 차이가 뭐야?", "응답": "원자는 물질을 이루는 가장 작은 단위고 분자는 원자들이 결합한 형태야.", "카테고리": "KNOWLEDGE"}
+{"질의": "동아시아 유교문화가 왜 중요해?", "응답": "가족 중심 가치관과 예의범절, 학문 존중 문화의 기반이 됐어.", "카테고리": "KNOWLEDGE"}
+{"질의": "기축통화가 뭐야?", "응답": "국제 거래에서 기준이 되는 통화를 말해. 지금은 미국 달러가 대표적이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "산성이랑 염기성 차이가 뭐야?", "응답": "산성은 pH가 7보다 낮고 염기성은 7보다 높아. 7이면 중성이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "고구려 벽화가 유명한 이유가 뭐야?", "응답": "당시 생활상, 문화, 사상을 생생하게 보여주는 귀중한 자료라서야.", "카테고리": "KNOWLEDGE"}
+{"질의": "근로소득세는 어떻게 부과돼?", "응답": "소득 구간별로 세율이 다르게 적용되는 누진세 방식이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "함수랑 방정식 차이가 뭐야?", "응답": "함수는 입력값에 따라 출력값이 정해지는 관계고 방정식은 특정 조건을 만족하는 값을 찾는 식이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "화산 폭발은 왜 일어나?", "응답": "지하의 마그마가 압력에 의해 지표면으로 분출하면서 일어나.", "카테고리": "KNOWLEDGE"}
+{"질의": "한글날은 왜 있는 거야?", "응답": "세종대왕이 훈민정음을 반포한 걸 기념하는 날이야. 10월 9일이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "물가지수는 어떻게 만들어?", "응답": "여러 상품과 서비스 가격을 기준시점 대비 비교해서 지수로 만들어.", "카테고리": "KNOWLEDGE"}
+{"질의": "음의 정수랑 양의 정수 차이가 뭐야?", "응답": "0을 기준으로 큰 수는 양수, 작은 수는 음수야.", "카테고리": "KNOWLEDGE"}
+{"질의": "온실효과가 뭐야?", "응답": "대기 중 가스가 지구에서 나오는 열을 가둬서 지구를 따뜻하게 유지하는 현상이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "신라 화랑도가 뭐야?", "응답": "신라의 청소년 수양 단체인데 무예와 도덕을 함께 배웠어.", "카테고리": "KNOWLEDGE"}
+{"질의": "경제성장률은 어떻게 계산해?", "응답": "이번 기간 GDP와 이전 기간 GDP를 비교해서 증가율로 계산해.", "카테고리": "KNOWLEDGE"}
+{"질의": "로그가 뭐야?", "응답": "어떤 수를 밑으로 몇 번 거듭제곱해야 특정 값이 나오는지 나타내는 개념이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "판구조론이 뭐야?", "응답": "지구 표면이 여러 판으로 나뉘어 있고 이 판들이 움직인다는 이론이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "동학 사상이 뭐야?", "응답": "최제우가 창시한 사상인데 인내천, 즉 사람이 곧 하늘이라는 평등사상이 핵심이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "공정거래위원회가 뭐하는 곳이야?", "응답": "기업들의 불공정 거래나 독과점 행위를 감시하고 규제하는 정부기관이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "허수는 뭐야?", "응답": "제곱해서 음수가 되는 수야. i로 표시하고 i²=-1이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "극지방 오로라는 왜 생겨?", "응답": "태양풍의 입자가 지구 자기장과 부딪혀서 대기 중 기체를 자극하며 빛을 내는 거야.", "카테고리": "KNOWLEDGE"}
+{"질의": "3.1운동은 언제 일어났어?", "응답": "1919년 3월 1일에 일어난 독립운동이야. 전국적으로 만세운동이 퍼졌어.", "카테고리": "KNOWLEDGE"}
+{"질의": "환율제도 종류가 뭐가 있어?", "응답": "고정환율제와 변동환율제가 있어. 한국은 변동환율제를 채택하고 있어.", "카테고리": "KNOWLEDGE"}
+{"질의": "수열의 극한이 뭐야?", "응답": "수열의 항이 끝없이 진행될 때 어떤 값에 가까워지는지를 나타내는 개념이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "대륙이동설은 누가 주장했어?", "응답": "독일 과학자 베게너가 주장했어. 대륙들이 원래 하나였다가 갈라졌다는 이론이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "동인도회사가 뭐야?", "응답": "17세기 유럽 국가들이 아시아 무역을 위해 세운 특허 회사야.", "카테고리": "KNOWLEDGE"}
+{"질의": "디지털세가 뭐야?", "응답": "해외 IT 기업들의 국내 매출에 부과하려는 세금 논의를 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "집합이 뭐야?", "응답": "특정 조건을 만족하는 원소들의 모임을 말해. 수학의 기본 개념 중 하나야.", "카테고리": "KNOWLEDGE"}
+{"질의": "빙하기는 왜 생겨?", "응답": "지구 기후가 주기적으로 변하면서 기온이 크게 낮아지는 시기 때문에 생겨.", "카테고리": "KNOWLEDGE"}
+{"질의": "고려의 대외무역은 어땠어?", "응답": "벽란도를 중심으로 송, 아라비아 상인들과도 교류할 정도로 활발했어.", "카테고리": "KNOWLEDGE"}
+{"질의": "공매도가 뭐야?", "응답": "주식을 빌려서 먼저 팔고 나중에 싸게 사서 갚는 투자 방식이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "벡터랑 스칼라 차이가 뭐야?", "응답": "벡터는 크기와 방향이 있고 스칼라는 크기만 있는 양이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "극한기후 현상 이유가 뭐야?", "응답": "기후변화로 대기와 해양 순환이 불안정해지면서 폭염, 폭우 같은 극단적 날씨가 늘어나.", "카테고리": "KNOWLEDGE"}
+{"질의": "임오군란이 뭐야?", "응답": "1882년 구식 군인들이 차별대우에 반발해서 일으킨 반란이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "환율 하락은 뭘 의미해?", "응답": "원화 가치가 오른다는 뜻이라 수입은 유리해지고 수출은 불리해질 수 있어.", "카테고리": "KNOWLEDGE"}
+{"질의": "행렬이 뭐야?", "응답": "숫자를 행과 열로 배열한 표 형태의 수학적 대상이야. 여러 방정식을 한번에 다룰 때 써.", "카테고리": "KNOWLEDGE"}
+{"질의": "엘니뇨가 뭐야?", "응답": "태평양 적도 부근 바닷물 온도가 평소보다 높아지는 현상인데 세계 곳곳 기후에 영향을 줘.", "카테고리": "KNOWLEDGE"}
+{"질의": "고려의 몽골 침입은 몇 번이었어?", "응답": "약 6차례에 걸쳐 침입을 받았고 결국 강화를 맺었어.", "카테고리": "KNOWLEDGE"}
+{"질의": "주식 액면분할이 뭐야?", "응답": "주식 한 주를 여러 주로 쪼개서 주당 가격을 낮추는 걸 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "경우의 수는 어떻게 구해?", "응답": "어떤 사건이 일어날 수 있는 모든 가짓수를 세는 걸 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "자기장이 뭐야?", "응답": "자석이나 전류 주변에 생기는 힘의 영역을 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "발해는 누가 세웠어?", "응답": "고구려 유민 대조영이 세운 나라야. 고구려 계승 의식이 강했어.", "카테고리": "KNOWLEDGE"}
+{"질의": "기업공개 IPO가 뭐야?", "응답": "비상장 기업이 처음으로 주식을 증권시장에 상장해서 일반인도 살 수 있게 하는 절차야.", "카테고리": "KNOWLEDGE"}
+{"질의": "제곱근이 뭐야?", "응답": "어떤 수를 제곱해서 특정 값이 나오게 하는 수야. 9의 제곱근은 3이지.", "카테고리": "KNOWLEDGE"}
+{"질의": "오로라는 어느 지역에서 볼 수 있어?", "응답": "북극이나 남극 근처 고위도 지역에서 잘 보여.", "카테고리": "KNOWLEDGE"}
+{"질의": "조선의 과거제도가 뭐야?", "응답": "관리를 뽑기 위한 시험 제도인데 문과, 무과, 잡과로 나뉘었어.", "카테고리": "KNOWLEDGE"}
+{"질의": "환율 스와프가 뭐야?", "응답": "서로 다른 통화를 일정 기간 교환했다가 나중에 다시 바꾸는 금융 거래야.", "카테고리": "KNOWLEDGE"}
+{"질의": "피보나치 수열이 뭐야?", "응답": "앞의 두 수를 더해서 다음 수를 만드는 수열이야. 1,1,2,3,5,8 이런 식이지.", "카테고리": "KNOWLEDGE"}
+{"질의": "미세먼지는 왜 생겨?", "응답": "자동차 배기가스, 공장 매연, 황사 등 다양한 원인으로 발생해.", "카테고리": "KNOWLEDGE"}
+{"질의": "동학농민운동 결과는 어떻게 됐어?", "응답": "진압됐지만 이후 갑오개혁에 영향을 줬고 반봉건, 반외세 의식을 남겼어.", "카테고리": "KNOWLEDGE"}
+{"질의": "양적완화가 뭐야?", "응답": "중앙은행이 돈을 풀어서 시중에 유동성을 공급하는 정책이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "확률변수가 뭐야?", "응답": "어떤 실험 결과에 숫자를 대응시킨 변수를 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "지진은 왜 일어나?", "응답": "지각판이 움직이면서 쌓인 에너지가 갑자기 방출될 때 일어나.", "카테고리": "KNOWLEDGE"}
+{"질의": "조선 후기 실학이 뭐야?", "응답": "실생활에 도움이 되는 학문을 추구한 사상이야. 정약용 같은 학자가 대표적이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "스태그플레이션이 뭐야?", "응답": "경기 침체와 물가 상승이 동시에 일어나는 현상이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "이항분포가 뭐야?", "응답": "성공 확률이 일정한 독립 시행을 여러 번 했을 때 성공 횟수의 분포야.", "카테고리": "KNOWLEDGE"}
+{"질의": "조수간만의 차는 왜 생겨?", "응답": "달과 태양의 인력 때문에 바닷물이 주기적으로 오르내리면서 생겨.", "카테고리": "KNOWLEDGE"}
+{"질의": "광해군은 어떤 왕이야?", "응답": "중립외교로 유명하고 이후 인조반정으로 폐위됐어.", "카테고리": "KNOWLEDGE"}
+{"질의": "환헤지가 뭐야?", "응답": "환율 변동으로 인한 손실 위험을 줄이기 위한 금융 기법이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "삼각비 응용은 어디에 쓰여?", "응답": "건축, 항해, 천문학 등 거리와 각도를 계산하는 다양한 분야에 쓰여.", "카테고리": "KNOWLEDGE"}
+{"질의": "생태계 먹이사슬이 뭐야?", "응답": "생물들이 먹고 먹히는 관계로 연결된 구조를 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "고려 팔만대장경이 뭐야?", "응답": "몽골 침입을 부처의 힘으로 물리치려고 만든 불교 경전 목판이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "채권 수익률은 어떻게 결정돼?", "응답": "시장 금리와 채권 가격이 반비례 관계로 움직이면서 결정돼.", "카테고리": "KNOWLEDGE"}
+{"질의": "등고선이 뭐야?", "응답": "지도에서 같은 높이의 지점을 연결한 선이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "세계 3대 종교가 뭐야?", "응답": "기독교, 이슬람교, 불교를 보통 세계 3대 종교로 꼽아.", "카테고리": "KNOWLEDGE"}
+{"질의": "기업의 유동비율이 뭐야?", "응답": "유동자산을 유동부채로 나눈 값인데 단기 상환능력을 보는 지표야.", "카테고리": "KNOWLEDGE"}
+{"질의": "삼각형의 내각의 합은?", "응답": "삼각형 내각의 합은 항상 180도야.", "카테고리": "KNOWLEDGE"}
+{"질의": "해류가 뭐야?", "응답": "바닷물이 일정한 방향으로 흐르는 흐름을 말해. 기후에도 영향을 줘.", "카테고리": "KNOWLEDGE"}
+{"질의": "조선왕조실록이 뭐야?", "응답": "조선 왕들의 통치 기록을 담은 방대한 역사서야. 유네스코 세계기록유산이기도 해.", "카테고리": "KNOWLEDGE"}
+{"질의": "국채금리는 왜 중요해?", "응답": "시장 전체 금리 수준의 기준이 되고 경제 상황을 반영하는 지표라서야.", "카테고리": "KNOWLEDGE"}
+{"질의": "순열이랑 조합 차이가 뭐야?", "응답": "순열은 순서를 고려하고 조합은 순서를 고려하지 않는 경우의 수야.", "카테고리": "KNOWLEDGE"}
+{"질의": "극한강수는 왜 늘어나?", "응답": "대기 중 수증기량이 늘면서 폭우 발생 빈도가 높아지는 걸로 봐.", "카테고리": "KNOWLEDGE"}
+{"질의": "고려의 문벌귀족이 뭐야?", "응답": "고려 초중기 정치를 주도한 특정 가문 중심의 지배층을 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "환율 변동성이 커지면 어떻게 돼?", "응답": "무역이나 투자에서 불확실성이 커져서 기업들이 리스크 관리에 신경 써야 해.", "카테고리": "KNOWLEDGE"}
+{"질의": "통계에서 표준편차가 뭐야?", "응답": "자료가 평균에서 얼마나 흩어져 있는지 나타내는 값이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "오존층 파괴 원인이 뭐야?", "응답": "냉매나 스프레이에 쓰이던 프레온가스가 주된 원인으로 지목됐어.", "카테고리": "KNOWLEDGE"}
+{"질의": "고려 왕건의 정책이 뭐야?", "응답": "호족 세력을 포섭하려고 혼인정책을 많이 썼고 훈요십조를 남겼어.", "카테고리": "KNOWLEDGE"}
+{"질의": "신용등급은 어떻게 매겨져?", "응답": "기업이나 국가의 상환능력을 평가해서 AAA부터 D까지 등급을 매겨.", "카테고리": "KNOWLEDGE"}
+{"질의": "함수의 그래프 대칭성은 뭘로 판단해?", "응답": "짝함수는 y축 대칭, 홀함수는 원점 대칭이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "태양은 어떻게 빛을 내?", "응답": "수소가 헬륨으로 융합되는 핵융합 반응으로 에너지를 방출해서 빛이 나.", "카테고리": "KNOWLEDGE"}
+{"질의": "이순신 장군의 대표 전투가 뭐야?", "응답": "한산도대첩, 명량해전, 노량해전이 대표적이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "환율조작국이 뭐야?", "응답": "자국 통화 가치를 인위적으로 조작해 무역에서 이득을 보는 나라를 지칭하는 용어야.", "카테고리": "KNOWLEDGE"}
+{"질의": "자연로그가 뭐야?", "응답": "밑이 자연상수 e인 로그를 말해. e는 약 2.718이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "바이러스랑 세균 차이가 뭐야?", "응답": "세균은 스스로 증식하는 생명체고 바이러스는 숙주세포 없이는 증식 못 해.", "카테고리": "KNOWLEDGE"}
+{"질의": "임진왜란 때 활약한 의병은 누구야?", "응답": "곽재우, 조헌 같은 인물들이 대표적인 의병장이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "신용카드 리볼빙이 뭐야?", "응답": "이번 달 결제금액 일부만 갚고 나머지는 다음달로 이월시키는 서비스야.", "카테고리": "KNOWLEDGE"}
+{"질의": "군집이랑 개체군 차이가 뭐야?", "응답": "개체군은 같은 종의 무리고 군집은 여러 개체군이 모인 걸 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "신라 골품제가 뭐야?", "응답": "혈통에 따라 신분을 나누던 신라의 엄격한 계급제도야.", "카테고리": "KNOWLEDGE"}
+{"질의": "보험료율은 어떻게 정해져?", "응답": "위험률, 손해율, 예정이율 등을 고려해서 산정해.", "카테고리": "KNOWLEDGE"}
+{"질의": "대수의 법칙이 뭐야?", "응답": "시행 횟수가 많아질수록 실제 확률에 가까워진다는 법칙이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "플레이트 경계 종류가 뭐가 있어?", "응답": "발산형, 수렴형, 보존형 경계가 있어.", "카테고리": "KNOWLEDGE"}
+{"질의": "신라 성덕대왕신종이 뭐야?", "응답": "에밀레종으로도 불리는 신라 시대의 거대한 범종이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "연금저축의 세제혜택이 뭐야?", "응답": "납입금액 일부에 대해 세액공제를 받을 수 있어.", "카테고리": "KNOWLEDGE"}
+{"질의": "이차부등식 푸는 법이 뭐야?", "응답": "이차방정식의 근을 구한 다음 그래프 개형으로 부호를 판단하면 돼.", "카테고리": "KNOWLEDGE"}
+{"질의": "생물다양성이 왜 중요해?", "응답": "생태계 균형을 유지하고 자원, 의약품 개발 등에도 중요한 역할을 해.", "카테고리": "KNOWLEDGE"}
+{"질의": "조선 후기 세도정치가 뭐야?", "응답": "특정 가문이 권력을 독점하면서 정치가 부패했던 시기를 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "주택담보대출비율 LTV가 뭐야?", "응답": "주택 가격 대비 대출 가능 금액의 비율이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "이차곡선 종류가 뭐가 있어?", "응답": "포물선, 타원, 쌍곡선이 대표적인 이차곡선이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "산호초는 왜 중요해?", "응답": "해양생물 다양성의 보고이고 해안 침식도 막아주는 역할을 해.", "카테고리": "KNOWLEDGE"}
+{"질의": "고려의 서희 담판이 뭐야?", "응답": "거란 침입 때 외교 담판으로 강동6주를 얻어낸 사건이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "기준환율이 뭐야?", "응답": "외환시장에서 거래되는 통화의 기준이 되는 환율을 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "수학적 귀납법이 뭐야?", "응답": "기본 명제가 성립함을 보이고 다음 단계도 성립함을 보여서 모든 자연수에 성립함을 증명하는 방법이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "광합성과 호흡의 차이가 뭐야?", "응답": "광합성은 에너지를 저장하는 과정이고 호흡은 에너지를 꺼내 쓰는 과정이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "조선의 신분제도가 뭐야?", "응답": "양반, 중인, 상민, 천민으로 나뉘어 있었어.", "카테고리": "KNOWLEDGE"}
+{"질의": "레버리지 투자가 뭐야?", "응답": "빌린 돈으로 투자 규모를 키워서 수익률을 높이려는 방식이야. 위험도 커져.", "카테고리": "KNOWLEDGE"}
+{"질의": "함수의 역함수가 뭐야?", "응답": "원래 함수의 출력을 입력으로, 입력을 출력으로 바꾼 함수야.", "카테고리": "KNOWLEDGE"}
+{"질의": "극한 생물이 사는 열수구가 뭐야?", "응답": "심해 바닥에서 뜨거운 물이 솟아나는 곳인데 특이한 생물들이 서식해.", "카테고리": "KNOWLEDGE"}
+{"질의": "강화도조약이 뭐야?", "응답": "1876년 조선이 일본과 맺은 최초의 근대적 조약인데 불평등 조약이었어.", "카테고리": "KNOWLEDGE"}
+{"질의": "신용부도스와프 CDS가 뭐야?", "응답": "채무불이행 위험에 대비해 보험처럼 거래하는 파생상품이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "삼각형 합동 조건이 뭐야?", "응답": "SSS, SAS, ASA 세 가지 조건으로 합동을 판단해.", "카테고리": "KNOWLEDGE"}
+{"질의": "먹이그물이 먹이사슬과 다른 점이 뭐야?", "응답": "먹이사슬은 단순 연결이고 먹이그물은 여러 사슬이 얽혀 있는 복잡한 관계망이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "흥선대원군은 어떤 정책을 폈어?", "응답": "쇄국정책을 펴고 경복궁을 중건했으며 서원을 정리했어.", "카테고리": "KNOWLEDGE"}
+{"질의": "펀드 수수료 종류가 뭐가 있어?", "응답": "판매수수료, 운용보수, 신탁보수 등이 있어.", "카테고리": "KNOWLEDGE"}
+{"질의": "이차방정식 판별식이 뭐야?", "응답": "b²-4ac 값으로 근의 개수와 성질을 판단하는 식이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "극지방 빙하가 녹으면 어떻게 돼?", "응답": "해수면이 상승해서 저지대 침수 위험이 커지고 생태계도 변해.", "카테고리": "KNOWLEDGE"}
+{"질의": "을사조약이 뭐야?", "응답": "1905년 일본이 대한제국의 외교권을 박탈한 조약이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "인덱스펀드가 뭐야?", "응답": "코스피 같은 지수를 그대로 따라가도록 설계된 펀드야. 수수료가 낮은 편이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "삼각함수 그래프 주기가 뭐야?", "응답": "사인, 코사인은 2π, 탄젠트는 π를 주기로 반복돼.", "카테고리": "KNOWLEDGE"}
+{"질의": "생태계 천이가 뭐야?", "응답": "시간이 지나면서 생태계 구성이 점차 변해가는 과정을 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "신미양요가 뭐야?", "응답": "1871년 미국이 강화도를 침공한 사건이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "물가연동채권이 뭐야?", "응답": "물가 상승률에 따라 원금이나 이자가 조정되는 채권이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "함수의 연속이 뭐야?", "응답": "그래프가 끊기지 않고 이어지는 성질을 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "산성비는 왜 생겨?", "응답": "공장이나 자동차에서 나온 황산화물, 질소산화물이 대기 중 수증기와 반응해서 생겨.", "카테고리": "KNOWLEDGE"}
+{"질의": "운요호 사건이 뭐야?", "응답": "1875년 일본 군함이 강화도를 공격한 사건인데 강화도조약의 빌미가 됐어.", "카테고리": "KNOWLEDGE"}
+{"질의": "기업어음 CP가 뭐야?", "응답": "기업이 단기자금 조달을 위해 발행하는 어음이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "수학에서 극값이 뭐야?", "응답": "함수가 국소적으로 최대나 최소가 되는 값을 말해.", "카테고리": "KNOWLEDGE"}
+{"질의": "공생관계 종류가 뭐가 있어?", "응답": "상리공생, 편리공생, 기생 관계 등으로 나뉘어.", "카테고리": "KNOWLEDGE"}
+{"질의": "동학운동과 갑오개혁 관계가 뭐야?", "응답": "동학농민운동이 계기가 돼서 정부가 갑오개혁을 추진했어.", "카테고리": "KNOWLEDGE"}
+{"질의": "단리채와 복리채 차이가 뭐야?", "응답": "단리채는 만기에 원금과 단순 이자를 받고 복리채는 이자가 재투자돼서 불어나.", "카테고리": "KNOWLEDGE"}
+{"질의": "삼각형 넓이 공식이 뭐야?", "응답": "밑변 곱하기 높이 나누기 2로 구해. 두 변과 낀각을 알면 (1/2)ab sinC로도 구해.", "카테고리": "KNOWLEDGE"}
+{"질의": "먹이연쇄에서 생산자 역할이 뭐야?", "응답": "광합성으로 스스로 에너지를 만드는 식물이나 조류가 생산자 역할을 해.", "카테고리": "KNOWLEDGE"}
+{"질의": "동양과 서양의 역법 차이가 뭐야?", "응답": "동양은 태음태양력을 많이 썼고 서양은 태양력인 그레고리력을 주로 써.", "카테고리": "KNOWLEDGE"}
+{"질의": "윤년은 왜 있는 거야?", "응답": "지구 공전 주기가 365일보다 조금 더 길어서 그 오차를 맞추려고 4년마다 하루를 더 넣는 거야.", "카테고리": "KNOWLEDGE"}
+{"질의": "물가안정목표제가 뭐야?", "응답": "중앙은행이 특정 물가상승률을 목표로 정해두고 통화정책을 운영하는 방식이야.", "카테고리": "KNOWLEDGE"}
+{"질의": "관성의 법칙이 뭐야?", "응답": "외부 힘이 없으면 물체는 원래 운동 상태를 계속 유지하려는 성질이야, 뉴턴 제1법칙이지.", "카테고리": "KNOWLEDGE"}
+{"질의": "올해 개봉한 SF 영화 추천해줘", "응답": "최근 SF는 '듄 파트2'가 볼만해, 스케일도 크고 스토리도 탄탄하더라", "카테고리": "CREATIVE"}
+{"질의": "우울할 때 보기 좋은 영화 있어?", "응답": "코미디 장르 추천해, '가디언즈 오브 갤럭시' 같은 거 보면 기분 풀려", "카테고리": "CREATIVE"}
+{"질의": "크리스토퍼 놀란 영화 중에 뭐가 제일 나아?", "응답": "개인적으론 '인터스텔라' 추천, 몰입감이 장난 아니야", "카테고리": "CREATIVE"}
+{"질의": "아이랑 같이 볼만한 애니메이션 영화 뭐 있을까", "응답": "'인사이드 아웃' 시리즈 괜찮아, 아이도 어른도 재밌게 봐", "카테고리": "CREATIVE"}
+{"질의": "무서운 영화 하나 추천해줘", "응답": "'유전'이나 '컨저링' 시리즈 추천, 분위기가 진짜 소름 돋아", "카테고리": "CREATIVE"}
+{"질의": "로맨스 영화 볼만한 거 있어?", "응답": "'라라랜드' 어때, 음악이랑 영상미가 예술이야", "카테고리": "CREATIVE"}
+{"질의": "넷플릭스에서 볼만한 영화 뭐 있을까", "응답": "요즘엔 '글래스 어니언' 추천, 추리물 좋아하면 딱이야", "카테고리": "CREATIVE"}
+{"질의": "전쟁 영화 명작 좀 알려줘", "응답": "'라이언 일병 구하기'는 무조건 봐야 돼, 오프닝부터 압도적이야", "카테고리": "CREATIVE"}
+{"질의": "마블 영화 순서대로 보려면 뭐부터 봐야 해", "응답": "'아이언맨 1편'부터 시작하는 게 제일 무난해", "카테고리": "CREATIVE"}
+{"질의": "짧고 가볍게 볼 영화 추천해줘", "응답": "'내 아내의 모든 것' 같은 로맨틱 코미디 어때, 부담 없이 볼 수 있어", "카테고리": "CREATIVE"}
+{"질의": "좀비 영화 중에 재밌는 거 있어?", "응답": "'부산행' 강추, 긴장감 최고고 감동도 있어", "카테고리": "CREATIVE"}
+{"질의": "힐링되는 영화 추천해줘", "응답": "'리틀 포레스트' 보면 마음이 편안해져", "카테고리": "CREATIVE"}
+{"질의": "반전 있는 영화 뭐 있을까", "응답": "'유주얼 서스펙트' 결말 보고 진짜 놀랐어", "카테고리": "CREATIVE"}
+{"질의": "애니메이션 명작 하나 알려줘", "응답": "'너의 이름은.' 안 보면 후회해, 영상미랑 스토리 다 좋아", "카테고리": "CREATIVE"}
+{"질의": "최근에 재밌게 본 영화 있어?", "응답": "요즘 '오펜하이머' 얘기 많이 나오더라, 몰입도 진짜 높아", "카테고리": "CREATIVE"}
+{"질의": "킬링타임용 액션 영화 추천해줘", "응답": "'존 윅' 시리즈 보면 시간 순삭이야", "카테고리": "CREATIVE"}
+{"질의": "다큐멘터리 영화 볼만한 거 있어?", "응답": "'아이엠 그레타' 추천, 생각할 거리 많아", "카테고리": "CREATIVE"}
+{"질의": "시간여행 소재 영화 뭐가 재밌어?", "응답": "'어바웃 타임' 좋아, 감동적이면서 로맨틱해", "카테고리": "CREATIVE"}
+{"질의": "뮤지컬 영화 추천해줘", "응답": "'위대한 쇼맨' 노래도 좋고 화려해", "카테고리": "CREATIVE"}
+{"질의": "스릴러 영화 뭐 볼까?", "응답": "'나이브스 아웃' 추천, 추리하는 재미가 쏠쏠해", "카테고리": "CREATIVE"}
+{"질의": "우주 배경 영화 있어?", "응답": "'그래비티' 보면 진짜 우주에 있는 느낌 들어", "카테고리": "CREATIVE"}
+{"질의": "명절에 가족이랑 볼만한 영화 있어?", "응답": "'극한직업' 어때, 웃기고 부담 없어", "카테고리": "CREATIVE"}
+{"질의": "봉준호 감독 영화 중에 뭐가 좋아?", "응답": "'기생충'은 무조건 봐야지, 짜임새가 완벽해", "카테고리": "CREATIVE"}
+{"질의": "실화 바탕 영화 추천해줘", "응답": "'설리: 허드슨강의 기적' 감동적이야", "카테고리": "CREATIVE"}
+{"질의": "디즈니 명작 애니메이션 알려줘", "응답": "'라이온 킹' 클래식이지만 지금 봐도 좋아", "카테고리": "CREATIVE"}
+{"질의": "90년대 감성 영화 뭐 있을까?", "응답": "'이터널 선샤인' 감성 제대로야", "카테고리": "CREATIVE"}
+{"질의": "첩보 영화 추천해줘", "응답": "'미션 임파서블' 시리즈 액션 진짜 화려해", "카테고리": "CREATIVE"}
+{"질의": "판타지 영화 명작 알려줘", "응답": "'반지의 제왕' 3부작은 기본이지", "카테고리": "CREATIVE"}
+{"질의": "잔잔한 일본 영화 추천해줘", "응답": "'스즈메의 문단속' 좋아, 감성적이야", "카테고리": "CREATIVE"}
+{"질의": "여름에 보기 좋은 시원한 느낌 영화 있어?", "응답": "물 배경 영화들 찾아봐, 시원한 느낌 나서 좋아", "카테고리": "CREATIVE"}
+{"질의": "최근 흥행한 한국 영화 뭐 있어?", "응답": "'파묘' 요즘 화제더라, 미스터리하고 몰입감 있어", "카테고리": "CREATIVE"}
+{"질의": "크리스마스에 볼만한 영화 추천해줘", "응답": "'나 홀로 집에' 매년 봐도 재밌어", "카테고리": "CREATIVE"}
+{"질의": "인생 영화로 꼽을만한 거 추천해줘", "응답": "'쇼생크 탈출'은 진짜 명작이야, 안 본 사람 없어야 돼", "카테고리": "CREATIVE"}
+{"질의": "코미디 스페셜 볼만한 거 있어?", "응답": "넷플릭스 코미디 스페셜들 볼만해, 웃음 포인트 확실해", "카테고리": "CREATIVE"}
+{"질의": "히어로 영화 중에 제일 재밌는 거 뭐야?", "응답": "'스파이더맨: 어크로스 더 스파이더버스' 영상미 미쳤어", "카테고리": "CREATIVE"}
+{"질의": "심리 스릴러 영화 알려줘", "응답": "'샤이닝' 보면 오싹해, 명작이야", "카테고리": "CREATIVE"}
+{"질의": "시리즈로 볼만한 영화 프랜차이즈 있어?", "응답": "'해리포터' 시리즈 정주행 추천", "카테고리": "CREATIVE"}
+{"질의": "감동적인 가족 영화 추천해줘", "응답": "'코코' 보면 눈물 안 참아져", "카테고리": "CREATIVE"}
+{"질의": "우정 소재 영화 뭐 있을까?", "응답": "'스탠 바이 미' 좋아, 잔잔하고 따뜻해", "카테고리": "CREATIVE"}
+{"질의": "액션 코미디 영화 알려줘", "응답": "'나쁜 녀석들' 시리즈 시원하고 웃겨", "카테고리": "CREATIVE"}
+{"질의": "비오는 날 듣기 좋은 재즈 플레이리스트 추천해줘", "응답": "빌 에반스 트리오 들어봐, 빗소리랑 찰떡이야", "카테고리": "CREATIVE"}
+{"질의": "운동할 때 듣기 좋은 노래 추천해줘", "응답": "신나는 힙합이나 EDM 위주로 들으면 텐션 올라가", "카테고리": "CREATIVE"}
+{"질의": "드라이브할 때 듣기 좋은 노래 있어?", "응답": "잔잔한 시티팝 플레이리스트 틀어봐, 분위기 좋아", "카테고리": "CREATIVE"}
+{"질의": "요즘 인기 많은 케이팝 노래 뭐 있어?", "응답": "뉴진스나 아이브 신곡 들어봐, 요즘 대세야", "카테고리": "CREATIVE"}
+{"질의": "발라드 명곡 추천해줘", "응답": "아이유의 '밤편지' 언제 들어도 좋아", "카테고리": "CREATIVE"}
+{"질의": "공부할 때 듣기 좋은 음악 있을까?", "응답": "가사 없는 로파이 힙합 틀어놓으면 집중 잘 돼", "카테고리": "CREATIVE"}
+{"질의": "옛날 감성 팝송 추천해줘", "응답": "퀸의 'Bohemian Rhapsody' 시대를 초월한 명곡이지", "카테고리": "CREATIVE"}
+{"질의": "신나는 파티 음악 추천해줘", "응답": "다프트 펑크 노래 틀면 분위기 확 살아나", "카테고리": "CREATIVE"}
+{"질의": "이별 후에 듣기 좋은 노래 있어?", "응답": "슬픈 발라드 몰아 듣는 것도 나쁘지 않아, 성시경 노래 추천해", "카테고리": "CREATIVE"}
+{"질의": "클래식 입문하기 좋은 곡 뭐야?", "응답": "비발디 사계부터 들어봐, 익숙한 멜로디라 편해", "카테고리": "CREATIVE"}
+{"질의": "최근 나온 앨범 중에 괜찮은 거 있어?", "응답": "요즘 화제인 아티스트 정규 앨범 한번 들어봐, 완성도 높다는 평 많아", "카테고리": "CREATIVE"}
+{"질의": "인디밴드 추천해줘", "응답": "잔나비 노래 들어봐, 감성적이고 독특해", "카테고리": "CREATIVE"}
+{"질의": "신나는 트로트 노래 있어?", "응답": "임영웅 노래 들어봐, 요즘 진짜 인기 많아", "카테고리": "CREATIVE"}
+{"질의": "록발라드 명곡 알려줘", "응답": "건즈 앤 로지스의 'November Rain' 강추", "카테고리": "CREATIVE"}
+{"질의": "잠들기 전에 듣기 좋은 노래 추천해줘", "응답": "잔잔한 어쿠스틱 노래 들으면 마음이 편안해져", "카테고리": "CREATIVE"}
+{"질의": "뮤지컬 넘버 중에 좋은 거 있어?", "응답": "'레미제라블'의 'Do You Hear the People Sing' 웅장하고 좋아", "카테고리": "CREATIVE"}
+{"질의": "여름에 어울리는 노래 추천해줘", "응답": "시원한 팝이나 레게 느낌 곡들 들어봐, 여름 감성 딱이야", "카테고리": "CREATIVE"}
+{"질의": "랩 잘하는 아티스트 추천해줘", "응답": "켄드릭 라마 들어봐, 라임이랑 메시지가 진짜 탄탄해", "카테고리": "CREATIVE"}
+{"질의": "노래방 가면 부르기 좋은 곡 뭐 있을까?", "응답": "신나는 곡으로는 god의 '거짓말' 부르면 분위기 좋아", "카테고리": "CREATIVE"}
+{"질의": "카페에서 틀어놓기 좋은 음악 있어?", "응답": "보사노바 스타일 음악 틀어놓으면 분위기 좋아져", "카테고리": "CREATIVE"}
+{"질의": "90년대 가요 명곡 추천해줘", "응답": "서태지와 아이들 노래 한번 들어봐, 지금 들어도 신선해", "카테고리": "CREATIVE"}
+{"질의": "밴드 음악 중에 명반 뭐 있어?", "응답": "라디오헤드의 'OK Computer' 앨범 통으로 들어봐", "카테고리": "CREATIVE"}
+{"질의": "국악 느낌 나는 음악 추천해줘", "응답": "이날치 밴드 노래 들어봐, 국악이랑 팝이 잘 섞였어", "카테고리": "CREATIVE"}
+{"질의": "감성적인 OST 추천해줘", "응답": "'어바웃 타임' OST 들어보면 진짜 여운 남아", "카테고리": "CREATIVE"}
+{"질의": "최근 콘서트 다녀올만한 아티스트 있어?", "응답": "요즘 내한 공연 많이 하니까 좋아하는 아티스트 스케줄 확인해봐", "카테고리": "CREATIVE"}
+{"질의": "신나는 EDM 추천해줘", "응답": "캘빈 해리스 노래 들으면 텐션 확 올라가", "카테고리": "CREATIVE"}
+{"질의": "여행갈 때 듣기 좋은 플레이리스트 추천해줘", "응답": "신나는 팝송 위주로 모아서 들어봐, 기분전환 돼", "카테고리": "CREATIVE"}
+{"질의": "슬픈 노래 듣고 싶은데 뭐 있어?", "응답": "정승환 노래 추천해, 감정선이 깊어", "카테고리": "CREATIVE"}
+{"질의": "최신 힙합 트렌드 곡 뭐 있어?", "응답": "요즘 트렌디한 국내 힙합 앨범 찾아 들어봐, 비트 좋은 거 많아", "카테고리": "CREATIVE"}
+{"질의": "팝송 중에 신나는 곡 추천해줘", "응답": "두아 리파 노래 들어봐, 신나고 중독성 있어", "카테고리": "CREATIVE"}
+{"질의": "겨울에 어울리는 노래 추천해줘", "응답": "잔잔한 캐롤이나 겨울 감성곡 틀어봐, 분위기 좋아", "카테고리": "CREATIVE"}
+{"질의": "밴드 결성하려는데 참고할 곡 있어?", "응답": "록밴드라면 라디오헤드나 콜드플레이 스타일 참고해봐", "카테고리": "CREATIVE"}
+{"질의": "국내 인디 감성 발라드 추천해줘", "응답": "페퍼톤스 노래 들어봐, 밝고 좋아", "카테고리": "CREATIVE"}
+{"질의": "새벽 감성에 듣기 좋은 노래 있어?", "응답": "자우림 노래 들어봐, 새벽 감성이랑 잘 어울려", "카테고리": "CREATIVE"}
+{"질의": "최근 화제인 사운드트랙 뭐 있어?", "응답": "요즘 화제 드라마 OST들 한번 찾아 들어봐, 반응 좋더라", "카테고리": "CREATIVE"}
+{"질의": "요즘 할만한 게임 추천해줘", "응답": "'발더스 게이트 3' 강추, 스토리랑 자유도 진짜 좋아", "카테고리": "CREATIVE"}
+{"질의": "친구랑 같이 할 게임 있어?", "응답": "'잇 테이크스 투' 해봐, 협동 게임 중 최고야", "카테고리": "CREATIVE"}
+{"질의": "캐주얼하게 즐길 모바일 게임 추천해줘", "응답": "'브롤스타즈' 가볍게 하기 좋아", "카테고리": "CREATIVE"}
+{"질의": "스토리 좋은 RPG 게임 뭐 있어?", "응답": "'엘든 링' 세계관이랑 스토리 진짜 몰입돼", "카테고리": "CREATIVE"}
+{"질의": "FPS 게임 중에 뭐가 재밌어?", "응답": "'발로란트' 요즘 많이들 하더라, 전략적이라 재밌어", "카테고리": "CREATIVE"}
+{"질의": "힐링되는 게임 추천해줘", "응답": "'동물의 숲' 느긋하게 하기 딱 좋아", "카테고리": "CREATIVE"}
+{"질의": "퍼즐 게임 추천해줘", "응답": "'포탈 2' 두뇌 자극되고 재밌어", "카테고리": "CREATIVE"}
+{"질의": "오픈월드 게임 뭐가 좋아?", "응답": "'젤다의 전설: 왕국의 눈물' 탐험하는 재미가 엄청나", "카테고리": "CREATIVE"}
+{"질의": "레트로 감성 게임 있어?", "응답": "'스타듀밸리' 도트그래픽에 힐링되는 농장 게임이야", "카테고리": "CREATIVE"}
+{"질의": "무서운 공포 게임 추천해줘", "응답": "'리틀 나이트메어' 분위기 진짜 오싹해", "카테고리": "CREATIVE"}
+{"질의": "전략 시뮬레이션 게임 뭐 있을까?", "응답": "'문명 6' 시간 순삭될 정도로 중독성 있어", "카테고리": "CREATIVE"}
+{"질의": "콘솔 게임 뭐부터 시작하면 좋을까?", "응답": "닌텐도 스위치라면 '마리오 카트'부터 해봐", "카테고리": "CREATIVE"}
+{"질의": "요즘 인기 많은 e스포츠 종목 뭐야?", "응답": "리그 오브 레전드가 여전히 대세야", "카테고리": "CREATIVE"}
+{"질의": "격투 게임 추천해줘", "응답": "'철권 8' 조작감 좋고 재밌어", "카테고리": "CREATIVE"}
+{"질의": "초보자도 하기 쉬운 게임 있어?", "응답": "'마인크래프트' 자유도 높고 진입장벽 낮아", "카테고리": "CREATIVE"}
+{"질의": "스릴 넘치는 배틀로얄 게임 추천해줘", "응답": "'배틀그라운드' 긴장감 최고야", "카테고리": "CREATIVE"}
+{"질의": "감성적인 인디게임 추천해줘", "응답": "'셀레스트' 추천, 스토리도 좋고 감동적이야", "카테고리": "CREATIVE"}
+{"질의": "협동 좀비 게임 있어?", "응답": "'레프트 4 데드' 친구들이랑 하면 진짜 재밌어", "카테고리": "CREATIVE"}
+{"질의": "요즘 유행하는 리듬게임 뭐 있어?", "응답": "리듬게임 장르 요즘 많이 나와, 손이 바빠질 정도로 재밌어", "카테고리": "CREATIVE"}
+{"질의": "카드 게임 추천해줘", "응답": "'하스스톤' 전략 짜는 재미 있어", "카테고리": "CREATIVE"}
+{"질의": "육성 시뮬레이션 게임 있어?", "응답": "요즘 다양한 캐릭터 육성 시뮬레이션 게임들 나와있어, 찾아봐", "카테고리": "CREATIVE"}
+{"질의": "대전 액션 게임 뭐가 재밌어?", "응답": "'스매시브라더스' 친구들이랑 하면 웃음 끊이질 않아", "카테고리": "CREATIVE"}
+{"질의": "탐정, 추리 게임 추천해줘", "응답": "'역전재판' 시리즈 스토리랑 반전 재밌어", "카테고리": "CREATIVE"}
+{"질의": "우주 배경 게임 있어?", "응답": "'노 맨즈 스카이' 탐험하는 재미 진짜 커", "카테고리": "CREATIVE"}
+{"질의": "롤플레잉 모바일 게임 추천해줘", "응답": "'원신' 그래픽도 좋고 콘텐츠 많아", "카테고리": "CREATIVE"}
+{"질의": "자동차 레이싱 게임 뭐가 좋아?", "응답": "'포르자 호라이즌' 그래픽도 예쁘고 스피드감 있어", "카테고리": "CREATIVE"}
+{"질의": "방 탈출 게임 소재로 뭐가 재밌을까?", "응답": "미스터리 서적 컨셉으로 만들면 몰입감 있을 거야", "카테고리": "CREATIVE"}
+{"질의": "소울라이크 장르 게임 추천해줘", "응답": "'세키로' 어렵지만 클리어하면 성취감 최고야", "카테고리": "CREATIVE"}
+{"질의": "보드게임 추천해줘", "응답": "'카탄' 친구들이랑 하기 딱 좋아", "카테고리": "CREATIVE"}
+{"질의": "요즘 스트리머들이 많이 하는 게임 뭐야?", "응답": "배틀로얄이나 마인크래프트 콘텐츠 많이 하더라", "카테고리": "CREATIVE"}
+{"질의": "손흥민 최근 경기 결과 어때?", "응답": "최근 경기에서 골 넣으면서 팀 승리에 기여했어", "카테고리": "CREATIVE"}
+{"질의": "이번 시즌 프리미어리그 우승 후보 어디야?", "응답": "맨시티랑 아스날이 유력하다고 보더라", "카테고리": "CREATIVE"}
+{"질의": "야구 직관하기 좋은 팀 추천해줘", "응답": "요즘 분위기 좋은 팀 경기 보러 가면 재밌어", "카테고리": "CREATIVE"}
+{"질의": "축구 국가대표 다음 경기 언제야?", "응답": "곧 국가대표 평가전 있으니까 일정 확인해봐", "카테고리": "CREATIVE"}
+{"질의": "골프 입문하려는데 뭐부터 배워야 해?", "응답": "그립이랑 스윙 자세부터 기본기 잡는 게 중요해", "카테고리": "CREATIVE"}
+{"질의": "농구 좋아하는데 NBA 볼만한 팀 있어?", "응답": "요즘 젊은 팀들 경기력이 좋아, 챙겨봐", "카테고리": "CREATIVE"}
+{"질의": "마라톤 준비하려는데 조언 좀 해줘", "응답": "처음엔 무리하지 말고 페이스 조절하면서 거리 늘려가", "카테고리": "CREATIVE"}
+{"질의": "배드민턴 잘 치는 법 알려줘", "응답": "손목 스냅이랑 풋워크 연습하면 실력 확 늘어", "카테고리": "CREATIVE"}
+{"질의": "요즘 핫한 e스포츠 경기 있어?", "응답": "LCK 결승전이 화제야, 챙겨볼만 해", "카테고리": "CREATIVE"}
+{"질의": "최근 야구 트레이드 소식 있어?", "응답": "시즌 중이라 트레이드 소식 종종 나오더라", "카테고리": "CREATIVE"}
+{"질의": "테니스 초보인데 라켓 추천해줘", "응답": "무게 가볍고 그립감 좋은 입문용 라켓부터 시작해봐", "카테고리": "CREATIVE"}
+{"질의": "볼링 점수 잘 내는 팁 있어?", "응답": "릴리즈 타이밍이랑 스핀 연습하면 점수 확 올라", "카테고리": "CREATIVE"}
+{"질의": "클라이밍 시작하려는데 어때?", "응답": "팔 힘보다 코어랑 밸런스가 더 중요해", "카테고리": "CREATIVE"}
+{"질의": "겨울 스포츠 뭐 재밌어?", "응답": "스키나 스노보드 한번 배워봐, 재밌어", "카테고리": "CREATIVE"}
+{"질의": "유명한 축구 라이벌전 뭐가 있어?", "응답": "엘 클라시코가 제일 유명하지", "카테고리": "CREATIVE"}
+{"질의": "야구 규칙 중에 헷갈리는 거 설명해줘", "응답": "인필드 플라이 규칙이 초보자들 제일 헷갈려해", "카테고리": "CREATIVE"}
+{"질의": "다이어트에 좋은 운동 추천해줘", "응답": "유산소랑 근력운동 병행하면 효과 좋아", "카테고리": "CREATIVE"}
+{"질의": "축구화 고를 때 뭘 봐야 해?", "응답": "발볼 넓이랑 구장 종류에 맞는 스터드 확인해봐", "카테고리": "CREATIVE"}
+{"질의": "최근 올림픽 종목 중에 재밌게 본 거 있어?", "응답": "양궁이나 펜싱 경기 긴장감 있어서 재밌더라", "카테고리": "CREATIVE"}
+{"질의": "배구 규칙 잘 몰라서 그런데 알려줘", "응답": "한 팀당 최대 세 번 터치할 수 있다는 게 기본 규칙이야", "카테고리": "CREATIVE"}
+{"질의": "헬스 초보인데 루틴 짜줘", "응답": "상하체 나눠서 주 3-4회 정도 시작해봐", "카테고리": "CREATIVE"}
+{"질의": "러닝화 추천해줘", "응답": "쿠셔닝 좋은 러닝화부터 신어봐, 무릎 부담 덜해", "카테고리": "CREATIVE"}
+{"질의": "스포츠 경기 직관 팁 좀 알려줘", "응답": "미리 좌석 확인하고 응원 굿즈 챙기면 더 재밌어", "카테고리": "CREATIVE"}
+{"질의": "최근 피겨스케이팅 선수 중에 주목할 만한 사람 있어?", "응답": "요즘 신예 선수들 실력이 정말 좋아졌어", "카테고리": "CREATIVE"}
+{"질의": "서핑 배우고 싶은데 어디서 시작하면 좋아?", "응답": "파도 약한 초보자 스팟부터 강습받으면서 시작해봐", "카테고리": "CREATIVE"}
+{"질의": "e스포츠 선수 되려면 뭐가 필요해?", "응답": "꾸준한 연습이랑 멘탈 관리가 진짜 중요해", "카테고리": "CREATIVE"}
+{"질의": "축구 전술 중에 요즘 유행하는 거 뭐야?", "응답": "하이프레싱 전술이 요즘 대세더라", "카테고리": "CREATIVE"}
+{"질의": "골프 스코어 줄이는 팁 알려줘", "응답": "숏게임 연습에 시간 더 투자해봐, 스코어 확 줄어", "카테고리": "CREATIVE"}
+{"질의": "수영 배우기 좋은 나이가 있어?", "응답": "나이 상관없이 언제 시작해도 늘 수 있어", "카테고리": "CREATIVE"}
+{"질의": "최근 국내 프로야구 순위 어때?", "응답": "시즌 막바지라 순위 싸움 치열해", "카테고리": "CREATIVE"}
+{"질의": "단편 판타지 소설 한 편 써줘", "응답": "마법사가 잃어버린 별을 찾아 떠나는 짧은 이야기 하나 써볼게, 준비됐어?", "카테고리": "CREATIVE"}
+{"질의": "사랑 시 하나 써줘", "응답": "짧은 연애 시 한 편 써줄게, 어떤 분위기로 원해?", "카테고리": "CREATIVE"}
+{"질의": "친구 생일 축하 메시지 써줘", "응답": "따뜻하고 유쾌한 축하 문구 하나 써줄게", "카테고리": "CREATIVE"}
+{"질의": "삼행시 지어줘, 단어는 '여름'", "응답": "여-여름밤 바람이 시원하게 / 름-름다운 별빛 아래 / 여름은 그렇게 지나가", "카테고리": "CREATIVE"}
+{"질의": "SF 단편 소설 아이디어 하나 줘", "응답": "인공지능이 인간의 감정을 배우는 이야기 어때, 흥미로울 것 같아", "카테고리": "CREATIVE"}
+{"질의": "짧은 공포 이야기 하나 써줘", "응답": "밤에 혼자 있는 집에서 벌어지는 오싹한 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "친구한테 사과하는 편지 써줘", "응답": "진심이 담긴 사과 문구 하나 써줄게, 어떤 상황인지 말해줘", "카테고리": "CREATIVE"}
+{"질의": "랩 가사 한 소절 써줘", "응답": "자신감 넘치는 라임 한 소절 써볼게", "카테고리": "CREATIVE"}
+{"질의": "동화 하나 써줘, 주인공은 토끼", "응답": "용감한 토끼가 숲을 구하는 짧은 동화 하나 써줄게", "카테고리": "CREATIVE"}
+{"질의": "이별 후 감정 담은 짧은 글 써줘", "응답": "그리움과 아쉬움을 담은 짧은 산문 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "사극 배경 짧은 소설 써줘", "응답": "궁궐에서 벌어지는 비밀 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "자기소개 유쾌하게 써줘", "응답": "재치있고 밝은 느낌으로 하나 써줄게", "카테고리": "CREATIVE"}
+{"질의": "감사 편지 짧게 써줘", "응답": "진심 담아서 짧고 따뜻하게 써줄게", "카테고리": "CREATIVE"}
+{"질의": "미스터리 단편 소설 써줘", "응답": "사라진 그림을 둘러싼 미스터리 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "응원 메시지 써줘, 시험 앞둔 친구한테", "응답": "힘나는 응원 문구 하나 써줄게", "카테고리": "CREATIVE"}
+{"질의": "짧은 우주 배경 소설 써줘", "응답": "우주선에서 벌어지는 짧은 모험담 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "로맨스 단편 소설 아이디어 줘", "응답": "우연히 재회한 첫사랑 이야기 어때, 감성적일 것 같아", "카테고리": "CREATIVE"}
+{"질의": "위트있는 유머 글 하나 써줘", "응답": "일상 속 웃긴 상황을 소재로 짧은 글 써볼게", "카테고리": "CREATIVE"}
+{"질의": "시 하나 써줘, 주제는 '가을'", "응답": "가을 낙엽과 쓸쓸함을 담은 짧은 시 하나 써줄게", "카테고리": "CREATIVE"}
+{"질의": "판타지 세계관 하나 만들어줘", "응답": "하늘에 떠 있는 섬들로 이루어진 세계 어때, 독특하지", "카테고리": "CREATIVE"}
+{"질의": "짧은 좀비 이야기 써줘", "응답": "폐허가 된 도시에서 살아남는 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "친구 결혼 축하 메시지 써줘", "응답": "진심 어린 축하 문구 하나 써줄게", "카테고리": "CREATIVE"}
+{"질의": "짧은 역사 소설 써줘", "응답": "조선시대 배경의 짧은 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "반전 있는 짧은 소설 써줘", "응답": "마지막에 놀랄만한 반전 있는 짧은 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "캐릭터 설정 하나 만들어줘", "응답": "기억을 잃은 탐정 캐릭터 어때, 매력있을 것 같아", "카테고리": "CREATIVE"}
+{"질의": "위로의 말 한마디 해줘", "응답": "힘들 때 듣고 싶은 위로 한마디 해줄게", "카테고리": "CREATIVE"}
+{"질의": "짧은 성장 소설 써줘", "응답": "소심한 아이가 용기를 내는 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "웃긴 짧은 대화 시나리오 써줘", "응답": "배달 음식 시키다 벌어지는 웃긴 상황 써볼게", "카테고리": "CREATIVE"}
+{"질의": "짧은 스릴러 이야기 써줘", "응답": "엘리베이터에 갇힌 사람들 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "신년 다짐 메시지 써줘", "응답": "희망찬 새해 다짐 문구 하나 써줄게", "카테고리": "CREATIVE"}
+{"질의": "짧은 동물 우화 써줘", "응답": "게으른 여우가 교훈을 얻는 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "이별 편지 써줘", "응답": "담담하면서도 진심 담긴 이별 편지 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "짧은 시간여행 소설 써줘", "응답": "과거로 돌아가 실수를 바로잡는 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "응원 삼행시 지어줘, 단어는 '파이팅'", "응답": "파-파도처럼 밀려오는 어려움도 / 이-이겨낼 수 있어 넌 / 팅-팅커벨처럼 빛나니까", "카테고리": "CREATIVE"}
+{"질의": "짧은 추리 소설 도입부 써줘", "응답": "밀실에서 사라진 보석 이야기로 시작해볼게", "카테고리": "CREATIVE"}
+{"질의": "감동적인 짧은 이야기 써줘", "응답": "오랜만에 재회한 가족 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "짧은 학원물 소설 써줘", "응답": "전학생과의 우정을 그린 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "재미있는 별명 지어줘, 성격은 활발함", "응답": "'에너자이저'나 '텐션왕' 어때, 딱 어울려", "카테고리": "CREATIVE"}
+{"질의": "짧은 로봇 소재 소설 써줘", "응답": "감정을 배우는 로봇의 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "응원가 가사 한 소절 써줘", "응답": "힘내라는 메시지 담은 밝은 가사 한 소절 써볼게", "카테고리": "CREATIVE"}
+{"질의": "짧은 판타지 전투 장면 써줘", "응답": "용과 기사의 대결 장면 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "위로가 되는 짧은 시 써줘", "응답": "지친 마음을 다독이는 짧은 시 하나 써줄게", "카테고리": "CREATIVE"}
+{"질의": "짧은 크리스마스 이야기 써줘", "응답": "눈 내리는 밤 벌어지는 따뜻한 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "유머러스한 자기소개서 문구 써줘", "응답": "재치있게 웃음 주는 소개 문구 하나 써줄게", "카테고리": "CREATIVE"}
+{"질의": "짧은 탐정 소설 써줘", "응답": "사라진 편지를 쫓는 탐정 이야기 하나 써볼게", "카테고리": "CREATIVE"}
+{"질의": "요즘 화제인 드라마 추천해줘", "응답": "요즘 화제인 오피스물 드라마 한번 봐봐, 몰입감 좋더라", "카테고리": "CREATIVE"}
+{"질의": "정주행하기 좋은 드라마 있어?", "응답": "'스카이 캐슬' 몰아보면 시간 순삭이야", "카테고리": "CREATIVE"}
+{"질의": "감동적인 드라마 추천해줘", "응답": "'그해 우리는' 잔잔하고 감동적이야", "카테고리": "CREATIVE"}
+{"질의": "요즘 인기있는 웹툰 뭐 있어?", "응답": "'나 혼자만 레벨업' 스토리 몰입감 최고야", "카테고리": "CREATIVE"}
+{"질의": "볼만한 일본 애니메이션 추천해줘", "응답": "'귀멸의 칼날' 액션이랑 스토리 다 좋아", "카테고리": "CREATIVE"}
+{"질의": "로맨스 웹툰 추천해줘", "응답": "'치즈인더트랩' 감정선 섬세하게 잘 그려졌어", "카테고리": "CREATIVE"}
+{"질의": "미드 추천해줘", "응답": "'브레이킹 배드' 스토리 전개가 진짜 탄탄해", "카테고리": "CREATIVE"}
+{"질의": "판타지 소설 명작 추천해줘", "응답": "'해리포터' 시리즈는 언제 읽어도 재밌어", "카테고리": "CREATIVE"}
+{"질의": "감동적인 책 추천해줘", "응답": "'어린 왕자' 읽을 때마다 느낌이 달라", "카테고리": "CREATIVE"}
+{"질의": "최근 인기 있는 스릴러 소설 뭐 있어?", "응답": "'살인자의 기억법' 몰입도 진짜 높아", "카테고리": "CREATIVE"}
+{"질의": "개그 웹툰 추천해줘", "응답": "'유미의 세포들' 진짜 웃기고 공감가는 내용 많아", "카테고리": "CREATIVE"}
+{"질의": "성장 서사 좋은 드라마 있어?", "응답": "'스물다섯 스물하나' 성장 서사 감동적이야", "카테고리": "CREATIVE"}
+{"질의": "판타지 애니메이션 추천해줘", "응답": "'진격의 거인' 스토리 스케일이 엄청나", "카테고리": "CREATIVE"}
+{"질의": "에세이 책 추천해줘", "응답": "'언어의 온도' 잔잔하게 읽기 좋아", "카테고리": "CREATIVE"}
+{"질의": "최근 화제 넷플릭스 시리즈 뭐 있어?", "응답": "'오징어 게임' 이후로도 화제작 꾸준히 나와, 최근 시리즈 챙겨봐", "카테고리": "CREATIVE"}
+{"질의": "추리 웹툰 추천해줘", "응답": "'싸이코메트리 그녀석' 추리 요소 있어서 재밌어", "카테고리": "CREATIVE"}
+{"질의": "감성적인 일본 소설 추천해줘", "응답": "'너의 췌장을 먹고 싶어' 읽으면 여운 오래 남아", "카테고리": "CREATIVE"}
+{"질의": "액션 애니메이션 추천해줘", "응답": "'원피스' 오래됐지만 여전히 재밌어", "카테고리": "CREATIVE"}
+{"질의": "잔잔한 힐링 드라마 추천해줘", "응답": "'갯마을 차차차' 보면 마음이 편안해져", "카테고리": "CREATIVE"}
+{"질의": "고전 명작 소설 추천해줘", "응답": "'노인과 바다' 짧지만 여운이 깊어", "카테고리": "CREATIVE"}
+{"질의": "ㅁㄴㅇㄹ", "응답": "질문을 이해하지 못했습니다. 다시 입력해주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㄱㄴㄷㄹ", "응답": "무슨 말씀인지 파악이 어려워요. 다시 한 번 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "ㅋㅌㅊㅍ", "응답": "죄송하지만 내용을 알아듣지 못했어요. 다른 방식으로 질문해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅂㅈㄷㄱ", "응답": "입력하신 내용을 이해할 수 없습니다. 정확한 문장으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅅㅎㅇㅁ", "응답": "이해하지 못한 질문이에요. 조금 더 구체적으로 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "ㄴㄹㅎㅋ", "응답": "요청하신 내용을 파악하지 못했습니다. 다시 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅍㅌㅊㅋ", "응답": "어떤 의미인지 알 수 없어요. 다시 한번 정리해서 말씀해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅇㅁㄴㅇㄹㅎ", "응답": "인식할 수 없는 입력입니다. 올바른 문장으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㄷㄷㄷㄷ", "응답": "질문 내용을 확인하지 못했어요. 다시 입력 부탁드립니다.", "카테고리": "ANOMALY"}
+{"질의": "ㅂㅂㅂㅂㅂ", "응답": "무슨 뜻인지 이해하기 어렵네요. 다시 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "ㅈㅈㅈㅈ", "응답": "해당 입력은 인식되지 않았습니다. 다시 한번 확인 후 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㄱㄱㄱㄱㄱ", "응답": "죄송해요, 질문을 알아듣지 못했어요. 다른 표현으로 다시 물어봐 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅍㅍㅍㅍ", "응답": "정확한 의미를 파악할 수 없습니다. 다시 입력해 주시길 바랍니다.", "카테고리": "ANOMALY"}
+{"질의": "ㅊㅊㅊㅊㅊ", "응답": "이해되지 않는 문장이에요. 조금 더 명확하게 적어주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅌㅌㅌㅌ", "응답": "질문을 인식하지 못했습니다. 다시 한번 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅅㅅㅅㅅㅅ", "응답": "무슨 내용인지 잘 모르겠어요. 다시 말씀해주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "ㄴㄴㄴㄴㄴ", "응답": "알아들을 수 없는 입력입니다. 정상적인 문장으로 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㄹㄹㄹㄹ", "응답": "질문이 명확하지 않아요. 다시 정리해서 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㄲㄸㅃㅆㅉ", "응답": "이 내용은 이해하기 어렵습니다. 다시 질문해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "ㄱㅅㄷㅈㅂ", "응답": "요청을 처리할 수 없습니다. 올바른 형식으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅁㅁㅁㄴㄴㄴ", "응답": "죄송하지만 무슨 말인지 모르겠어요. 다시 한번 말해주실래요?", "카테고리": "ANOMALY"}
+{"질의": "ㅎㄴㄷㄱㅅ", "응답": "질문 의도를 파악하지 못했어요. 다시 입력 부탁드려요.", "카테고리": "ANOMALY"}
+{"질의": "ㅈㄷㄱㅅㅂ", "응답": "문장이 인식되지 않았습니다. 다시 시도해 주시기 바랍니다.", "카테고리": "ANOMALY"}
+{"질의": "ㅋㄲㄸㅃㅆ", "응답": "이해할 수 없는 내용이에요. 다른 방식으로 다시 질문해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㄴㅁㅇㄹㅎㅅ", "응답": "정확히 어떤 걸 물어보시는지 모르겠어요. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅏㅑㅓㅕ", "응답": "알 수 없는 입력입니다. 다시 한번 확인해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅗㅛㅜㅠ", "응답": "질문을 파악할 수 없어요. 조금 더 자세히 적어주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "ㅡㅣㅐㅔ", "응답": "죄송합니다, 이해하지 못했어요. 다시 입력 부탁드립니다.", "카테고리": "ANOMALY"}
+{"질의": "ㅘㅙㅚㅝ", "응답": "무엇을 말씀하시는지 이해하기 힘들어요. 다시 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅏㅏㅏㅏ", "응답": "해당 문장을 인식하지 못했습니다. 다시 작성해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅓㅓㅓㅓ", "응답": "이해가 안 되는 질문이네요. 다시 한번 물어봐 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "ㅜㅜㅜㅜ", "응답": "질문 내용이 불명확합니다. 정확하게 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅗㅗㅗㅗ", "응답": "어떤 답변을 드려야 할지 모르겠어요. 다시 말씀해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅣㅣㅣㅣ", "응답": "문의하신 내용을 알아채지 못했습니다. 다시 입력해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "ㅐㅐㅐㅐ", "응답": "죄송해요, 이해가 잘 안 돼요. 다시 한번 적어주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅑㅑㅑㅑ", "응답": "정상적인 질문으로 인식되지 않았습니다. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅔㅔㅔㅔ", "응답": "무슨 뜻으로 입력하신 건지 모르겠어요. 다시 부탁드려요.", "카테고리": "ANOMALY"}
+{"질의": "ㅝㅝㅝㅝ", "응답": "질문을 해석할 수 없습니다. 다른 표현으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅟㅟㅟㅟ", "응답": "이 입력은 의미를 알 수 없어요. 다시 한번 시도해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "ㅢㅢㅢㅢ", "응답": "죄송하지만 요청을 이해하지 못했습니다. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅋㅋㅋㅋㅋㅋ", "응답": "질문을 이해하지 못했습니다. 다시 입력해주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅋㅋㅋ", "응답": "무슨 말씀인지 파악이 어려워요. 다시 한 번 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "ㅎㅎㅎㅎㅎ", "응답": "죄송하지만 내용을 알아듣지 못했어요. 다른 방식으로 질문해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅎㅎ", "응답": "입력하신 내용을 이해할 수 없습니다. 정확한 문장으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅠㅠㅠㅠ", "응답": "이해하지 못한 질문이에요. 조금 더 구체적으로 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "ㅠㅠ", "응답": "요청하신 내용을 파악하지 못했습니다. 다시 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅜㅜㅜㅜㅜ", "응답": "어떤 의미인지 알 수 없어요. 다시 한번 정리해서 말씀해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅜㅜ", "응답": "인식할 수 없는 입력입니다. 올바른 문장으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "zzzzzzz", "응답": "질문 내용을 확인하지 못했어요. 다시 입력 부탁드립니다.", "카테고리": "ANOMALY"}
+{"질의": "zzz", "응답": "무슨 뜻인지 이해하기 어렵네요. 다시 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "haha ha ha ha", "응답": "해당 입력은 인식되지 않았습니다. 다시 한번 확인 후 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅋㅎㅋㅎㅋㅎ", "응답": "죄송해요, 질문을 알아듣지 못했어요. 다른 표현으로 다시 물어봐 주세요.", "카테고리": "ANOMALY"}
+{"질의": "lolololol", "응답": "정확한 의미를 파악할 수 없습니다. 다시 입력해 주시길 바랍니다.", "카테고리": "ANOMALY"}
+{"질의": "ㅗㅗㅗㅗㅗ", "응답": "이해되지 않는 문장이에요. 조금 더 명확하게 적어주세요.", "카테고리": "ANOMALY"}
+{"질의": "킄킄킄", "응답": "질문을 인식하지 못했습니다. 다시 한번 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "흐흐흐흐흐", "응답": "무슨 내용인지 잘 모르겠어요. 다시 말씀해주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "크크크크", "응답": "알아들을 수 없는 입력입니다. 정상적인 문장으로 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "흑흑흑흑", "응답": "질문이 명확하지 않아요. 다시 정리해서 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "헐헐헐헐헐", "응답": "이 내용은 이해하기 어렵습니다. 다시 질문해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "어어어어어어", "응답": "요청을 처리할 수 없습니다. 올바른 형식으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "음음음음음", "응답": "죄송하지만 무슨 말인지 모르겠어요. 다시 한번 말해주실래요?", "카테고리": "ANOMALY"}
+{"질의": "그그그그그", "응답": "질문 의도를 파악하지 못했어요. 다시 입력 부탁드려요.", "카테고리": "ANOMALY"}
+{"질의": "응응응응응", "응답": "문장이 인식되지 않았습니다. 다시 시도해 주시기 바랍니다.", "카테고리": "ANOMALY"}
+{"질의": "하하하하하하하", "응답": "이해할 수 없는 내용이에요. 다른 방식으로 다시 질문해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "히히히히히", "응답": "정확히 어떤 걸 물어보시는지 모르겠어요. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "asdfkjh 123", "응답": "알 수 없는 입력입니다. 다시 한번 확인해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "qwerqwer", "응답": "질문을 파악할 수 없어요. 조금 더 자세히 적어주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "zxcvbnm", "응답": "죄송합니다, 이해하지 못했어요. 다시 입력 부탁드립니다.", "카테고리": "ANOMALY"}
+{"질의": "asdasdasd", "응답": "무엇을 말씀하시는지 이해하기 힘들어요. 다시 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "qweqweqwe", "응답": "해당 문장을 인식하지 못했습니다. 다시 작성해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "lkjhlkjh", "응답": "이해가 안 되는 질문이네요. 다시 한번 물어봐 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "mnbvcxz", "응답": "질문 내용이 불명확합니다. 정확하게 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "poiuytrewq", "응답": "어떤 답변을 드려야 할지 모르겠어요. 다시 말씀해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "asdfghjkl", "응답": "문의하신 내용을 알아채지 못했습니다. 다시 입력해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "qazwsxedc", "응답": "죄송해요, 이해가 잘 안 돼요. 다시 한번 적어주세요.", "카테고리": "ANOMALY"}
+{"질의": "zaqwsxcde", "응답": "정상적인 질문으로 인식되지 않았습니다. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "tyuiopasdf", "응답": "무슨 뜻으로 입력하신 건지 모르겠어요. 다시 부탁드려요.", "카테고리": "ANOMALY"}
+{"질의": "vbnmasdf", "응답": "질문을 해석할 수 없습니다. 다른 표현으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "xcvbqwer", "응답": "이 입력은 의미를 알 수 없어요. 다시 한번 시도해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "rewqasdf", "응답": "죄송하지만 요청을 이해하지 못했습니다. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "fdsazxcv", "응답": "질문을 이해하지 못했습니다. 다시 입력해주세요.", "카테고리": "ANOMALY"}
+{"질의": "jklasdf", "응답": "무슨 말씀인지 파악이 어려워요. 다시 한 번 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "uiopqwer", "응답": "죄송하지만 내용을 알아듣지 못했어요. 다른 방식으로 질문해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ghjklzxc", "응답": "입력하신 내용을 이해할 수 없습니다. 정확한 문장으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "bnmqwerty", "응답": "이해하지 못한 질문이에요. 조금 더 구체적으로 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "wsxedcrfv", "응답": "요청하신 내용을 파악하지 못했습니다. 다시 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "tgbyhnujm", "응답": "어떤 의미인지 알 수 없어요. 다시 한번 정리해서 말씀해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ikolp;'[", "응답": "인식할 수 없는 입력입니다. 올바른 문장으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "qazxswedc", "응답": "질문 내용을 확인하지 못했어요. 다시 입력 부탁드립니다.", "카테고리": "ANOMALY"}
+{"질의": "mlpoiknjb", "응답": "무슨 뜻인지 이해하기 어렵네요. 다시 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "asd123zxc", "응답": "해당 입력은 인식되지 않았습니다. 다시 한번 확인 후 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "1a2b3c4d", "응답": "죄송해요, 질문을 알아듣지 못했어요. 다른 표현으로 다시 물어봐 주세요.", "카테고리": "ANOMALY"}
+{"질의": "a1b2c3d4e5", "응답": "정확한 의미를 파악할 수 없습니다. 다시 입력해 주시길 바랍니다.", "카테고리": "ANOMALY"}
+{"질의": "123abc456", "응답": "이해되지 않는 문장이에요. 조금 더 명확하게 적어주세요.", "카테고리": "ANOMALY"}
+{"질의": "zxc987vbn", "응답": "질문을 인식하지 못했습니다. 다시 한번 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "qwe456rty", "응답": "무슨 내용인지 잘 모르겠어요. 다시 말씀해주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "9a8s7d6f5", "응답": "알아들을 수 없는 입력입니다. 정상적인 문장으로 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "kjh789asd", "응답": "질문이 명확하지 않아요. 다시 정리해서 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "090a0s0d", "응답": "이 내용은 이해하기 어렵습니다. 다시 질문해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "1q2w3e4r", "응답": "요청을 처리할 수 없습니다. 올바른 형식으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "5t6y7u8i", "응답": "죄송하지만 무슨 말인지 모르겠어요. 다시 한번 말해주실래요?", "카테고리": "ANOMALY"}
+{"질의": "0987654321asdf", "응답": "질문 의도를 파악하지 못했어요. 다시 입력 부탁드려요.", "카테고리": "ANOMALY"}
+{"질의": "a1s2d3f4g5h6", "응답": "문장이 인식되지 않았습니다. 다시 시도해 주시기 바랍니다.", "카테고리": "ANOMALY"}
+{"질의": "zzz111xxx", "응답": "이해할 수 없는 내용이에요. 다른 방식으로 다시 질문해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "qq11ww22", "응답": "정확히 어떤 걸 물어보시는지 모르겠어요. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "12ab34cd56", "응답": "알 수 없는 입력입니다. 다시 한번 확인해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "x9y8z7", "응답": "질문을 파악할 수 없어요. 조금 더 자세히 적어주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "3f2g1h", "응답": "죄송합니다, 이해하지 못했어요. 다시 입력 부탁드립니다.", "카테고리": "ANOMALY"}
+{"질의": "8j7k6l5", "응답": "무엇을 말씀하시는지 이해하기 힘들어요. 다시 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "456asd789", "응답": "해당 문장을 인식하지 못했습니다. 다시 작성해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "!@#$%", "응답": "이해가 안 되는 질문이네요. 다시 한번 물어봐 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "&*()_+", "응답": "질문 내용이 불명확합니다. 정확하게 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "~!@#$%^&*()", "응답": "어떤 답변을 드려야 할지 모르겠어요. 다시 말씀해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "?!?!?!", "응답": "문의하신 내용을 알아채지 못했습니다. 다시 입력해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "....", "응답": "죄송해요, 이해가 잘 안 돼요. 다시 한번 적어주세요.", "카테고리": "ANOMALY"}
+{"질의": ",,,,,", "응답": "정상적인 질문으로 인식되지 않았습니다. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": ";;;;;", "응답": "무슨 뜻으로 입력하신 건지 모르겠어요. 다시 부탁드려요.", "카테고리": "ANOMALY"}
+{"질의": ":::::", "응답": "질문을 해석할 수 없습니다. 다른 표현으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "/////", "응답": "이 입력은 의미를 알 수 없어요. 다시 한번 시도해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "\\\\\\\\\\", "응답": "죄송하지만 요청을 이해하지 못했습니다. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "<<<<>>>>", "응답": "질문을 이해하지 못했습니다. 다시 입력해주세요.", "카테고리": "ANOMALY"}
+{"질의": "[[[]]]", "응답": "무슨 말씀인지 파악이 어려워요. 다시 한 번 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "{{{}}}", "응답": "죄송하지만 내용을 알아듣지 못했어요. 다른 방식으로 질문해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "***-***", "응답": "입력하신 내용을 이해할 수 없습니다. 정확한 문장으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "%%%$$$", "응답": "이해하지 못한 질문이에요. 조금 더 구체적으로 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "^^^&&&", "응답": "요청하신 내용을 파악하지 못했습니다. 다시 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "####@@@@", "응답": "어떤 의미인지 알 수 없어요. 다시 한번 정리해서 말씀해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "~~~~~~~", "응답": "인식할 수 없는 입력입니다. 올바른 문장으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "...???", "응답": "질문 내용을 확인하지 못했어요. 다시 입력 부탁드립니다.", "카테고리": "ANOMALY"}
+{"질의": "!!!???", "응답": "무슨 뜻인지 이해하기 어렵네요. 다시 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "😂😂😂😂", "응답": "해당 입력은 인식되지 않았습니다. 다시 한번 확인 후 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "🤔🤔🤔", "응답": "죄송해요, 질문을 알아듣지 못했어요. 다른 표현으로 다시 물어봐 주세요.", "카테고리": "ANOMALY"}
+{"질의": "👍👍👍👍👍", "응답": "정확한 의미를 파악할 수 없습니다. 다시 입력해 주시길 바랍니다.", "카테고리": "ANOMALY"}
+{"질의": "😭😭😭", "응답": "이해되지 않는 문장이에요. 조금 더 명확하게 적어주세요.", "카테고리": "ANOMALY"}
+{"질의": "🙃🙃🙃🙃", "응답": "질문을 인식하지 못했습니다. 다시 한번 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "😅😅😅😅😅", "응답": "무슨 내용인지 잘 모르겠어요. 다시 말씀해주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "🤷‍♂️🤷‍♂️🤷‍♂️", "응답": "알아들을 수 없는 입력입니다. 정상적인 문장으로 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "😊😊😊😊😊😊", "응답": "질문이 명확하지 않아요. 다시 정리해서 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "🥲🥲🥲", "응답": "이 내용은 이해하기 어렵습니다. 다시 질문해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "😐😐😐😐", "응답": "요청을 처리할 수 없습니다. 올바른 형식으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "🤡🤡🤡", "응답": "죄송하지만 무슨 말인지 모르겠어요. 다시 한번 말해주실래요?", "카테고리": "ANOMALY"}
+{"질의": "💀💀💀💀", "응답": "질문 의도를 파악하지 못했어요. 다시 입력 부탁드려요.", "카테고리": "ANOMALY"}
+{"질의": "😳😳😳😳", "응답": "문장이 인식되지 않았습니다. 다시 시도해 주시기 바랍니다.", "카테고리": "ANOMALY"}
+{"질의": "🔥🔥🔥🔥🔥", "응답": "이해할 수 없는 내용이에요. 다른 방식으로 다시 질문해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "😴😴😴", "응답": "정확히 어떤 걸 물어보시는지 모르겠어요. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "🙄🙄🙄🙄", "응답": "알 수 없는 입력입니다. 다시 한번 확인해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "😆😆😆😆😆", "응답": "질문을 파악할 수 없어요. 조금 더 자세히 적어주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "🫠🫠🫠", "응답": "죄송합니다, 이해하지 못했어요. 다시 입력 부탁드립니다.", "카테고리": "ANOMALY"}
+{"질의": "🥴🥴🥴🥴", "응답": "무엇을 말씀하시는지 이해하기 힘들어요. 다시 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "😇😇😇", "응답": "해당 문장을 인식하지 못했습니다. 다시 작성해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "aaaaaa", "응답": "이해가 안 되는 질문이네요. 다시 한번 물어봐 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "bbbbbb", "응답": "질문 내용이 불명확합니다. 정확하게 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "cccccc", "응답": "어떤 답변을 드려야 할지 모르겠어요. 다시 말씀해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "111111", "응답": "문의하신 내용을 알아채지 못했습니다. 다시 입력해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "000000", "응답": "죄송해요, 이해가 잘 안 돼요. 다시 한번 적어주세요.", "카테고리": "ANOMALY"}
+{"질의": "999999", "응답": "정상적인 질문으로 인식되지 않았습니다. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "xxxxxxx", "응답": "무슨 뜻으로 입력하신 건지 모르겠어요. 다시 부탁드려요.", "카테고리": "ANOMALY"}
+{"질의": "yyyyyy", "응답": "질문을 해석할 수 없습니다. 다른 표현으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "kkkkkkk", "응답": "이 입력은 의미를 알 수 없어요. 다시 한번 시도해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "nnnnnn", "응답": "죄송하지만 요청을 이해하지 못했습니다. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "5555555", "응답": "질문을 이해하지 못했습니다. 다시 입력해주세요.", "카테고리": "ANOMALY"}
+{"질의": "777777", "응답": "무슨 말씀인지 파악이 어려워요. 다시 한 번 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "wwwwww", "응답": "죄송하지만 내용을 알아듣지 못했어요. 다른 방식으로 질문해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "pppppp", "응답": "입력하신 내용을 이해할 수 없습니다. 정확한 문장으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "222222", "응답": "이해하지 못한 질문이에요. 조금 더 구체적으로 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "ㅇㅓ떻게해ㅑ함ㄴㅣ까", "응답": "요청하신 내용을 파악하지 못했습니다. 다시 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "안뇽하세욤ㅋㅋㅋ뭐라구요", "응답": "어떤 의미인지 알 수 없어요. 다시 한번 정리해서 말씀해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㄱㅘㅊㅏㄴㅎㅐ 이게 뭐임", "응답": "인식할 수 없는 입력입니다. 올바른 문장으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "머함ㄴㅑ 이거 대체 뭐지", "응답": "질문 내용을 확인하지 못했어요. 다시 입력 부탁드립니다.", "카테고리": "ANOMALY"}
+{"질의": "ㅂㅏㅂㅏ보야 이게 뭔말이야", "응답": "무슨 뜻인지 이해하기 어렵네요. 다시 말씀해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "어쩌라구요 ㅇㅏㅁㅜㄷㅐㄴㅁㅣ", "응답": "해당 입력은 인식되지 않았습니다. 다시 한번 확인 후 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅋㅋㅋㅋ뭐하냐고요오오", "응답": "죄송해요, 질문을 알아듣지 못했어요. 다른 표현으로 다시 물어봐 주세요.", "카테고리": "ANOMALY"}
+{"질의": "그니까요 ㅇㅓ떻게 하라구", "응답": "정확한 의미를 파악할 수 없습니다. 다시 입력해 주시길 바랍니다.", "카테고리": "ANOMALY"}
+{"질의": "ㅁㅝㅅㅗㄹㅣ야 이게", "응답": "이해되지 않는 문장이에요. 조금 더 명확하게 적어주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅇㅐㅑㅑ 뭐라는겨", "응답": "질문을 인식하지 못했습니다. 다시 한번 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "뭐하는거임뇨 ㅈㅣㄴㅉㅏ", "응답": "무슨 내용인지 잘 모르겠어요. 다시 말씀해주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "이게뭔소리징 ㅋㅋㅋㅋ", "응답": "알아들을 수 없는 입력입니다. 정상적인 문장으로 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅎㅏㅇㅏ 진짜 모르겠음", "응답": "질문이 명확하지 않아요. 다시 정리해서 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "대체머라는건지 모르겟음ㅇㅁ", "응답": "이 내용은 이해하기 어렵습니다. 다시 질문해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "ㅋㅋㅋㅋ아니 뭐라구여", "응답": "요청을 처리할 수 없습니다. 올바른 형식으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "어쩔티비 저쩔티비 ㅋㅋ", "응답": "죄송하지만 무슨 말인지 모르겠어요. 다시 한번 말해주실래요?", "카테고리": "ANOMALY"}
+{"질의": "뭐라카노 진짜 모르것다", "응답": "질문 의도를 파악하지 못했어요. 다시 입력 부탁드려요.", "카테고리": "ANOMALY"}
+{"질의": "아무말 대잔치임 ㅋㅋㅋ", "응답": "문장이 인식되지 않았습니다. 다시 시도해 주시기 바랍니다.", "카테고리": "ANOMALY"}
+{"질의": "그래서 뭐 어쩌라고 ㅋ", "응답": "이해할 수 없는 내용이에요. 다른 방식으로 다시 질문해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "무슨 소리인지 1도 모르겟", "응답": "정확히 어떤 걸 물어보시는지 모르겠어요. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "asdf 짜파게티 123 ㅁㄴㅇ", "응답": "알 수 없는 입력입니다. 다시 한번 확인해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "abc 123 ㅋㅋㅋ !!!", "응답": "질문을 파악할 수 없어요. 조금 더 자세히 적어주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "1234 ㅎㅎㅎ qwer", "응답": "죄송합니다, 이해하지 못했어요. 다시 입력 부탁드립니다.", "카테고리": "ANOMALY"}
+{"질의": "asdf!!@@## 뭐야", "응답": "무엇을 말씀하시는지 이해하기 힘들어요. 다시 시도해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅁㄴㅇㄹ123asdf", "응답": "해당 문장을 인식하지 못했습니다. 다시 작성해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "!@# 안녕 asdf 456", "응답": "이해가 안 되는 질문이네요. 다시 한번 물어봐 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "zzz 789 ㅠㅠㅠ", "응답": "질문 내용이 불명확합니다. 정확하게 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "qwer1234!@#$", "응답": "어떤 답변을 드려야 할지 모르겠어요. 다시 말씀해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅋㅋ123abc!!!", "응답": "문의하신 내용을 알아채지 못했습니다. 다시 입력해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "456 asdf ㅎㅎ zzz", "응답": "죄송해요, 이해가 잘 안 돼요. 다시 한번 적어주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅂㅈㄷ 789 !!!", "응답": "정상적인 질문으로 인식되지 않았습니다. 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "lol123ㅋㅋㅋ###", "응답": "무슨 뜻으로 입력하신 건지 모르겠어요. 다시 부탁드려요.", "카테고리": "ANOMALY"}
+{"질의": "asdf;lkj1234!!", "응답": "질문을 해석할 수 없습니다. 다른 표현으로 다시 입력해 주세요.", "카테고리": "ANOMALY"}
+{"질의": "ㅇㅁㄴ456!!qwe", "응답": "이 입력은 의미를 알 수 없어요. 다시 한번 시도해 주시겠어요?", "카테고리": "ANOMALY"}
+{"질의": "999asdf@@ㅋㅋㅋ", "응답": "죄송하지만 요청을 이해하지 못했습니다. 다시 입력해 주세요.", "카테고리": "ANOMALY"}

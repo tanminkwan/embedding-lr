@@ -8,10 +8,12 @@ EMBEDDING_DIM = 1024
 
 DATA_SPLITS = ["train", "test", "validation"]
 SPLIT_RATIOS = {"train": 3, "test": 1, "validation": 1}
+SPLIT_FILE_STEMS = {"train": "train", "test": "test", "validation": "val"}
 RANDOM_SEED = 42
+RECORDS_PER_CLASS = 200
 
 DOMAIN_NAME = "embedding_lr"
 
-JSON_KEY_QUERY = "질의"
-JSON_KEY_RESPONSE = "응답"
-JSON_KEY_CATEGORY = "카테고리"
+FIELD_QUERY = "질의"
+FIELD_RESPONSE = "응답"
+FIELD_CATEGORY = "카테고리"

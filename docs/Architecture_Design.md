@@ -1,6 +1,6 @@
 # Application / System Architecture Design
 
-[[Scope_Definition]]의 5-Phase 파이프라인(데이터 생성 → 임베딩 변환 → 모델 학습 → 검증 →
+[[Scope_Definition]]의 5-Phase 파이프라인(데이터 준비 → 임베딩 변환 → 모델 학습 → 검증 →
 추론)을 실제 코드 구조로 구체화한 설계서. [[CLAUDE.md]]의 SOLID, workflow 친화, Docker
 원칙을 반영한다.
 
@@ -12,17 +12,20 @@
 것을 가능하게 한다.
 
 ```
-[Phase 1] 데이터 생성        prompt/*.md → role_01~09_*.jsonl
-[Phase 1.5] 데이터 조합/분할  role_*.jsonl → data.jsonl → train/test/val.jsonl
-[Phase 2] 임베딩 변환        train/test/val.jsonl → *_vectors.parquet (AIPro+ API 호출)
-[Phase 3] 모델 학습          *_vectors.parquet → model_<ver>.pkl (GridSearchCV)
-[Phase 4] 검증               val_vectors.parquet + model.pkl → eval_report.md/json
-[Phase 5] 추론 서비스        FastAPI 상시 서비스, model_<ver>.pkl 로드 후 실시간 분류
+[Phase 1] 데이터 준비(포맷 변환)   data/<version>/role_01~09_*.csv(이미 확보된 원본) → role_01~09_*.jsonl
+[Phase 1.5] 데이터 조합/분할       role_*.jsonl → data.jsonl → train/test/val.jsonl
+[Phase 2] 임베딩 변환              train/test/val.jsonl → *_vectors.parquet (AIPro+ API 호출)
+[Phase 3] 모델 학습                *_vectors.parquet → model_<ver>.pkl (GridSearchCV)
+[Phase 4] 검증                     val_vectors.parquet + model.pkl → eval_report.md/json
+[Phase 5] 추론 서비스              FastAPI 상시 서비스, model_<ver>.pkl 로드 후 실시간 분류
 ```
 
-각 화살표는 "파일 경로"이며, 다음 Phase의 CLI는 이 경로를 `--input` 인자로 받는다.
-상류 원본(`role_*.jsonl`)을 하류 결과가 절대 덮어쓰지 않는다([[P1_Data_Preprocessing_Review]]
-사고 재발 방지 — role → data → train/test/val 순서만 허용).
+Phase 1은 **새 데이터를 만드는 단계가 아니다** — 질의·응답 내용 자체는 이미 확보되어
+있고(현재는 CSV, [[P1_설계서_DataPreparation]] 1절), Phase 1의 코드는 그 원본을 학습
+파이프라인이 쓰는 JSONL로 변환하는 일만 한다. 각 화살표는 "파일 경로"이며, 다음 Phase의
+CLI는 이 경로를 `--input` 인자로 받는다. 상류 원본(`role_*.jsonl`)을 하류 결과가 절대
+덮어쓰지 않는다([[P1_Data_Preprocessing_Review]] 사고 재발 방지 — role → data →
+train/test/val 순서만 허용).
 
 ## 2. 모듈 구조 (SOLID — SRP/DIP 중심)
 
@@ -35,9 +38,9 @@ src/embedding_lr/
 │   └── interfaces.py      # Protocol: EmbeddingClient, VectorStore, Classifier, DataRepository
 ├── preprocessing/
 │   └── text_cleaner.py    # 코드펜스 구분자 제거 + 스택 트레이스 라인 제거 + 공백 정규화 (P2_설계서_TextCleaning 참고) — Phase2와 추론에서 공유
-├── data_generation/       # Phase 1
-│   ├── prompt_loader.py
-│   └── jsonl_repository.py  # `DataRepository` Protocol 구현체(JSONL 전용) — 지금은 JSONL뿐이지만 형식이 바뀌면 이 구현체만 교체(P1_설계서_DataGeneration 참고)
+├── data_generation/       # Phase 1 — 이미 확보된 원본(현재 CSV)을 JSONL로 변환
+│   ├── csv_repository.py    # `DataRepository` 구현체 — 레거시 CSV 읽기 전용(save는 미지원, CSV로는 내보내지 않음)
+│   └── jsonl_repository.py  # `DataRepository` 구현체(JSONL) — 지금은 이 형식뿐이지만 형식이 바뀌면 이 구현체만 교체(P1_설계서_DataPreparation 참고)
 ├── dataset/                # Phase 1.5 — `list[QueryRecord]` 위에서만 동작, 파일 형식을 모른다(DIP)
 │   ├── combine.py          # role 9개 `list[QueryRecord]` → 재조합, 클래스당 200건 검증
 │   └── split.py            # `list[QueryRecord]` → 클래스별 3:1:1 stratified 분할 (seed 고정)
@@ -66,10 +69,11 @@ src/embedding_lr/
 다른 임베딩 서비스로 교체하거나, LogisticRegression을 다른 분류기로 바꿔도 파이프라인
 로직은 수정하지 않는다. 테스트에서는 이 Protocol을 가짜(fake) 구현으로 교체해 TDD를
 수행한다. `dataset/combine.py`·`dataset/split.py`도 같은 원칙을 따른다 — 파일이 아니라
-`DataRepository` Protocol이 반환한 `list[QueryRecord]` 위에서만 동작하므로, 지금은
-JSONL(`data_generation/jsonl_repository.py`)뿐인 저장 형식이 나중에 바뀌어도(예: Parquet,
-DB) 이 두 모듈과 CLI 오케스트레이션 로직은 수정하지 않고 `DataRepository` 구현체만
-교체하면 된다([[P1_설계서_DataGeneration]] 참고).
+`DataRepository` Protocol이 반환한 `list[QueryRecord]` 위에서만 동작하므로, 원본 데이터의
+형식이 지금은 CSV(`data_generation/csv_repository.py`, 읽기 전용)이고 저장은
+JSONL(`data_generation/jsonl_repository.py`)로 하지만, 나중에 원본 형식이 또 바뀌어도
+(예: 다른 포맷의 원본, Parquet, DB) 이 두 모듈과 CLI 오케스트레이션 로직은 수정하지
+않고 `DataRepository` 구현체만 추가/교체하면 된다([[P1_설계서_DataPreparation]] 참고).
 
 ## 3. Workflow 친화 규약 (모든 Phase 공통)
 
@@ -114,7 +118,7 @@ Phase 2 진입 시 `registration.ensure_domain()`이 프로젝트 고정 도메�
 flowchart TD
     subgraph TRAIN["학습 경로 — 파일 기반 (Phase 1~4)"]
         direction TD
-        A["prompt/*.md"] -->|LLM| B["role_01~09_*.jsonl"]
+        A["data/&lt;version&gt;/role_01~09_*.csv<br/>(이미 확보된 원본)"] -->|"csv_repository.load + jsonl_repository.save"| B["role_01~09_*.jsonl"]
         B -->|"dataset.combine (재조합)"| C["data.jsonl"]
         C -->|"dataset.split (클래스별 3:1:1, seed 고정 분할)"| D["data/&lt;version&gt;/train.jsonl / test.jsonl / val.jsonl"]
 
@@ -196,7 +200,7 @@ docker/
 |---|---|---|
 | 단위 | `text_cleaner`, `collection`(콜렉션명 생성 규칙: `version_split`), `metrics` | 순수 함수, 외부 의존성 없음 |
 | 단위(모킹) | `aipro_client`, `registration`, `knowledge_writer`, `predictor` | `EmbeddingClient`/`VectorStore` Protocol을 fake로 교체 또는 respx로 HTTP 모킹 |
-| 통합 | `embedding.pipeline`, `training.trainer` | 소규모 fixture 데이터로 end-to-end 실행, 실제 AIPro+는 호출하지 않음 |
+| 통합 | `csv_repository`, `jsonl_repository`, `embedding.pipeline`, `training.trainer` | 소규모 fixture 데이터로 end-to-end 실행(파일 I/O는 `tmp_path`), 실제 AIPro+는 호출하지 않음 |
 | E2E(수동/선택) | 전체 파이프라인 | 실제 AIPro+(`localhost:28000`) 대상, CI에는 포함하지 않음 |
 
 ## 8. 디렉터리 구조 요약

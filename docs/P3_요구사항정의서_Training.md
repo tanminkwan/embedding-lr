@@ -82,10 +82,13 @@ Phase 2가 만든 `train_vectors.parquet`/`test_vectors.parquet`(1024D 임베딩
 
 - 탐색 대상: `C`, `solver`, `max_iter` (기본 범위는 [[Scope_Definition]] 4.3절 표 참고,
   코드가 아닌 설정에서 관리).
-- 선정 기준: test set(200건) Accuracy + F1-macro.
+- 선정 기준: test set(200건) F1-macro를 1차 기준, Accuracy를 2차(동점) 기준으로 사용한다
+  — F1-macro가 가장 높은 조합을 선택하고, F1-macro가 동률이면 Accuracy가 더 높은 조합을
+  선택한다(사용자 확인, 2026-08-19: 특정 클래스에 치우친 조합이 Accuracy만으로는 1등으로
+  잘못 뽑히는 것을 방지하기 위해 F1-macro 우선).
 - 탐색 방식(`GridSearchCV` vs 수동 반복 비교)은 [[Scope_Definition]]에서도 선택지로 열려
-  있으므로 설계서에서 확정한다 — 본 요구사항은 "탐색 범위 설정 가능 + test set 기준 선정"만
-  고정한다.
+  있으므로 설계서에서 확정한다 — 본 요구사항은 "탐색 범위 설정 가능 + test set 기준(F1-macro
+  우선) 선정"만 고정한다.
 
 ### 4.4 모델 저장
 

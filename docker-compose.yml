@@ -1,0 +1,27 @@
+# 추론(Phase 5) 상시 서비스 단독 구성 — Phase 1~4 배치 파이프라인은 포함하지 않는다.
+# [[P5_설계서_Inference]] 8절 "docker run" 수동 검증 절차를 compose로 옮긴 것.
+# 실행: docker compose up --build
+services:
+  inference:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.inference
+      # 사내 프록시 경유 환경 대응 — Dockerfile.pipeline과 동일 관례(README 참고).
+      # 자동 상속에 의존하지 않고 셸의 proxy 값을 명시적으로 build-arg로 전달한다.
+      args:
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
+        no_proxy: ${no_proxy}
+    image: embedding-lr-inference:phase5
+    container_name: embedding-lr-inference
+    # Embedding Service(localhost:8000)/AIPro+(localhost:28000)가 호스트에서 별도로
+    # 떠 있는 기존 서비스라 host 네트워크로 붙는다 — P5_테스트결과서_Inference.md 4.1절과 동일.
+    network_mode: host
+    env_file:
+      - .env
+    environment:
+      MODEL_DIR: /app/models
+      MODEL_PATH: /app/models/model.pkl
+    volumes:
+      - ./models/model.pkl:/app/models/model.pkl:ro
+    restart: unless-stopped

@@ -9,4 +9,5 @@ htmlcov/
 .env
 status/
 data/**/*.parquet
+models/
 

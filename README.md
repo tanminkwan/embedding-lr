@@ -30,6 +30,67 @@ CSV), Phase 1 코드는 그 원본을 JSONL로 변환하는 일만 한다.
 
 전체 구조는 [docs/Architecture_Design.md](docs/Architecture_Design.md) 참고.
 
+## 추론 서비스 사용법
+
+사전 조건: **Embedding Service(`localhost:8000`)만** 호스트에서 떠 있으면 된다. AIPro+는
+런타임에 전혀 호출하지 않으므로(코드 전체에 AIPro 참조 없음) 꺼져 있어도 무방하다.
+`models/model.pkl`(Phase 3 학습 산출물)이 존재해야 하고, `.env`에 `MODEL_DIR`/
+`EMBEDDING_SERVER_*` 값이 채워져 있어야 한다. `AIPRO_*`는 실제로 쓰이진 않지만
+`Settings`(pydantic) 필수 필드라 값 자체(더미도 가능)는 채워둬야 기동이 실패하지
+않는다(`.env.example` 참고).
+
+```bash
+# 기동 (docker-compose.yml, network_mode: host로 호스트의 Embedding Service에 접근)
+docker compose up --build -d
+
+# 상태/로그 확인
+docker compose ps
+docker compose logs -f inference
+
+# 헬스체크
+curl http://localhost:8080/health
+# {"status":"ok"}
+
+# 종료
+docker compose down
+```
+
+`POST /classify`는 `items` 리스트를 받아 순서 대응하는 `results` 리스트를 반환한다.
+`query`만 분류에 쓰이고 `response`는 무시된다(값은 필요하되 빈 문자열 `""`로 넣어도 됨).
+
+```bash
+curl -X POST http://localhost:8080/classify \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      {"query": "쿠버네티스 파드가 CrashLoopBackOff 상태인데 어떻게 확인하나요?", "response": ""},
+      {"query": "오늘 점심 뭐 먹을지 고민되는데 추천해줘", "response": ""},
+      {"query": "조선시대 왕 순서 알려줘", "response": ""},
+      {"query": "재미있는 영화 추천해줘", "response": ""},
+      {"query": "asdkfj alksjdf 123123", "response": ""}
+    ]
+  }'
+```
+
+응답 예시(`results[i]`는 `items[i]`에 순서로 대응):
+
+```json
+{
+  "results": [
+    {
+      "predicted_category": "IT",
+      "final_verdict": "IT",
+      "probabilities": {"IT": 0.973, "DAILY": 0.003, "KNOWLEDGE": 0.008, "CREATIVE": 0.008, "ANOMALY": 0.008}
+    }
+  ]
+}
+```
+
+- `predicted_category`: 5-class(`IT`/`DAILY`/`KNOWLEDGE`/`CREATIVE`/`ANOMALY`) 중 확률 최댓값
+- `final_verdict`: `IT`/`NON_IT` 이진 판정(`IT`가 아니면 전부 `NON_IT`)
+- `probabilities`: 클래스별 확률(합계 1.0)
+- 임베딩 서버(`EMBEDDING_SERVER_BASE_URL`) 호출 실패 시 HTTP 503(`EmbeddingServerError`) 반환
+
 ## 작업 절차
 
 이 프로젝트는 코드보다 문서가 먼저다. [CLAUDE.md](CLAUDE.md) 3절에 따라 각 Phase(및
@@ -92,7 +153,7 @@ Phase 0(공통 모듈)~Phase 5(추론)까지 코드가 구현·테스트된 상�
 | **Phase 5** 추론 설계+코드+테스트(`domain.interfaces`(`TextClassifier` 신규)/`domain.models`/`config` 갱신/`inference.{embedding_lr_classifier,predictor,api}`/`cli.run_inference_server`) | 완료 | 분류 방식을 `TextClassifier` Protocol 뒤로 추상화(임베딩+LR은 `EmbeddingLRTextClassifier` 어댑터 하나 — 추후 NLI/앙상블 교체 시 `cli.run_inference_server.py` 조립부만 변경). `POST /classify`(리스트 요청→리스트 응답, 순서 대응)/`GET /health`. 임베딩은 질의(query) 단독(실 AIPro+ 실험으로 검증, `response` 필드는 무시). 모델은 서비스 기동 시 1회 로드, 로드 실패 시 기동 자체 실패. Phase 5 범위 99%/프로젝트 전체 99% 커버리지, 168 tests passed(재작업 없음). 실서비스(Embedding Service `localhost:8000`) E2E: IT/DAILY/KNOWLEDGE/CREATIVE/ANOMALY 5종 질의 모두 정확히 분류, `response` 필드 무영향 확인. `Dockerfile.inference` 신규(`docker-compose.yml`은 후속 과제). P5_설계서_Inference.md/P5_테스트결과서_Inference.md |
 | Docker: `Dockerfile.pipeline` 뼈대 | 완료 | Phase 0 공통 모듈 테스트 실행용. 호스트가 사내 프록시 경유 환경이면 `docker build --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy --build-arg no_proxy=$no_proxy`로 프록시를 넘겨야 `pip install`이 성공함(자동 상속 안 됨) |
 | Docker: `Dockerfile.inference` | 완료 | Phase 5와 함께 완료(위 행 참고) |
-| Docker: `docker-compose.yml` | 미착수 | Phase 1~5 통합 오케스트레이션 — 후속 과제, 각 Phase는 지금까지 단독 `docker build`/`docker run`으로 검증 |
+| Docker: `docker-compose.yml` | 완료(추론 단독) | 추론 서비스(Phase 5) 단독 기동용 — `network_mode: host`로 호스트의 Embedding Service(`localhost:8000`)/AIPro+(`localhost:28000`)에 접근, `models/model.pkl`을 읽기 전용으로 마운트. Phase 1~4 배치 파이프라인 통합 오케스트레이션은 여전히 후속 과제 |
 | Loki/Grafana 연동 | 미착수 | P0_설계서_Logging.md 7절에 향후 방침만 기록, 지금은 stdout 로그까지만 |
 
 이 표는 작업이 진행될 때마다 갱신한다.

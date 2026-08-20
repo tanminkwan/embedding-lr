@@ -3,12 +3,16 @@ from pydantic import ValidationError
 
 from embedding_lr.constants import CLASS_LABELS, EMBEDDING_DIM
 from embedding_lr.domain.models import (
+    EvaluationReport,
+    GapMetrics,
     HyperparamSearchResult,
     HyperparamTrial,
     KnowledgeItem,
     KnowledgeRecord,
     PredictionResult,
     QueryRecord,
+    TargetCheckResult,
+    ValidationMetrics,
 )
 
 
@@ -143,3 +147,73 @@ class TestHyperparamSearchResult:
     def test_rejects_missing_field(self):
         with pytest.raises(ValidationError):
             HyperparamSearchResult(best_accuracy=0.9, best_f1_macro=0.88, trials=[])
+
+
+def _validation_metrics_payload(**overrides) -> dict:
+    metrics = dict(
+        accuracy=0.9,
+        f1_macro=0.88,
+        binary_accuracy=0.95,
+        confusion_matrix_labels=CLASS_LABELS,
+        confusion_matrix=[[1] * len(CLASS_LABELS) for _ in CLASS_LABELS],
+        binary_confusion_matrix=[[1, 0], [0, 1]],
+        classification_report={"IT": {"precision": 0.9, "recall": 0.9, "f1": 0.9, "support": 40}},
+    )
+    metrics.update(overrides)
+    return metrics
+
+
+class TestValidationMetrics:
+    def test_accepts_full_metrics(self):
+        metrics = ValidationMetrics(**_validation_metrics_payload())
+        assert metrics.accuracy == pytest.approx(0.9)
+        assert len(metrics.confusion_matrix) == len(CLASS_LABELS)
+
+    def test_rejects_missing_field(self):
+        payload = _validation_metrics_payload()
+        del payload["f1_macro"]
+        with pytest.raises(ValidationError):
+            ValidationMetrics(**payload)
+
+
+class TestGapMetrics:
+    def test_accepts_warning_flag(self):
+        gap = GapMetrics(accuracy_gap=0.12, f1_macro_gap=0.05, warning=True)
+        assert gap.warning is True
+
+    def test_rejects_missing_field(self):
+        with pytest.raises(ValidationError):
+            GapMetrics(accuracy_gap=0.12, warning=True)
+
+
+class TestTargetCheckResult:
+    def test_accepts_all_targets_met(self):
+        result = TargetCheckResult(
+            accuracy_target_met=True, binary_accuracy_target_met=True, f1_macro_target_met=True
+        )
+        assert result.accuracy_target_met is True
+
+    def test_rejects_missing_field(self):
+        with pytest.raises(ValidationError):
+            TargetCheckResult(accuracy_target_met=True, binary_accuracy_target_met=True)
+
+
+class TestEvaluationReport:
+    def test_accepts_nested_models(self):
+        report = EvaluationReport(
+            metrics=ValidationMetrics(**_validation_metrics_payload()),
+            gap=GapMetrics(accuracy_gap=0.02, f1_macro_gap=0.01, warning=False),
+            targets=TargetCheckResult(
+                accuracy_target_met=True, binary_accuracy_target_met=True, f1_macro_target_met=True
+            ),
+        )
+        assert report.gap.warning is False
+
+    def test_rejects_missing_field(self):
+        with pytest.raises(ValidationError):
+            EvaluationReport(
+                gap=GapMetrics(accuracy_gap=0.02, f1_macro_gap=0.01, warning=False),
+                targets=TargetCheckResult(
+                    accuracy_target_met=True, binary_accuracy_target_met=True, f1_macro_target_met=True
+                ),
+            )

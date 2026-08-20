@@ -126,3 +126,41 @@ class HyperparamSearchResult(BaseModel):
     best_accuracy: float
     best_f1_macro: float
     trials: list[HyperparamTrial]
+
+
+class ValidationMetrics(BaseModel):
+    """evaluation.metrics.compute_metrics() 반환값 — val set 기준 5-class + 이진 지표
+    (P4_설계서_Validation.md 3절)."""
+
+    accuracy: float
+    f1_macro: float
+    binary_accuracy: float
+    confusion_matrix_labels: list[str]
+    confusion_matrix: list[list[int]]
+    binary_confusion_matrix: list[list[int]]
+    classification_report: dict[str, dict[str, float]]
+
+
+class GapMetrics(BaseModel):
+    """evaluation.metrics.compute_gap() 반환값 — Phase 3 test 성적 대비 val 성적 차이."""
+
+    accuracy_gap: float
+    f1_macro_gap: float
+    warning: bool
+
+
+class TargetCheckResult(BaseModel):
+    """evaluation.metrics.check_targets() 반환값 — Scope_Definition 4.4절 목표 달성 여부."""
+
+    accuracy_target_met: bool
+    binary_accuracy_target_met: bool
+    f1_macro_target_met: bool
+
+
+class EvaluationReport(BaseModel):
+    """evaluation.report.build_report() 반환값. eval_report_<ver>.json으로 그대로
+    직렬화된다(evaluation/report.py save_report)."""
+
+    metrics: ValidationMetrics
+    gap: GapMetrics
+    targets: TargetCheckResult

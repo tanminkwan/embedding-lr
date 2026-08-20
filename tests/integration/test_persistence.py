@@ -61,3 +61,20 @@ class TestSaveSearchResult:
 
         with pytest.raises(DataValidationError, match="이미 존재"):
             persistence.save_search_result(_search_result(), str(path))
+
+
+class TestLoadSearchResult:
+    def test_round_trips_a_saved_result(self, tmp_path):
+        path = tmp_path / "hyperparams.json"
+        result = _search_result()
+        persistence.save_search_result(result, str(path))
+
+        loaded = persistence.load_search_result(str(path))
+
+        assert loaded == result
+
+    def test_raises_when_path_missing(self, tmp_path):
+        path = tmp_path / "missing.json"
+
+        with pytest.raises(ModelNotFoundError):
+            persistence.load_search_result(str(path))

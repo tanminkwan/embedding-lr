@@ -18,4 +18,8 @@ class Settings(BaseSettings):
     model_dir: str
     status_dir: str = "status"
 
+    model_path: str
+    inference_host: str = "0.0.0.0"
+    inference_port: int = 8080
+
     model_config = SettingsConfigDict(env_file=".env", protected_namespaces=())

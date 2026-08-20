@@ -9,6 +9,7 @@ REQUIRED_ENV = {
     "AIPRO_API_TOKEN": "test-token",
     "EMBEDDING_SERVER_BASE_URL": "http://localhost:8000",
     "MODEL_DIR": "models",
+    "MODEL_PATH": "models/model.pkl",
 }
 
 
@@ -22,6 +23,7 @@ def test_loads_required_fields_from_env(monkeypatch):
     assert settings.aipro_api_token == "test-token"
     assert settings.embedding_server_base_url == "http://localhost:8000"
     assert settings.model_dir == "models"
+    assert settings.model_path == "models/model.pkl"
 
 
 def test_applies_defaults_when_optional_fields_absent(monkeypatch):
@@ -36,6 +38,8 @@ def test_applies_defaults_when_optional_fields_absent(monkeypatch):
     assert settings.status_dir == "status"
     assert settings.aipro_timeout_seconds == 30.0
     assert settings.embedding_server_timeout_seconds == 30.0
+    assert settings.inference_host == "0.0.0.0"
+    assert settings.inference_port == 8080
 
 
 def test_overrides_defaults_from_env(monkeypatch):
@@ -53,6 +57,7 @@ def test_missing_required_field_raises(monkeypatch):
     monkeypatch.delenv("AIPRO_API_TOKEN", raising=False)
     monkeypatch.delenv("EMBEDDING_SERVER_BASE_URL", raising=False)
     monkeypatch.delenv("MODEL_DIR", raising=False)
+    monkeypatch.delenv("MODEL_PATH", raising=False)
 
     with pytest.raises(ValidationError):
         Settings(_env_file=None)

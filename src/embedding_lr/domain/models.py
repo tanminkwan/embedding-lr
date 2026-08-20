@@ -110,6 +110,18 @@ class PredictionResult(BaseModel):
         return self
 
 
+class ClassifyRequest(BaseModel):
+    """POST /classify 요청 본문 — inference/api.py."""
+
+    items: list[QueryRecord]
+
+
+class ClassifyResponse(BaseModel):
+    """POST /classify 응답 본문. results[i]는 items[i]에 순서로 대응한다."""
+
+    results: list[PredictionResult]
+
+
 class HyperparamTrial(BaseModel):
     """하이퍼파라미터 조합 1개 + test set 성적 1건 — training/trainer.py 산출"""
 

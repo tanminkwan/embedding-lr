@@ -10,6 +10,7 @@ REQUIRED_ENV = {
     "AIPRO_API_TOKEN": "test-token",
     "EMBEDDING_SERVER_BASE_URL": "http://localhost:8000",
     "MODEL_DIR": "models",
+    "MODEL_PATH": "models/model.pkl",
 }
 
 _IT_ROLE_FILES = [

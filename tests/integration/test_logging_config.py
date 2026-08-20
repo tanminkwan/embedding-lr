@@ -11,6 +11,7 @@ def _settings(**overrides) -> Settings:
         aipro_api_token="test-token",
         embedding_server_base_url="http://localhost:8000",
         model_dir="models",
+        model_path="models/model.pkl",
         service_name="embedding_lr",
         log_level="INFO",
     )

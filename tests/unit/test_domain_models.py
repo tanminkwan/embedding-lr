@@ -2,7 +2,14 @@ import pytest
 from pydantic import ValidationError
 
 from embedding_lr.constants import CLASS_LABELS, EMBEDDING_DIM
-from embedding_lr.domain.models import KnowledgeItem, KnowledgeRecord, PredictionResult, QueryRecord
+from embedding_lr.domain.models import (
+    HyperparamSearchResult,
+    HyperparamTrial,
+    KnowledgeItem,
+    KnowledgeRecord,
+    PredictionResult,
+    QueryRecord,
+)
 
 
 class TestQueryRecord:
@@ -100,3 +107,39 @@ class TestPredictionResult:
         extra["EXTRA"] = 0.0
         with pytest.raises(ValidationError):
             PredictionResult(predicted_category="IT", final_verdict="IT", probabilities=extra)
+
+
+class TestHyperparamTrial:
+    def test_accepts_mixed_type_params(self):
+        trial = HyperparamTrial(
+            params={"C": 1.0, "solver": "lbfgs", "max_iter": 500}, accuracy=0.9, f1_macro=0.88
+        )
+        assert trial.params["solver"] == "lbfgs"
+        assert trial.accuracy == pytest.approx(0.9)
+
+    def test_rejects_missing_field(self):
+        with pytest.raises(ValidationError):
+            HyperparamTrial(params={"C": 1.0}, accuracy=0.9)
+
+
+class TestHyperparamSearchResult:
+    def test_accepts_result_with_trials(self):
+        trials = [
+            HyperparamTrial(params={"C": 0.1}, accuracy=0.8, f1_macro=0.78),
+            HyperparamTrial(params={"C": 1.0}, accuracy=0.9, f1_macro=0.88),
+        ]
+        result = HyperparamSearchResult(
+            best_params={"C": 1.0}, best_accuracy=0.9, best_f1_macro=0.88, trials=trials
+        )
+        assert len(result.trials) == 2
+        assert result.best_params == {"C": 1.0}
+
+    def test_accepts_empty_trials_list(self):
+        result = HyperparamSearchResult(
+            best_params={"C": 1.0}, best_accuracy=0.9, best_f1_macro=0.88, trials=[]
+        )
+        assert result.trials == []
+
+    def test_rejects_missing_field(self):
+        with pytest.raises(ValidationError):
+            HyperparamSearchResult(best_accuracy=0.9, best_f1_macro=0.88, trials=[])

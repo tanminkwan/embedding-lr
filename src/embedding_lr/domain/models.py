@@ -108,3 +108,21 @@ class PredictionResult(BaseModel):
                 f"predicted_category {self.predicted_category!r} (expected {expected!r})"
             )
         return self
+
+
+class HyperparamTrial(BaseModel):
+    """하이퍼파라미터 조합 1개 + test set 성적 1건 — training/trainer.py 산출"""
+
+    params: dict[str, float | int | str]
+    accuracy: float
+    f1_macro: float
+
+
+class HyperparamSearchResult(BaseModel):
+    """training.trainer.search_hyperparameters() 반환값. hyperparams.json으로 그대로
+    직렬화된다(training/persistence.py save_search_result)."""
+
+    best_params: dict[str, float | int | str]
+    best_accuracy: float
+    best_f1_macro: float
+    trials: list[HyperparamTrial]

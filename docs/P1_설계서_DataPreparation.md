@@ -1,12 +1,12 @@
 # 설계서 — Phase 1 데이터 준비 (DataPreparation)
 
-[[P1_DataPreparation_Requirements]](요구사항정의서)를 [[Architecture_Design]] 2절(모듈
+[[P1_요구사항정의서_DataPreparation]](요구사항정의서)를 [[Architecture_Design]] 2절(모듈
 구조)·3절(Workflow 규약)의 실제 모듈 시그니처로 구체화한 설계서. [[CLAUDE.md]] 3절
 순서상 2단계 산출물이다.
 
 대상 모듈: `data_generation/{csv_repository,jsonl_repository}.py`, `dataset/{combine,split}.py`.
 [[Architecture_Design]]은 데이터 준비를 **Phase 1**(원본 CSV → JSONL 변환)과 **Phase 1.5**
-(조합/분할)로 나누는데, 본 설계서는 [[P1_DataPreparation_Requirements]]와 동일하게 둘 다
+(조합/분할)로 나누는데, 본 설계서는 [[P1_요구사항정의서_DataPreparation]]와 동일하게 둘 다
 다룬다.
 
 ## 1. 범위와 설계 전제
@@ -119,7 +119,7 @@ def split(
 - 알고리즘: 클래스별로 레코드를 그룹핑(카테고리 알파벳순 처리) → 그룹 내부에서 `seed`로
   결정적 셔플 → `ratios` 비율(3:1:1)로 잘라 `train`/`test`/`validation`에 각각 append.
   클래스 처리 순서와 그룹 내 셔플 순서 모두 고정되어야 재현성이 보장된다
-  ([[P1_DataPreparation_Requirements]] 5절 "재현성" 요구사항).
+  ([[P1_요구사항정의서_DataPreparation]] 5절 "재현성" 요구사항).
 - `seed`/`ratios` 기본값은 `constants.RANDOM_SEED`/`constants.SPLIT_RATIOS`([[P0_설계서_Common]]
   1절에 정의됨) — [[CLAUDE.md]] 4절에 따라 코드에 직접 쓰지 않고 상수를 참조한다.
 - 반환 후 저장 시 파일명 매핑은 `constants.SPLIT_FILE_STEMS`를 사용: `"validation"` 키 →
@@ -162,13 +162,13 @@ role_01~09_*.jsonl ──(JsonlRepository.load × 9)──> list[QueryRecord] ×
 | `dataset/combine.py` | A | ≥ 90% | 순수 로직 — 테스트 먼저, 클래스 불균형/중복 케이스 포함 |
 | `dataset/split.py` | A | ≥ 90% | 순수 로직 — 테스트 먼저, seed 고정 재현성 케이스 포함 |
 
-완료 기준은 [[P1_DataPreparation_Requirements]] 7절과 동일. 특히 "동일 입력으로 재실행
+완료 기준은 [[P1_요구사항정의서_DataPreparation]] 7절과 동일. 특히 "동일 입력으로 재실행
 시 분할 결과가 바이트 단위로 동일"함은 `split()`의 `seed` 고정 여부를 직접 검증하는
 테스트 케이스로 커버한다.
 
 ## 9. 관련 문서/코드
 
-- 요구사항: [[P1_DataPreparation_Requirements]]
+- 요구사항: [[P1_요구사항정의서_DataPreparation]]
 - 상위 설계: [[Architecture_Design]] 2절(모듈 구조), 3절(Workflow 규약)
 - 공통 모듈: [[P0_설계서_Common]] 1절(`SPLIT_RATIOS`/`RANDOM_SEED`/`FIELD_*`), 4절
   (`DataRepository` Protocol)

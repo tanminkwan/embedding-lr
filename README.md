@@ -51,7 +51,7 @@ CSV), Phase 1 코드는 그 원본을 JSONL로 변환하는 일만 한다.
 | [P0_설계서_Common.md](docs/P0_설계서_Common.md) | **Phase 0** 공통 모듈(`config`/`constants`/`domain`/`exceptions`/`run_context`) 필드·시그니처 설계 |
 | [P0_설계서_Logging.md](docs/P0_설계서_Logging.md) | **Phase 0** 로깅 표준(JSON 스키마, 라벨/본문 구분) — Loki/Grafana는 미연동, 향후 대비만 |
 | [P0_테스트결과서_Common.md](docs/P0_테스트결과서_Common.md) | **Phase 0** 공통 모듈 테스트 실행 결과·등급별 커버리지 |
-| [P1_DataPreparation_Requirements.md](docs/P1_DataPreparation_Requirements.md) | Phase 1(데이터 준비) 요구사항 정의서 — v0.2 재변환 포함 |
+| [P1_요구사항정의서_DataPreparation.md](docs/P1_요구사항정의서_DataPreparation.md) | Phase 1(데이터 준비) 요구사항 정의서 — v0.2 재변환 포함 |
 | [P1_Data_Preprocessing_Review.md](docs/P1_Data_Preprocessing_Review.md) | v0.1 데이터 결함 검토(CSV 이스케이프 오류, 분할 시드 미고정) |
 | [P1_설계서_DataPreparation.md](docs/P1_설계서_DataPreparation.md) | **Phase 1** 데이터 준비(CSV→JSONL 변환)/조합/분할 설계 — `DataRepository` 기반 원본 형식 추상화, `dataset.combine`/`dataset.split` 시그니처 |
 | [P2_설계서_TextCleaning.md](docs/P2_설계서_TextCleaning.md) | **Phase 2** 텍스트 전처리(`text_cleaner`) 설계 — 코드펜스 구분자 제거/스택 트레이스 라인 제거/공백 정규화 |
@@ -64,11 +64,14 @@ CSV), Phase 1 코드는 그 원본을 JSONL로 변환하는 일만 한다.
 | [P4_요구사항정의서_Validation.md](docs/P4_요구사항정의서_Validation.md) | **Phase 4** 검증 요구사항 정의서 — 5-class/이진 Accuracy·F1-macro·Confusion Matrix, test-vs-validation gap 지표, 루프백은 사람 결정 |
 | [P4_설계서_Validation.md](docs/P4_설계서_Validation.md) | **Phase 4** 검증 설계 — `evaluation/{metrics,report}.py` 시그니처, gap 경고 임계값 설정 파일, 목표치 상수화 |
 | [P4_테스트결과서_Validation.md](docs/P4_테스트결과서_Validation.md) | **Phase 4** 검증 테스트 실행 결과·등급별 커버리지 |
+| [P5_요구사항정의서_Inference.md](docs/P5_요구사항정의서_Inference.md) | **Phase 5** 추론 요구사항 정의서 — 독립 배치 웹 서비스, 임베딩은 질의(query) 단독(실 AIPro+ 실험으로 검증) |
+| [P5_설계서_Inference.md](docs/P5_설계서_Inference.md) | **Phase 5** 추론 설계 — `TextClassifier` Protocol로 분류 방식 추상화(임베딩+LR은 어댑터 하나), `inference/{predictor,api,embedding_lr_classifier}.py` 시그니처 |
+| [P5_테스트결과서_Inference.md](docs/P5_테스트결과서_Inference.md) | **Phase 5** 추론 테스트 실행 결과·등급별 커버리지 |
 
 ## 진행 상황
 
-Phase 0(공통 모듈)~Phase 4(검증)까지 코드가 구현·테스트된 상태다. Phase 5(추론)는
-아직 착수 전이다.
+Phase 0(공통 모듈)~Phase 5(추론)까지 코드가 구현·테스트된 상태다. 5개 Phase 전체
+완료.
 
 | 영역 | 상태 | 비고 |
 |---|---|---|
@@ -78,7 +81,7 @@ Phase 0(공통 모듈)~Phase 4(검증)까지 코드가 구현·테스트된 상�
 | **Phase 0** 로깅 표준 설계 | 완료 | P0_설계서_Logging.md |
 | **Phase 0** 공통 모듈 코드+테스트(`config`/`constants`/`domain`/`exceptions`/`run_context`/`logging_config`) | 완료 | 23 tests passed, A+B 등급 커버리지 100% — P0_테스트결과서_Common.md, Docker(`docker/Dockerfile.pipeline`) 내부에서 실행 |
 | **Phase 0** 임베딩 캐싱 설계 변경 | 완료 | MD5 해시 기반 레코드 중복 판별 제거 → `source` 필드에 분류 라벨값 저장, 콜렉션을 `<version>_<train\|test\|validation>`로 분리. 도메인(`DOMAIN_NAME`, 프로젝트 고정 1개)·콜렉션 모두 사전 등록 후에만 지식 데이터 등록 가능(둘 다 이미 존재하면 재등록하지 않음) — Scope_Definition.md 2.1절/Architecture_Design.md 참고 |
-| Phase 1 요구사항 정의 | 완료 | CSV→**JSONL** 포맷 전환 포함(CSV 이스케이프 사고 재발 원천 차단) — P1_DataPreparation_Requirements.md |
+| Phase 1 요구사항 정의 | 완료 | CSV→**JSONL** 포맷 전환 포함(CSV 이스케이프 사고 재발 원천 차단) — P1_요구사항정의서_DataPreparation.md |
 | **Phase 1** 설계(데이터 준비/조합/분할) | 완료 | `DataRepository` Protocol(`CsvRepository`=읽기 전용, `JsonlRepository`) 뒤로 원본 형식을 추상화 — 형식이 바뀌어도 `dataset.combine`/`dataset.split`은 무수정. `SPLIT_RATIOS`(3:1:1)/`RANDOM_SEED`(42)/`RECORDS_PER_CLASS`(200) 상수 추가 — P1_설계서_DataPreparation.md |
 | **Phase 1** 코드+테스트(`csv_repository`/`jsonl_repository`/`dataset.combine`/`dataset.split`/`cli.run_phase1`/`cli.run_phase1_5`) | 완료 | 신규 모듈 100% 커버리지, Docker 내부에서 실행 |
 | Phase 1 데이터(v0.1 → v0.2) | 완료 | `data/v0.1_from.Claude-Cowork/role_03_network.csv`의 CSV 이스케이프 오류를 원본에서 직접 수정(P1_Data_Preprocessing_Review 3.1절) → `cli.run_phase1`/`run_phase1_5`로 실제 변환·조합·분할 실행 → `data/v0.2/{role_01~09,data,train,test,val}.jsonl` 생성(1,000건, 클래스당 200건, train/test/val 120/40/40) |
@@ -86,9 +89,10 @@ Phase 0(공통 모듈)~Phase 4(검증)까지 코드가 구현·테스트된 상�
 | **Phase 2** 임베딩 변환 설계+코드+테스트(`collection`/`aipro_client`/`embedding_server_client`/`registration`/`knowledge_writer`/`pipeline`/`cli.run_phase2`) | 완료 | AIPro+ 도메인/콜렉션 idempotent 등록 → `POST /api/rag/knowledge` 레코드별 개별 등록(bulk-upload 미사용) → `GET /api/rag/knowledge` 일괄 조회 → `*_vectors.parquet` 저장, 콜렉션 건수 일치 시 재등록 스킵, `embed()`는 어디서도 호출 안 함. Phase 2 범위 97%/프로젝트 전체 99% 커버리지, 98 tests passed — 실제 AIPro+는 호출하지 않고 respx/fake로 테스트. P2_설계서_Embedding.md/P2_테스트결과서_Embedding.md |
 | **Phase 3** 모델 학습 설계+코드+테스트(`domain.models` 갱신/`training.trainer`/`training.persistence`/`cli.run_phase3`) | 완료 | `GridSearchCV`+`PredefinedSplit`(train=-1, test=0)으로 test set 기준 탐색, 최적 조합 선정 후 train set만으로 재학습, F1-macro→Accuracy tie-break, 모델(`.pkl`)/탐색이력(`.json`) 재실행 시 미덮어쓰기. Phase 3 범위 99%/프로젝트 전체 99% 커버리지, 121 tests passed(구현 중 scikit-learn 1.9 API 변화로 `multi_class` 인자 제거 + NaN tie-break 정렬 버그 수정, 상세는 테스트결과서 6절). P3_설계서_Training.md/P3_테스트결과서_Training.md |
 | **Phase 4** 검증 설계+코드+테스트(`domain.models`/`constants`/`training.persistence` 갱신/`evaluation.metrics`/`evaluation.report`/`cli.run_phase4`) | 완료 | `val_vectors.parquet`+`model.pkl`+`hyperparams.json`으로 5-class/이진 Accuracy·F1-macro·Confusion Matrix·Classification Report 산출, test-vs-validation gap 지표(임계값 설정 파일, 초과 시 warning) 추가, 목표 미달이어도 exit code는 항상 0(루프백은 사람이 리포트 보고 판단). Phase 4 범위 99%/프로젝트 전체 99% 커버리지, 150 tests passed(구현 중 일부 클래스만 학습된 모델에서 `probs_to_labels` KeyError 발견·수정, 상세는 테스트결과서 6절). 실데이터(`data/v0.2/val_vectors.parquet`) 검증: 5-class Accuracy 98.5%/이진 Accuracy 100%/F1-macro 0.985, gap 0.01(무경고) — 목표 3종 모두 달성. P4_설계서_Validation.md/P4_테스트결과서_Validation.md |
-| Phase 5(추론) 코드 | 미착수 | |
+| **Phase 5** 추론 설계+코드+테스트(`domain.interfaces`(`TextClassifier` 신규)/`domain.models`/`config` 갱신/`inference.{embedding_lr_classifier,predictor,api}`/`cli.run_inference_server`) | 완료 | 분류 방식을 `TextClassifier` Protocol 뒤로 추상화(임베딩+LR은 `EmbeddingLRTextClassifier` 어댑터 하나 — 추후 NLI/앙상블 교체 시 `cli.run_inference_server.py` 조립부만 변경). `POST /classify`(리스트 요청→리스트 응답, 순서 대응)/`GET /health`. 임베딩은 질의(query) 단독(실 AIPro+ 실험으로 검증, `response` 필드는 무시). 모델은 서비스 기동 시 1회 로드, 로드 실패 시 기동 자체 실패. Phase 5 범위 99%/프로젝트 전체 99% 커버리지, 168 tests passed(재작업 없음). 실서비스(Embedding Service `localhost:8000`) E2E: IT/DAILY/KNOWLEDGE/CREATIVE/ANOMALY 5종 질의 모두 정확히 분류, `response` 필드 무영향 확인. `Dockerfile.inference` 신규(`docker-compose.yml`은 후속 과제). P5_설계서_Inference.md/P5_테스트결과서_Inference.md |
 | Docker: `Dockerfile.pipeline` 뼈대 | 완료 | Phase 0 공통 모듈 테스트 실행용. 호스트가 사내 프록시 경유 환경이면 `docker build --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy --build-arg no_proxy=$no_proxy`로 프록시를 넘겨야 `pip install`이 성공함(자동 상속 안 됨) |
-| Docker: `Dockerfile.inference`, `docker-compose.yml` | 미착수 | |
+| Docker: `Dockerfile.inference` | 완료 | Phase 5와 함께 완료(위 행 참고) |
+| Docker: `docker-compose.yml` | 미착수 | Phase 1~5 통합 오케스트레이션 — 후속 과제, 각 Phase는 지금까지 단독 `docker build`/`docker run`으로 검증 |
 | Loki/Grafana 연동 | 미착수 | P0_설계서_Logging.md 7절에 향후 방침만 기록, 지금은 stdout 로그까지만 |
 
 이 표는 작업이 진행될 때마다 갱신한다.

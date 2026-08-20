@@ -17,6 +17,7 @@ def _settings(tmp_path) -> Settings:
         embedding_server_base_url="http://localhost:8000",
         model_dir=str(tmp_path / "models"),
         status_dir=str(tmp_path / "status"),
+        model_path=str(tmp_path / "models" / "model.pkl"),
     )
 
 

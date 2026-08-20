@@ -98,7 +98,7 @@ docker run --rm \
 | 재현성 (동일 입력·동일 seed) | 기존 `data/v0.2/*.jsonl`과 바이트 단위 동일 | `diff` 결과 차이 없음(`data.jsonl`/`train.jsonl`/`test.jsonl`/`val.jsonl` 4개 파일) | ✅ |
 | 입출력 보존(재실행 시 덮어쓰기 금지) | 기존 출력 존재 시 실패 | `DataValidationError: /out/data.jsonl 이미 존재 — 덮어쓰기 금지` 발생, 종료 코드 1 | ✅ |
 
-[[P1_DataPreparation_Requirements]] 7절의 완료 기준(클래스당 200건, 3:1:1 분할, JSON 유효성,
+[[P1_요구사항정의서_DataPreparation]] 7절의 완료 기준(클래스당 200건, 3:1:1 분할, JSON 유효성,
 재현성)을 실제 CLI 구동으로도 재확인했다. 검증에 사용한 스크래치 디렉터리는 세션 종료
 전 삭제했으며, 리포지토리 내 `data/v0.2/`나 다른 파일은 변경하지 않았다.
 
@@ -110,7 +110,7 @@ docker run --rm \
 
 ## 6. 관련 문서/코드
 
-- 요구사항: [[P1_DataPreparation_Requirements]]
+- 요구사항: [[P1_요구사항정의서_DataPreparation]]
 - 설계: [[P1_설계서_DataPreparation]]
 - 코드: `src/embedding_lr/data_generation/{csv_repository,jsonl_repository}.py`,
   `src/embedding_lr/dataset/{combine,split}.py`,

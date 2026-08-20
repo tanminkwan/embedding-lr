@@ -3,6 +3,8 @@ from pydantic import ValidationError
 
 from embedding_lr.constants import CLASS_LABELS, EMBEDDING_DIM
 from embedding_lr.domain.models import (
+    ClassifyRequest,
+    ClassifyResponse,
     EvaluationReport,
     GapMetrics,
     HyperparamSearchResult,
@@ -217,3 +219,41 @@ class TestEvaluationReport:
                     accuracy_target_met=True, binary_accuracy_target_met=True, f1_macro_target_met=True
                 ),
             )
+
+
+class TestClassifyRequest:
+    def test_accepts_list_of_query_records(self):
+        request = ClassifyRequest(
+            items=[
+                QueryRecord(query="Tomcat 재시작?", response=""),
+                QueryRecord(query="오늘 날씨 어때?", response=""),
+            ]
+        )
+        assert len(request.items) == 2
+
+    def test_accepts_empty_items_list(self):
+        request = ClassifyRequest(items=[])
+        assert request.items == []
+
+    def test_rejects_missing_field(self):
+        with pytest.raises(ValidationError):
+            ClassifyRequest()
+
+
+class TestClassifyResponse:
+    def _prediction(self) -> PredictionResult:
+        remaining = 0.1 / (len(CLASS_LABELS) - 1)
+        probs = {label: (0.9 if label == "IT" else remaining) for label in CLASS_LABELS}
+        return PredictionResult(predicted_category="IT", final_verdict="IT", probabilities=probs)
+
+    def test_accepts_list_of_prediction_results(self):
+        response = ClassifyResponse(results=[self._prediction(), self._prediction()])
+        assert len(response.results) == 2
+
+    def test_accepts_empty_results_list(self):
+        response = ClassifyResponse(results=[])
+        assert response.results == []
+
+    def test_rejects_missing_field(self):
+        with pytest.raises(ValidationError):
+            ClassifyResponse()

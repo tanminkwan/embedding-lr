@@ -42,6 +42,15 @@ class Classifier(Protocol):
     def predict_proba(self, X: list[list[float]]) -> list[dict[str, float]]: ...
 
 
+class TextClassifier(Protocol):
+    """(정제된) 텍스트 리스트 → 클래스별 확률 dict 리스트 — Phase 5 추론 전용.
+    임베딩+LR 조합(EmbeddingLRTextClassifier)은 이 Protocol의 구현체 중 하나일 뿐이다 —
+    NLI 등 임베딩을 거치지 않는 방식이나 여러 구현체를 조합한 앙상블도 이 Protocol만
+    만족하면 inference/predictor.py, inference/api.py의 수정 없이 교체·추가할 수 있다."""
+
+    def classify(self, queries: list[str]) -> list[dict[str, float]]: ...
+
+
 class DataRepository(Protocol):
     def load(self, path: str) -> list[QueryRecord]: ...
 

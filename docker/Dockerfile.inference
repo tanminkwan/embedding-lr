@@ -1,0 +1,13 @@
+# Phase 5 상시 서비스 이미지 — Architecture_Design.md 6절
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY pyproject.toml ./
+COPY src ./src
+RUN pip install --no-cache-dir ".[dev,inference]"
+
+COPY tests ./tests
+
+EXPOSE 8080
+CMD ["python", "-m", "embedding_lr.cli.run_inference_server"]

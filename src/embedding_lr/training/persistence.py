@@ -34,3 +34,10 @@ def save_search_result(result: HyperparamSearchResult, path: str) -> None:
     if Path(path).exists():
         raise DataValidationError(f"{path} 이미 존재 — 덮어쓰기 금지(입출력 보존 원칙)")
     Path(path).write_text(result.model_dump_json(indent=2), encoding="utf-8")
+
+
+def load_search_result(path: str) -> HyperparamSearchResult:
+    """path의 JSON을 읽어 HyperparamSearchResult로 파싱. 파일이 없으면 ModelNotFoundError."""
+    if not Path(path).exists():
+        raise ModelNotFoundError(f"{path} 하이퍼파라미터 탐색 결과 파일을 찾을 수 없습니다")
+    return HyperparamSearchResult.model_validate_json(Path(path).read_text(encoding="utf-8"))

@@ -61,11 +61,14 @@ CSV), Phase 1 코드는 그 원본을 JSONL로 변환하는 일만 한다.
 | [P3_요구사항정의서_Training.md](docs/P3_요구사항정의서_Training.md) | **Phase 3** 모델 학습 요구사항 정의서 — test set 기준 하이퍼파라미터 선정(val set 미사용), tie-break(F1-macro→Accuracy) |
 | [P3_설계서_Training.md](docs/P3_설계서_Training.md) | **Phase 3** 모델 학습 설계 — `GridSearchCV`+`PredefinedSplit`, 최종 모델은 train set만 재학습, `training/{trainer,persistence}.py` 시그니처 |
 | [P3_테스트결과서_Training.md](docs/P3_테스트결과서_Training.md) | **Phase 3** 모델 학습 테스트 실행 결과·등급별 커버리지 |
+| [P4_요구사항정의서_Validation.md](docs/P4_요구사항정의서_Validation.md) | **Phase 4** 검증 요구사항 정의서 — 5-class/이진 Accuracy·F1-macro·Confusion Matrix, test-vs-validation gap 지표, 루프백은 사람 결정 |
+| [P4_설계서_Validation.md](docs/P4_설계서_Validation.md) | **Phase 4** 검증 설계 — `evaluation/{metrics,report}.py` 시그니처, gap 경고 임계값 설정 파일, 목표치 상수화 |
+| [P4_테스트결과서_Validation.md](docs/P4_테스트결과서_Validation.md) | **Phase 4** 검증 테스트 실행 결과·등급별 커버리지 |
 
 ## 진행 상황
 
-Phase 0(공통 모듈)~Phase 3(모델 학습)까지 코드가 구현·테스트된 상태다. Phase
-4(검증) 이후는 아직 착수 전이다.
+Phase 0(공통 모듈)~Phase 4(검증)까지 코드가 구현·테스트된 상태다. Phase 5(추론)는
+아직 착수 전이다.
 
 | 영역 | 상태 | 비고 |
 |---|---|---|
@@ -82,7 +85,8 @@ Phase 0(공통 모듈)~Phase 3(모델 학습)까지 코드가 구현·테스트�
 | **Phase 2** 텍스트 전처리(`text_cleaner`) 설계+코드+테스트 | 완료 | 코드펜스 구분자 제거(본문 보존)/스택 트레이스 라인 제거/공백 정규화 3규칙, 순서 고정, 100% 커버리지 — P2_설계서_TextCleaning.md |
 | **Phase 2** 임베딩 변환 설계+코드+테스트(`collection`/`aipro_client`/`embedding_server_client`/`registration`/`knowledge_writer`/`pipeline`/`cli.run_phase2`) | 완료 | AIPro+ 도메인/콜렉션 idempotent 등록 → `POST /api/rag/knowledge` 레코드별 개별 등록(bulk-upload 미사용) → `GET /api/rag/knowledge` 일괄 조회 → `*_vectors.parquet` 저장, 콜렉션 건수 일치 시 재등록 스킵, `embed()`는 어디서도 호출 안 함. Phase 2 범위 97%/프로젝트 전체 99% 커버리지, 98 tests passed — 실제 AIPro+는 호출하지 않고 respx/fake로 테스트. P2_설계서_Embedding.md/P2_테스트결과서_Embedding.md |
 | **Phase 3** 모델 학습 설계+코드+테스트(`domain.models` 갱신/`training.trainer`/`training.persistence`/`cli.run_phase3`) | 완료 | `GridSearchCV`+`PredefinedSplit`(train=-1, test=0)으로 test set 기준 탐색, 최적 조합 선정 후 train set만으로 재학습, F1-macro→Accuracy tie-break, 모델(`.pkl`)/탐색이력(`.json`) 재실행 시 미덮어쓰기. Phase 3 범위 99%/프로젝트 전체 99% 커버리지, 121 tests passed(구현 중 scikit-learn 1.9 API 변화로 `multi_class` 인자 제거 + NaN tie-break 정렬 버그 수정, 상세는 테스트결과서 6절). P3_설계서_Training.md/P3_테스트결과서_Training.md |
-| Phase 4(검증)~5(추론) 코드 | 미착수 | |
+| **Phase 4** 검증 설계+코드+테스트(`domain.models`/`constants`/`training.persistence` 갱신/`evaluation.metrics`/`evaluation.report`/`cli.run_phase4`) | 완료 | `val_vectors.parquet`+`model.pkl`+`hyperparams.json`으로 5-class/이진 Accuracy·F1-macro·Confusion Matrix·Classification Report 산출, test-vs-validation gap 지표(임계값 설정 파일, 초과 시 warning) 추가, 목표 미달이어도 exit code는 항상 0(루프백은 사람이 리포트 보고 판단). Phase 4 범위 99%/프로젝트 전체 99% 커버리지, 150 tests passed(구현 중 일부 클래스만 학습된 모델에서 `probs_to_labels` KeyError 발견·수정, 상세는 테스트결과서 6절). 실데이터(`data/v0.2/val_vectors.parquet`) 검증: 5-class Accuracy 98.5%/이진 Accuracy 100%/F1-macro 0.985, gap 0.01(무경고) — 목표 3종 모두 달성. P4_설계서_Validation.md/P4_테스트결과서_Validation.md |
+| Phase 5(추론) 코드 | 미착수 | |
 | Docker: `Dockerfile.pipeline` 뼈대 | 완료 | Phase 0 공통 모듈 테스트 실행용. 호스트가 사내 프록시 경유 환경이면 `docker build --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy --build-arg no_proxy=$no_proxy`로 프록시를 넘겨야 `pip install`이 성공함(자동 상속 안 됨) |
 | Docker: `Dockerfile.inference`, `docker-compose.yml` | 미착수 | |
 | Loki/Grafana 연동 | 미착수 | P0_설계서_Logging.md 7절에 향후 방침만 기록, 지금은 stdout 로그까지만 |

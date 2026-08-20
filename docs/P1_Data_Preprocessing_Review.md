@@ -71,7 +71,7 @@
 
 3.1절의 근본 원인(CSV가 필드 내 따옴표·쉼표·개행을 이스케이프 규칙에 의존해서만 다룰 수
 있다는 구조적 한계)을 고려해, v0.2부터는 출력 포맷 자체를 **CSV → JSONL**로 전환하기로
-결정함([[Scope_Definition]] 3.3절, [[P1_DataPreparation_Requirements]] 참고). 위 1번 조치
+결정함([[Scope_Definition]] 3.3절, [[P1_요구사항정의서_DataPreparation]] 참고). 위 1번 조치
 (원본 수정 → 재조합 → 재분할 순서)는 포맷과 무관하게 그대로 적용되지만, 산출물 확장자는
 `role_01~09_*.jsonl` → `data.jsonl` → `train/test/val.jsonl`로 바뀐다. JSONL 전환 이후에는
 RFC4180 이스케이프 규칙 자체가 필요 없어져 이 유형의 파싱 사고가 구조적으로 재발할 수 없다.

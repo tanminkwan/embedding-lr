@@ -51,7 +51,7 @@ CSV), Phase 1 코드는 그 원본을 JSONL로 변환하는 일만 한다.
 | [P0_설계서_Common.md](docs/P0_설계서_Common.md) | **Phase 0** 공통 모듈(`config`/`constants`/`domain`/`exceptions`/`run_context`) 필드·시그니처 설계 |
 | [P0_설계서_Logging.md](docs/P0_설계서_Logging.md) | **Phase 0** 로깅 표준(JSON 스키마, 라벨/본문 구분) — Loki/Grafana는 미연동, 향후 대비만 |
 | [P0_테스트결과서_Common.md](docs/P0_테스트결과서_Common.md) | **Phase 0** 공통 모듈 테스트 실행 결과·등급별 커버리지 |
-| [P1_DataPreparation_Requirements.md](docs/P1_DataPreparation_Requirements.md) | Phase 1(데이터 준비) 요구사항 정의서 — v0.2 재변환 포함 |
+| [P1_요구사항정의서_DataPreparation.md](docs/P1_요구사항정의서_DataPreparation.md) | Phase 1(데이터 준비) 요구사항 정의서 — v0.2 재변환 포함 |
 | [P1_Data_Preprocessing_Review.md](docs/P1_Data_Preprocessing_Review.md) | v0.1 데이터 결함 검토(CSV 이스케이프 오류, 분할 시드 미고정) |
 | [P1_설계서_DataPreparation.md](docs/P1_설계서_DataPreparation.md) | **Phase 1** 데이터 준비(CSV→JSONL 변환)/조합/분할 설계 — `DataRepository` 기반 원본 형식 추상화, `dataset.combine`/`dataset.split` 시그니처 |
 | [P2_설계서_TextCleaning.md](docs/P2_설계서_TextCleaning.md) | **Phase 2** 텍스트 전처리(`text_cleaner`) 설계 — 코드펜스 구분자 제거/스택 트레이스 라인 제거/공백 정규화 |
@@ -81,7 +81,7 @@ Phase 0(공통 모듈)~Phase 5(추론)까지 코드가 구현·테스트된 상�
 | **Phase 0** 로깅 표준 설계 | 완료 | P0_설계서_Logging.md |
 | **Phase 0** 공통 모듈 코드+테스트(`config`/`constants`/`domain`/`exceptions`/`run_context`/`logging_config`) | 완료 | 23 tests passed, A+B 등급 커버리지 100% — P0_테스트결과서_Common.md, Docker(`docker/Dockerfile.pipeline`) 내부에서 실행 |
 | **Phase 0** 임베딩 캐싱 설계 변경 | 완료 | MD5 해시 기반 레코드 중복 판별 제거 → `source` 필드에 분류 라벨값 저장, 콜렉션을 `<version>_<train\|test\|validation>`로 분리. 도메인(`DOMAIN_NAME`, 프로젝트 고정 1개)·콜렉션 모두 사전 등록 후에만 지식 데이터 등록 가능(둘 다 이미 존재하면 재등록하지 않음) — Scope_Definition.md 2.1절/Architecture_Design.md 참고 |
-| Phase 1 요구사항 정의 | 완료 | CSV→**JSONL** 포맷 전환 포함(CSV 이스케이프 사고 재발 원천 차단) — P1_DataPreparation_Requirements.md |
+| Phase 1 요구사항 정의 | 완료 | CSV→**JSONL** 포맷 전환 포함(CSV 이스케이프 사고 재발 원천 차단) — P1_요구사항정의서_DataPreparation.md |
 | **Phase 1** 설계(데이터 준비/조합/분할) | 완료 | `DataRepository` Protocol(`CsvRepository`=읽기 전용, `JsonlRepository`) 뒤로 원본 형식을 추상화 — 형식이 바뀌어도 `dataset.combine`/`dataset.split`은 무수정. `SPLIT_RATIOS`(3:1:1)/`RANDOM_SEED`(42)/`RECORDS_PER_CLASS`(200) 상수 추가 — P1_설계서_DataPreparation.md |
 | **Phase 1** 코드+테스트(`csv_repository`/`jsonl_repository`/`dataset.combine`/`dataset.split`/`cli.run_phase1`/`cli.run_phase1_5`) | 완료 | 신규 모듈 100% 커버리지, Docker 내부에서 실행 |
 | Phase 1 데이터(v0.1 → v0.2) | 완료 | `data/v0.1_from.Claude-Cowork/role_03_network.csv`의 CSV 이스케이프 오류를 원본에서 직접 수정(P1_Data_Preprocessing_Review 3.1절) → `cli.run_phase1`/`run_phase1_5`로 실제 변환·조합·분할 실행 → `data/v0.2/{role_01~09,data,train,test,val}.jsonl` 생성(1,000건, 클래스당 200건, train/test/val 120/40/40) |

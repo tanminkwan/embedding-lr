@@ -1,4 +1,4 @@
-# P1_DataPreparation_Requirements — Phase 1 요구사항 정의서
+# P1_요구사항정의서_DataPreparation — Phase 1 요구사항 정의서
 
 [[Scope_Definition]] 3절(학습 데이터 확보 전략)과 7절(Phase 로드맵)을 Phase 1 단위로
 구체화한 요구사항 정의서. [[CLAUDE.md]] 3절 "작업 진행 순서"의 1단계 산출물이며, 다음
